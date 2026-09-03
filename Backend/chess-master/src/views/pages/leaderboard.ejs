@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>ChessMaster | Leaderboard</title>
+
+        <link rel="stylesheet" href="/css/style.css">
+        <link
+            href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Fraunces:wght@600;700&display=swap"
+            rel="stylesheet">
+
+        <style>
+        :root {
+            /* Golden Theme Color System */
+            --cm-gold: #C9A227;
+            --cm-gold-lt: #F0D265;
+            --cm-gold-dk: #8F6B18;
+            --cm-bg: #080810;
+            --cm-bg-2: #13131d;
+            --cm-line: rgba(201, 162, 39, 0.2);
+            --cm-ink: #f3f4f6;
+            --cm-ink-dim: #9ca3af;
+            --cm-ink-faint: #6b7280;
+            --cm-brass: #C9A227;
+            --cm-brass-lt: #F0D265;
+            
+            --bg-gold-glow: radial-gradient(circle at 50% 20%, rgba(201, 162, 39, 0.12) 0%, rgba(8, 8, 16, 1) 75%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--cm-bg);
+            background-image: var(--bg-gold-glow);
+            background-attachment: fixed;
+            color: var(--cm-ink);
+            min-height: 100vh;
+        }
+
+        /* ==========================
+                PAGE WRAP
+        ========================== */
+        .page-wrap {
+            max-width: 1200px;
+            margin: auto;
+            padding: 0 24px 80px;
+        }
+
+        /* ==========================
+                HERO
+        ========================== */
+        .page-head {
+            margin: 0 -24px 40px;
+            padding: 60px 40px 35px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 30px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid var(--cm-line);
+            background: linear-gradient(
+                135deg,
+                rgba(201, 162, 39, 0.12),
+                rgba(143, 107, 24, 0.05),
+                transparent
+            );
+            position: relative;
+            overflow: hidden;
+            border-radius: 0 0 16px 16px;
+        }
+
+        .page-head::before {
+            content: '';
+            position: absolute;
+            width: 700px;
+            height: 700px;
+            right: -180px;
+            top: -260px;
+            background: radial-gradient(circle, rgba(201, 162, 39, 0.15), transparent 70%);
+            pointer-events: none;
+        }
+
+        .page-head > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        .kicker {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--cm-gold-lt);
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .page-title {
+            font-family: 'Fraunces', serif;
+            font-size: clamp(2.4rem, 5vw, 3.4rem);
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+
+        .page-sub {
+            max-width: 520px;
+            line-height: 1.8;
+            color: var(--cm-ink-dim);
+            font-size: 15px;
+        }
+
+        /* ==========================
+                BUTTONS
+        ========================== */
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            padding: 13px 24px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #ffffff;
+            background: linear-gradient(
+                135deg,
+                var(--cm-gold-dk) 0%,
+                var(--cm-gold) 100%
+            );
+            transition: all 0.25s ease;
+            box-shadow: 0 8px 22px rgba(201, 162, 39, 0.28);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(201, 162, 39, 0.45);
+            color: #ffffff;
+        }
+
+        .btn-watch {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            color: var(--cm-gold-lt);
+            background: rgba(201, 162, 39, 0.08);
+            border: 1px solid var(--cm-line);
+            transition: all 0.25s ease;
+        }
+
+        .btn-watch:hover {
+            background: rgba(201, 162, 39, 0.2);
+            border-color: var(--cm-gold);
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        /* ==========================
+              EMPTY STATE
+        ========================== */
+        .empty-state {
+            background: var(--cm-bg-2);
+            border: 1px solid var(--cm-line);
+            border-radius: 20px;
+            padding: 80px 40px;
+            text-align: center;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+        }
+
+        .empty-icon {
+            font-size: 58px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h2 {
+            font-family: 'Fraunces', serif;
+            font-size: 32px;
+            margin-bottom: 12px;
+            color: #ffffff;
+        }
+
+        .empty-state p {
+            color: var(--cm-ink-dim);
+            font-size: 15px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+
+        /* ==========================
+              DESKTOP TABLE
+        ========================== */
+        .table-wrap {
+            background: var(--cm-bg-2);
+            border: 1px solid var(--cm-line);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: linear-gradient(
+                180deg,
+                rgba(201, 162, 39, 0.15),
+                rgba(201, 162, 39, 0.04)
+            );
+            border-bottom: 1px solid var(--cm-line);
+        }
+
+        th {
+            padding: 18px 20px;
+            text-align: left;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--cm-gold-lt);
+        }
+
+        td {
+            padding: 18px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 14px;
+            color: var(--cm-ink);
+            transition: all 0.25s ease;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover td {
+            background: rgba(201, 162, 39, 0.08);
+        }
+
+        .td-num {
+            width: 70px;
+            font-weight: 700;
+            color: var(--cm-gold);
+        }
+
+        .td-player {
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        /* ==========================
+                   BADGES
+        ========================== */
+        .badge-white {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .badge-black {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #d1d5db;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .badge-draw {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            background: rgba(201, 162, 39, 0.15);
+            border: 1px solid rgba(201, 162, 39, 0.4);
+            color: var(--cm-gold-lt);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* ==========================
+              MOBILE CARDS
+        ========================== */
+        .mobile-cards {
+            display: none;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .game-card {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+            background: var(--cm-bg-2);
+            border: 1px solid var(--cm-line);
+            border-radius: 18px;
+            padding: 22px;
+            transition: all 0.25s ease;
+        }
+
+        .game-card:hover {
+            border-color: var(--cm-gold);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 24px rgba(201, 162, 39, 0.15);
+        }
+
+        .card-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .match-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--cm-gold-lt);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .card-head h3 {
+            font-family: 'Fraunces', serif;
+            font-size: 22px;
+            color: #ffffff;
+        }
+
+        .card-meta {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .meta-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(201, 162, 39, 0.15);
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .meta-item span {
+            display: block;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.10em;
+            color: var(--cm-ink-faint);
+            margin-bottom: 5px;
+        }
+
+        .meta-item strong {
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        /* ==========================
+               RESPONSIVE
+        ========================== */
+        @media(max-width: 768px) {
+            .page-head {
+                padding: 45px 24px 30px;
+                margin: 0 -24px 30px;
+            }
+            .page-title {
+                font-size: 2.4rem;
+            }
+            .table-wrap {
+                display: none;
+            }
+            .mobile-cards {
+                display: flex;
+            }
+        }
+
+        @media(max-width: 540px) {
+            .card-meta {
+                grid-template-columns: 1fr;
+            }
+            .page-wrap {
+                padding: 0 18px 60px;
+            }
+            .page-head {
+                margin: 0 -18px 25px;
+                padding: 40px 18px 25px;
+            }
+            .page-title {
+                font-size: 2rem;
+            }
+            .btn-primary {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+    </head>
+
+    <body class="cm-body">
+        <%- include("../partials/navbar") %>
+
+        <main>
+            <div class="page-wrap">
+
+                <div class="page-head">
+                    <div>
+                        <span class="kicker">♚ ChessMaster Ranking</span>
+                        <h1 class="page-title">Leaderboard</h1>
+                        <p class="page-sub">
+                            Explore recently saved matches, winners, move
+                            counts, and replay your favourite games.
+                        </p>
+                    </div>
+
+                    <a href="/play" class="btn-primary">
+                        ♟ Play New Match
+                    </a>
+                </div>
+
+                <% if(!games || games.length === 0){ %>
+
+                <div class="empty-state">
+                    <div class="empty-icon">🏆</div>
+                    <h2>No Games Found</h2>
+                    <p>
+                        Play and save your first chess match to appear on the
+                        leaderboard.
+                    </p>
+                    <a href="/play" class="btn-primary">
+                        Start Playing
+                    </a>
+                </div>
+
+                <% } else { %>
+
+                <!-- =========================
+                     MOBILE CARDS
+            ========================== -->
+                <div class="mobile-cards">
+                    <% games.forEach((game, index) => { %>
+                    <a href="/game/<%= game._id %>" class="game-card">
+                        <div class="card-head">
+                            <div>
+                                <div class="match-num">
+                                    Match #<%= index + 1 %>
+                                </div>
+                                <h3>
+                                    <%= game.whitePlayer %> vs <%=
+                                    game.blackPlayer %>
+                                </h3>
+                            </div>
+
+                            <div>
+                                <% if(game.winner === "white"){ %>
+                                <span class="badge-white">⬜ White</span>
+                                <% } else if(game.winner === "black"){ %>
+                                <span class="badge-black">⬛ Black</span>
+                                <% } else { %>
+                                <span class="badge-draw">🤝 Draw</span>
+                                <% } %>
+                            </div>
+                        </div>
+
+                        <div class="card-meta">
+                            <div class="meta-item">
+                                <span>Moves</span>
+                                <strong><%= game.totalMoves %></strong>
+                            </div>
+                            <div class="meta-item">
+                                <span>Date</span>
+                                <strong><%= new
+                                    Date(game.createdAt).toLocaleDateString()
+                                    %></strong>
+                            </div>
+                            <div class="meta-item">
+                                <span>Mode</span>
+                                <strong><%= game.timeMode || "Classic"
+                                    %></strong>
+                            </div>
+                            <div class="meta-item">
+                                <span>Time</span>
+                                <strong><%= game.timeControl || "-" %></strong>
+                            </div>
+                        </div>
+                    </a>
+                    <% }) %>
+                </div>
+
+                <!-- =========================
+                    DESKTOP TABLE
+            ========================== -->
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>White Player</th>
+                                <th>Black Player</th>
+                                <th>Winner</th>
+                                <th>Moves</th>
+                                <th>Date</th>
+                                <th>Replay</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% games.forEach((game, index) => { %>
+                            <tr>
+                                <td class="td-num">
+                                    <% if(index === 0){ %>🥇
+                                    <% } else if(index === 1){ %>🥈
+                                    <% } else if(index === 2){ %>🥉
+                                    <% } else { %>
+                                    <%= index + 1 %>
+                                    <% } %>
+                                </td>
+
+                                <td class="td-player">
+                                    <%= game.whitePlayer %>
+                                </td>
+
+                                <td class="td-player">
+                                    <%= game.blackPlayer %>
+                                </td>
+
+                                <td>
+                                    <% if(game.winner === "white"){ %>
+                                    <span class="badge-white">⬜ White</span>
+                                    <% } else if(game.winner === "black"){ %>
+                                    <span class="badge-black">⬛ Black</span>
+                                    <% } else { %>
+                                    <span class="badge-draw">🤝 Draw</span>
+                                    <% } %>
+                                </td>
+
+                                <td>
+                                    <%= game.totalMoves %>
+                                </td>
+
+                                <td>
+                                    <%= new
+                                    Date(game.createdAt).toLocaleDateString() %>
+                                </td>
+
+                                <td>
+                                    <a href="/game/<%= game._id %>"
+                                        class="btn-watch">
+                                        ▶ Watch
+                                    </a>
+                                </td>
+                            </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+
+                <% } %>
+
+            </div>
+        </main>
+
+        <%- include("../partials/footer") %>
+    </body>
+</html>

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>ChessMaster | Status</title>
+
+        <link rel="stylesheet" href="/css/style.css">
+
+        <style>
+       :root {
+    --gold: #C9A227;
+    --gold-light: #F0D265;
+    --gold-dark: #8F6B18;
+    --bg-dark: #080810;
+    --bg-gold-glow: radial-gradient(circle at 50% 20%, rgba(201, 162, 39, 0.12) 0%, rgba(8, 8, 16, 1) 75%);
+}
+
+body {
+    background-color: var(--bg-dark);
+    background-image: var(--bg-gold-glow);
+    background-attachment: fixed;
+    color: #f3f4f6;
+    font-family: Inter, sans-serif;
+    margin: 0;
+    min-height: 100vh;
+}
+
+        .status-container {
+            width: min(96vw, 1400px);
+            margin: 24px auto;
+            padding: 15px;
+        }
+
+        /* -------- Header -------- */
+        .status-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .status-title {
+            font-size: 30px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #ffffff;
+        }
+
+        /* -------- Tabs -------- */
+        .mode-tabs {
+            display: flex;
+            gap: 10px;
+            background: var(--card-bg);
+            padding: 5px;
+            border-radius: 12px;
+            border: 1px solid rgba(201, 162, 39, 0.15);
+            width: fit-content;
+        }
+
+        .mode-btn {
+            padding: 9px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: transparent;
+            color: #9ca3af;
+            transition: all 0.25s ease;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(201, 162, 39, 0.35);
+        }
+
+        .mode-btn:hover:not(.active) {
+            color: var(--gold-light);
+            background: rgba(201, 162, 39, 0.08);
+        }
+
+        /* -------- Main Layout -------- */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        /* -------- Cards Grid -------- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 18px 20px;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--gold);
+            box-shadow: 0 8px 20px rgba(201, 162, 39, 0.15);
+        }
+
+        .stat-card.featured {
+            grid-column: span 2;
+            background: linear-gradient(135deg, #13131d 0%, #1c1810 100%);
+            border-color: rgba(201, 162, 39, 0.3);
+        }
+
+        .stat-title {
+            color: #9ca3af;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 26px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .stat-card.featured .stat-value {
+            color: var(--gold-light);
+            font-size: 32px;
+            text-shadow: 0 0 10px rgba(240, 210, 101, 0.2);
+        }
+
+        /* -------- Graph -------- */
+        .graph-box {
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid rgba(201, 162, 39, 0.15);
+            padding: 20px;
+            min-height: 480px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .graph-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #f3f4f6;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            flex-grow: 1;
+            width: 100%;
+        }
+
+        .graph-box canvas {
+            width: 100% !important;
+            height: 400px !important;
+        }
+
+        /* -------- Responsive Breakpoints -------- */
+        @media (max-width: 1100px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+            .graph-box canvas {
+                height: 320px !important;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .status-container {
+                width: 100%;
+                padding: 12px;
+            }
+            .status-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .mode-tabs {
+                width: 100%;
+            }
+            .mode-btn {
+                flex: 1;
+                text-align: center;
+                padding: 10px 0;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .graph-box canvas {
+                height: 260px !important;
+            }
+        }
+    </style>
+    </head>
+
+    <body>
+
+        <%- include("../partials/navbar") %>
+
+        <div class="status-container">
+
+            <!-- Top Header with Mode Tabs -->
+            <div class="status-header">
+                <div class="status-title">Rating Status</div>
+
+                <div class="mode-tabs">
+                    <button class="mode-btn active"
+                        onclick="changeMode('rapid', this)">Rapid</button>
+                    <button class="mode-btn"
+                        onclick="changeMode('blitz', this)">Blitz</button>
+                    <button class="mode-btn"
+                        onclick="changeMode('bullet', this)">Bullet</button>
+                </div>
+            </div>
+
+            <div class="dashboard">
+                <div class="main-layout">
+
+                    <!-- Stats Grid -->
+                    <div class="stats-grid">
+
+                        <div class="stat-card">
+                            <div class="stat-title">Current Rating</div>
+                            <div class="stat-value" id="rating"
+                                style="color: var(--gold-light);">0</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-title">Peak Rating</div>
+                            <div class="stat-value" id="peak">0</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-title">Total Games</div>
+                            <div class="stat-value" id="games">0</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-title">Wins</div>
+                            <div class="stat-value" style="color: #4ade80;"
+                                id="wins">0</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-title">Losses</div>
+                            <div class="stat-value" style="color: #f87171;"
+                                id="losses">0</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-title">Draws</div>
+                            <div class="stat-value" style="color: #9ca3af;"
+                                id="draws">0</div>
+                        </div>
+
+                        <div class="stat-card featured">
+                            <div class="stat-title">Win Rate</div>
+                            <div class="stat-value" id="winrate">0%</div>
+                        </div>
+
+                    </div>
+
+                    <!-- Rating Graph -->
+                    <div class="graph-box">
+                        <div class="graph-title">📈 Rating History</div>
+                        <div class="chart-wrapper">
+                            <canvas id="ratingChart"></canvas>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <%- include("../partials/footer") %>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <script>
+        const rapidHistory = <%- JSON.stringify(rapidHistory) %>;
+        const blitzHistory = <%- JSON.stringify(blitzHistory) %>;
+        const bulletHistory = <%- JSON.stringify(bulletHistory) %>;
+
+        const data = {
+            rapid: {
+                rating: <%= rapidRating %>,
+                peak: <%= rapidPeak %>,
+                games: <%= rapidGames %>,
+                wins: <%= rapidWins %>,
+                losses: <%= rapidLosses %>,
+                draws: <%= rapidDraws %>,
+                win: "<%= rapidWinRate %>%"
+            },
+            blitz: {
+                rating: <%= blitzRating %>,
+                peak: <%= blitzPeak %>,
+                games: <%= blitzGames %>,
+                wins: <%= blitzWins %>,
+                losses: <%= blitzLosses %>,
+                draws: <%= blitzDraws %>,
+                win: "<%= blitzWinRate %>%"
+            },
+            bullet: {
+                rating: <%= bulletRating %>,
+                peak: <%= bulletPeak %>,
+                games: <%= bulletGames %>,
+                wins: <%= bulletWins %>,
+                losses: <%= bulletLosses %>,
+                draws: <%= bulletDraws %>,
+                win: "<%= bulletWinRate %>%"
+            }
+        };
+
+        const ctx = document.getElementById("ratingChart").getContext("2d");
+
+        // Gold Gradient fill under graph
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, "rgba(201, 162, 39, 0.4)");
+        gradient.addColorStop(1, "rgba(201, 162, 39, 0.0)");
+
+        let chart = new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: [],
+                datasets: [{
+                    label: "Rating",
+                    data: [],
+                    borderColor: "#C9A227",
+                    backgroundColor: gradient,
+                    fill: true,
+                    borderWidth: 3,
+                    tension: 0.35,
+                    pointRadius: 4,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: "#F0D265",
+                    pointBorderColor: "#080810",
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 800
+                },
+                interaction: {
+                    mode: "index",
+                    intersect: false
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: "#13131d",
+                        titleColor: "#9ca3af",
+                        bodyColor: "#F0D265",
+                        borderColor: "#C9A227",
+                        borderWidth: 1,
+                        padding: 12,
+                        cornerRadius: 8,
+                        displayColors: false
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: "#6b7280" },
+                        grid: { color: "rgba(255, 255, 255, 0.03)" }
+                    },
+                    y: {
+                        ticks: { color: "#6b7280" },
+                        grid: { color: "rgba(255, 255, 255, 0.03)" }
+                    }
+                }
+            }
+        });
+
+        function changeMode(mode, btn) {
+            document.querySelectorAll(".mode-btn").forEach(x => x.classList.remove("active"));
+            btn.classList.add("active");
+
+            let history = [];
+            if (mode === "rapid") history = rapidHistory;
+            if (mode === "blitz") history = blitzHistory;
+            if (mode === "bullet") history = bulletHistory;
+
+            if (!history || history.length === 0) history = [1200];
+
+            chart.data.labels = history.map((_, i) => `G${i + 1}`);
+            chart.data.datasets[0].data = history;
+            chart.data.datasets[0].label = mode.toUpperCase() + " Rating";
+
+            const min = Math.min(...history);
+            const max = Math.max(...history);
+            chart.options.scales.y.min = Math.max(0, min - 10);
+            chart.options.scales.y.max = max + 10;
+
+            chart.update();
+
+            document.getElementById("rating").textContent = data[mode].rating;
+            document.getElementById("peak").textContent = data[mode].peak;
+            document.getElementById("games").textContent = data[mode].games;
+            document.getElementById("wins").textContent = data[mode].wins;
+            document.getElementById("losses").textContent = data[mode].losses;
+            document.getElementById("draws").textContent = data[mode].draws;
+            document.getElementById("winrate").textContent = data[mode].win;
+        }
+
+        window.onload = () => {
+            changeMode("rapid", document.querySelector(".mode-btn"));
+        };
+    </script>
+
+    </body>
+</html>

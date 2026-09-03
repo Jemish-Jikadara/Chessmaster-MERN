@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>ChessMaster | Register</title>
+        <link rel="stylesheet" href="/css/style.css">
+        <link
+            href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap"
+            rel="stylesheet">
+        <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:#080810; color:#f0ece4; min-height:100vh; }
+        .auth-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:80px 24px; position:relative; overflow:hidden; }
+        .auth-wrap::before { content:''; position:absolute; width:500px; height:500px; background:radial-gradient(circle,rgba(124,58,237,0.18) 0%,transparent 70%); top:-100px; right:-100px; pointer-events:none; }
+        .auth-wrap::after { content:''; position:absolute; width:400px; height:400px; background:radial-gradient(circle,rgba(59,130,246,0.12) 0%,transparent 70%); bottom:-50px; left:5%; pointer-events:none; }
+        .auth-card { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.09); border-radius:20px; padding:40px 36px; width:100%; max-width:440px; position:relative; z-index:1; backdrop-filter:blur(10px); }
+
+        /* Steps indicator */
+        .steps { display:flex; align-items:center; gap:8px; margin-bottom:28px; }
+        .step-item { display:flex; align-items:center; gap:6px; font-size:12px; }
+        .step-dot { width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; font-family:'Syne',sans-serif; }
+        .step-dot.active { background:linear-gradient(135deg,#7c3aed,#ec4899); color:#fff; }
+        .step-dot.inactive { background:rgba(255,255,255,0.08); color:#6b7280; }
+        .step-label { color:#6b7280; font-size:12px; }
+        .step-label.active { color:#a78bfa; }
+        .step-line { flex:1; height:1px; background:rgba(255,255,255,0.08); }
+
+        .auth-kicker { font-family:'Syne',sans-serif; font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color:#a78bfa; margin-bottom:10px; display:block; }
+        .auth-title { font-family:'Syne',sans-serif; font-size:2rem; font-weight:800; color:#f0ece4; margin:0 0 8px; letter-spacing:-0.02em; }
+        .auth-sub { font-size:14px; color:#6b7280; margin:0 0 28px; line-height:1.6; }
+        .alert { padding:12px 16px; border-radius:10px; font-size:13px; margin-bottom:20px; }
+        .alert-error { background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); color:#f87171; }
+        .alert-success { background:rgba(74,222,128,0.1); border:1px solid rgba(74,222,128,0.25); color:#4ade80; }
+        .auth-form { display:flex; flex-direction:column; gap:16px; }
+        .auth-form label { display:flex; flex-direction:column; gap:6px; font-size:11px; font-family:'Syne',sans-serif; letter-spacing:0.12em; color:#6b7280; text-transform:uppercase; }
+        .auth-form input { padding:13px 16px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:#f0ece4; font-size:14px; font-family:'Inter',sans-serif; outline:none; transition:border-color 0.2s; }
+        .auth-form input:focus { border-color:rgba(124,58,237,0.5); }
+        .auth-form input::placeholder { color:#374151; }
+        .submit-btn { padding:14px; background:linear-gradient(135deg,#7c3aed,#ec4899); border:none; border-radius:10px; color:#fff; font-family:'Syne',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:transform 0.2s,box-shadow 0.2s; box-shadow:0 4px 20px rgba(124,58,237,0.3); margin-top:4px; }
+        .submit-btn:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(124,58,237,0.45); }
+        .auth-switch { text-align:center; font-size:13px; color:#6b7280; margin-top:20px; }
+        .auth-switch a { color:#a78bfa; text-decoration:none; font-weight:500; }
+    </style>
+    </head>
+    <body class="cm-body">
+        <%- include("../partials/navbar") %>
+        <div class="auth-wrap">
+            <div class="auth-card">
+
+                <!-- Steps -->
+                <div class="steps">
+                    <div class="step-item">
+                        <div class="step-dot active">1</div>
+                        <span class="step-label active">Account</span>
+                    </div>
+                    <div class="step-line"></div>
+                    <div class="step-item">
+                        <div class="step-dot inactive">2</div>
+                        <span class="step-label">Profile</span>
+                    </div>
+                </div>
+
+                <span class="auth-kicker">Step 1 of 2</span>
+                <h1 class="auth-title">Create Account</h1>
+                <p class="auth-sub">Enter your email and password to get
+                    started.</p>
+
+                <% if (error && error.length > 0) { %>
+                <div class="alert alert-error"><%= error[0] %></div>
+                <% } %>
+                <% if (success && success.length > 0) { %>
+                <div class="alert alert-success"><%= success[0] %></div>
+                <% } %>
+
+                <form action="/register" method="POST" class="auth-form">
+                    <label>Email
+                        <input type="email" name="email"
+                            placeholder="Enter your email" required>
+                    </label>
+                    <label>Mobile Number
+                        <input type="text" name="mobile"
+                            placeholder="Enter your mobile number" required>
+                    </label>
+                    <p style="
+font-size:12px;
+color:#9ca3af;
+margin-top:-8px;
+margin-bottom:6px;
+line-height:1.5;">
+                    </p>
+                    <label>Password
+                        <input type="password" name="password"
+                            placeholder="Min 6 characters" required>
+                    </label>
+                    <label>Confirm Password
+                        <input type="password" name="confirmPassword"
+                            placeholder="Repeat password" required>
+                    </label>
+                    <button type="submit" class="submit-btn">Continue →</button>
+                </form>
+
+                <p class="auth-switch">Already have an account? <a
+                        href="/login">Login</a></p>
+            </div>
+        </div>
+        <%- include("../partials/footer") %>
+    </body>
+</html>

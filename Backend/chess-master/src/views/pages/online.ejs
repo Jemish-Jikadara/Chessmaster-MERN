@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>ChessMaster | Online Match</title>
+        <link rel="stylesheet" href="/css/style.css">
+        <style>
+            .tc-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 12px;
+                margin: 24px 0;
+            }
+            .tc-card {
+                background: rgba(255,255,255,0.04);
+                border: 2px solid rgba(255,255,255,0.1);
+                border-radius: 14px;
+                padding: 16px 10px;
+                text-align: center;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+            .tc-card:hover {
+                border-color: rgba(250,204,21,0.5);
+                background: rgba(250,204,21,0.06);
+            }
+            .tc-card.selected {
+                border-color: #facc15;
+                background: rgba(250,204,21,0.1);
+            }
+            .tc-card .tc-icon { font-size: 1.8rem; }
+            .tc-card .tc-name {
+                font-weight: 800;
+                color: #f0ece4;
+                margin: 6px 0 2px;
+                font-size: 14px;
+            }
+            .tc-card .tc-time {
+                font-size: 12px;
+                color: #6b7280;
+            }
+            .tc-btns {
+                display: grid;
+                gap: 8px;
+                margin-top: 8px;
+            }
+            .tc-btn {
+                width: 100%;
+                padding: 9px;
+                border-radius: 8px;
+                border: 1px solid rgba(255,255,255,0.1);
+                background: transparent;
+                color: #9ca3af;
+                font-size: 13px;
+                font-weight: 700;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+            .tc-btn:hover, .tc-btn.active {
+                border-color: #facc15;
+                color: #facc15;
+                background: rgba(250,204,21,0.08);
+            }
+        </style>
+    </head>
+    <body class="cm-body">
+        <%- include("../partials/navbar") %>
+
+        <main class="cm-online-page">
+            <section class="cm-online-card">
+                <span class="cm-kicker">Real Time</span>
+                <h1>Online Matchmaking</h1>
+                <p>New Game </p>
+
+                <!-- Time Control Selection -->
+                <div class="tc-grid">
+                    <!-- Bullet -->
+                    <div class="tc-card" id="tc-bullet">
+                        <div class="tc-icon">⚡</div>
+                        <div class="tc-name">Bullet</div>
+                        <div class="tc-time">1-2 min</div>
+                        <div class="tc-btns">
+                            <button class="tc-btn" data-minutes="1"
+                                data-increment="0"
+                                data-mode="bullet">1+0</button>
+                            <button class="tc-btn" data-minutes="1"
+                                data-increment="1"
+                                data-mode="bullet">1+1</button>
+                            <button class="tc-btn" data-minutes="2"
+                                data-increment="1"
+                                data-mode="bullet">2+1</button>
+                        </div>
+                    </div>
+                    <!-- Blitz -->
+                    <div class="tc-card" id="tc-blitz">
+                        <div class="tc-icon">🔥</div>
+                        <div class="tc-name">Blitz</div>
+                        <div class="tc-time">3-5 min</div>
+                        <div class="tc-btns">
+                            <button class="tc-btn" data-minutes="3"
+                                data-increment="0"
+                                data-mode="blitz">3+0</button>
+                            <button class="tc-btn" data-minutes="3"
+                                data-increment="2"
+                                data-mode="blitz">3+2</button>
+                            <button class="tc-btn" data-minutes="5"
+                                data-increment="0"
+                                data-mode="blitz">5+0</button>
+                        </div>
+                    </div>
+                    <!-- Rapid -->
+                    <div class="tc-card" id="tc-rapid">
+                        <div class="tc-icon">⏱</div>
+                        <div class="tc-name">Rapid</div>
+                        <div class="tc-time">10-15 min</div>
+                        <div class="tc-btns">
+                            <button class="tc-btn" data-minutes="10"
+                                data-increment="0"
+                                data-mode="rapid">10+0</button>
+                            <button class="tc-btn" data-minutes="10"
+                                data-increment="5"
+                                data-mode="rapid">10+5</button>
+                            <button class="tc-btn" data-minutes="15"
+                                data-increment="10"
+                                data-mode="rapid">15+10</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="findMatchBtn" type="button" class="cm-online-btn"
+                    disabled>
+                    Find Match
+                </button>
+
+                <p id="matchStatus" class="cm-online-status"
+                    style="margin-top: 12px;">
+                    Select a time control to find an opponent. Once you click
+                    "Find Match",
+                </p>
+            </section>
+        </main>
+
+        <%- include("../partials/footer") %>
+
+        <script>
+            window.currentUsername = "<%= currentUser ? currentUser.username : 'Player' %>";
+            window.currentUserId = "<%= currentUser ? currentUser.id : '' %>";
+
+            let selectedTimeControl = null;
+
+            // Time control buttons
+            document.querySelectorAll(".tc-btn").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    document.querySelectorAll(".tc-btn").forEach(b => b.classList.remove("active"));
+                    btn.classList.add("active");
+
+                    selectedTimeControl = {
+                        minutes: Number(btn.dataset.minutes),
+                        increment: Number(btn.dataset.increment),
+                        mode: btn.dataset.mode,
+                        label: btn.textContent.trim()
+                    };
+
+                    const findBtn = document.getElementById("findMatchBtn");
+                    findBtn.disabled = false;
+                    findBtn.textContent = `Find Match (${selectedTimeControl.label})`;
+                });
+            });
+        </script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="/js/online.js"></script>
+    </body>
+</html>

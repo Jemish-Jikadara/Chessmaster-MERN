@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>ChessMaster | Play</title>
+        <link rel="stylesheet" href="/css/style.css">
+        <link
+            href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,600&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap"
+            rel="stylesheet">
+        <style>
+        /* ==========================================================================
+           GOLDEN THEME VARIABLES & OVERRIDES
+           ========================================================================== */
+        :root {
+          --gold-primary: #d4af37;
+          --gold-light: #f3e5ab;
+          --gold-dark: #aa7c11;
+          --gold-gradient: linear-gradient(135deg, #fce082 0%, #d4af37 50%, #996515 100%);
+          --gold-glow: 0 0 25px rgba(212, 175, 55, 0.22);
+          
+          --bg-dark: #0a0908;
+          --bg-card: rgba(18, 15, 11, 0.85);
+          --border-gold: rgba(212, 175, 55, 0.28);
+          --border-gold-hover: rgba(212, 175, 55, 0.6);
+          
+          --text-main: #fefcf0;
+          --text-muted: #c5a880;
+          --text-faint: #8c7355;
+          --input-bg: rgba(25, 20, 14, 0.7);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+          font-family: 'Inter', sans-serif;
+          background-color: var(--bg-dark) !important;
+          background-image: 
+            radial-gradient(circle at 50% 10%, rgba(212, 175, 55, 0.12) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(170, 124, 17, 0.08) 0%, transparent 60%);
+          background-attachment: fixed;
+          color: var(--text-main);
+          overflow-x: hidden;
+          min-height: 100vh;
+        }
+
+        /* ── SCREEN BASE ── */
+        .play-screen { max-width: 860px; margin: 0 auto; padding: 80px 24px; animation: fadeUp 0.4s ease both; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .kicker { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 10px; display: block; font-weight: 600; }
+        .screen-title { font-family: 'Fraunces', serif; font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; color: var(--gold-light); margin: 0 0 10px; letter-spacing: -0.02em; line-height: 1.1; }
+        .screen-sub { color: var(--text-muted); font-size: 15px; margin: 0 0 44px; line-height: 1.6; }
+
+        /* ── MODE CARDS ── */
+        .mode-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+        .mode-card { 
+          background: var(--bg-card); 
+          border: 1px solid var(--border-gold); 
+          border-radius: 18px; 
+          padding: 36px 28px; 
+          cursor: pointer; 
+          transition: border-color 0.25s, background 0.25s, transform 0.2s, box-shadow 0.25s; 
+          position: relative; 
+          overflow: hidden; 
+          backdrop-filter: blur(12px);
+        }
+        .mode-card::before { content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+        .mode-card.friend::before { background: radial-gradient(ellipse at top left, rgba(212, 175, 55, 0.18), transparent 70%); }
+        .mode-card.bot::before { background: radial-gradient(ellipse at top left, rgba(243, 229, 171, 0.18), transparent 70%); }
+        .mode-card.online::before { background: radial-gradient(ellipse at top left, rgba(170, 124, 17, 0.25), transparent 70%); }
+        
+        .mode-card:hover { border-color: var(--border-gold-hover); background: rgba(30, 24, 16, 0.85); transform: translateY(-3px); box-shadow: var(--gold-glow); }
+        .mode-card:hover::before { opacity: 1; }
+
+        .mode-icon { font-size: 2.6rem; margin-bottom: 16px; display: block; }
+        .mode-card h3 { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 700; color: var(--gold-light); margin: 0 0 8px; }
+        .mode-card p { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin: 0 0 24px; }
+
+        .mode-btn-friend, .mode-btn-bot, .mode-btn-online { 
+          width: 100%; 
+          padding: 13px; 
+          background: rgba(212, 175, 55, 0.12); 
+          border: 1px solid var(--border-gold); 
+          border-radius: 10px; 
+          color: var(--gold-light); 
+          font-family: 'Syne', sans-serif; 
+          font-size: 13px; 
+          font-weight: 600; 
+          letter-spacing: 0.05em; 
+          cursor: pointer; 
+          transition: all 0.25s; 
+        }
+
+        .mode-btn-friend:hover, .mode-btn-bot:hover, .mode-btn-online:hover { 
+          background: var(--gold-gradient); 
+          border-color: var(--gold-primary); 
+          color: #0a0908; 
+          font-weight: 700;
+          box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+
+        @media (max-width: 860px) {
+            .mode-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ── BOT GRID ── */
+        .bot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 32px; }
+        .bot-card { 
+          background: var(--bg-card); 
+          border: 1px solid var(--border-gold); 
+          border-radius: 12px; 
+          padding: 16px 10px; 
+          text-align: center; 
+          cursor: pointer; 
+          transition: border-color 0.2s, background 0.2s, transform 0.15s, box-shadow 0.2s; 
+        }
+        .bot-card:hover { border-color: var(--gold-primary); background: rgba(212, 175, 55, 0.15); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2); }
+        .bot-card.selected { border-color: var(--gold-light); background: var(--gold-gradient); color: #0a0908; }
+        .bot-card.selected .bot-name, .bot-card.selected .bot-title, .bot-card.selected .bot-rating { color: #0a0908 !important; }
+        .bot-card .bot-icon { font-size: 1.5rem; margin-bottom: 6px; }
+        .bot-card .bot-name { font-size: 12px; font-weight: 600; color: var(--text-main); }
+        .bot-card .bot-rating { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; margin: 2px 0; color: var(--gold-primary); }
+        .bot-card .bot-title { font-size: 10px; color: var(--text-muted); }
+        .bot-card[data-level="beginner"] .bot-rating { color: #6ee7b7; }
+        .bot-card[data-level="novice"] .bot-rating { color: #93c5fd; }
+        .bot-card[data-level="intermediate"] .bot-rating { color: var(--gold-light); }
+        .bot-card[data-level="club"] .bot-rating { color: #fbbf24; }
+        .bot-card[data-level="advanced"] .bot-rating { color: #fb923c; }
+        .bot-card[data-level="expert"] .bot-rating { color: #f87171; }
+        .bot-card[data-level="master"] .bot-rating { color: #e879f9; }
+        .bot-card[data-level="gm"] .bot-rating { color: #ffffff; }
+
+        /* ── TIME CONTROL ── */
+        .time-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 32px; }
+        @media (max-width: 600px) { .time-grid { grid-template-columns: 1fr; } }
+
+        .time-card { background: var(--bg-card); border: 1px solid var(--border-gold); border-radius: 14px; padding: 24px 18px; transition: border-color 0.2s, box-shadow 0.2s; backdrop-filter: blur(12px); }
+        .time-card:hover { border-color: var(--gold-primary); box-shadow: var(--gold-glow); }
+        .time-card h3 { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 700; color: var(--gold-light); margin: 0 0 6px; }
+        .time-card p { font-size: 12px; color: var(--text-muted); margin: 0 0 16px; line-height: 1.5; }
+        .time-btns { display: flex; flex-direction: column; gap: 8px; }
+        .time-btns button { padding: 10px; background: rgba(25, 20, 14, 0.6); border: 1px solid var(--border-gold); border-radius: 8px; color: var(--text-main); font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .time-btns button:hover { border-color: var(--gold-primary); color: #0a0908; background: var(--gold-gradient); font-weight: 700; box-shadow: 0 4px 12px rgba(212, 175, 55, 0.25); }
+
+        /* ── PLAYER SETUP ── */
+        .player-form { max-width: 440px; margin: 40px auto 0; display: flex; flex-direction: column; gap: 16px; }
+        .player-form label { display: flex; flex-direction: column; gap: 6px; font-size: 11px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.12em; color: var(--gold-light); text-transform: uppercase; }
+        .player-form input { padding: 14px 16px; background: var(--input-bg); border: 1px solid var(--border-gold); border-radius: 10px; color: var(--text-main); font-size: 15px; font-family: 'Inter', sans-serif; outline: none; transition: all 0.25s ease; }
+        .player-form input:focus { border-color: var(--gold-primary); box-shadow: 0 0 12px rgba(212, 175, 55, 0.25); background: rgba(30, 24, 16, 0.85); }
+        .player-form input::placeholder { color: var(--text-faint); }
+
+        .continue-btn { padding: 14px; background: var(--gold-gradient); border: none; border-radius: 10px; color: #0a0908; font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2); margin-top: 8px; }
+        .continue-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4); filter: brightness(1.05); }
+
+        .back-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 24px; padding: 10px 20px; background: rgba(10, 9, 8, 0.4); border: 1px solid var(--border-gold); border-radius: 8px; color: var(--text-muted); font-size: 13px; cursor: pointer; transition: all 0.25s ease; }
+        .back-btn:hover { border-color: var(--gold-primary); color: var(--gold-light); background: rgba(212, 175, 55, 0.05); }
+
+        /* ── GAME LAYOUT ── */
+        .game-layout { display: grid; grid-template-columns: minmax(0, 560px) 300px; gap: 20px; max-width: 900px; margin: 0 auto; padding: 32px 24px 60px; animation: fadeUp 0.4s ease both; }
+        @media (max-width: 900px) { .game-layout { grid-template-columns: 1fr; } }
+
+        /* Board shell */
+        .board-shell { background: var(--bg-card); border: 1px solid var(--border-gold); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), var(--gold-glow); backdrop-filter: blur(12px); }
+
+        /* Player strips */
+        .player-strip { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: rgba(25, 20, 14, 0.6); border-radius: 10px; border: 1px solid var(--border-gold); transition: all 0.25s ease; }
+        .player-strip .ps-left { display: flex; align-items: center; gap: 10px; }
+        .ps-avatar { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+        .ps-avatar.white-av { background: var(--gold-light); color: #0a0908; font-weight: bold; }
+        .ps-avatar.black-av { background: #120f0b; border: 1px solid var(--gold-dark); color: var(--gold-light); }
+        .ps-name { font-size: 14px; font-weight: 600; color: var(--text-main); }
+        .ps-thinking { font-size: 11px; color: var(--gold-primary); display: none; animation: pulse 1.2s ease-in-out infinite; font-family: 'JetBrains Mono', monospace; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        .ps-clock { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; color: var(--gold-light); min-width: 70px; text-align: right; }
+        .player-strip.active-turn { border-color: var(--gold-primary); background: rgba(212, 175, 55, 0.12); box-shadow: inset 0 0 10px rgba(212, 175, 55, 0.15); }
+        .player-strip.active-turn .ps-clock { color: var(--gold-primary); }
+        .player-strip.low-time .ps-clock { color: #ef4444; }
+
+        /* Status bar */
+        .board-status { display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
+        .status-turn { color: var(--text-muted); font-family: 'Inter', sans-serif; }
+        .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-family: 'Syne', sans-serif; font-weight: 600; }
+        .status-badge.active { background: rgba(212, 175, 55, 0.15); color: var(--gold-light); border: 1px solid var(--border-gold); }
+        .status-badge.check { background: rgba(250, 204, 21, 0.15); color: #facc15; border: 1px solid rgba(250, 204, 21, 0.3); }
+        .status-badge.over { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+        /* Board */
+        .board-scroll { width: 100%; aspect-ratio: 1; }
+        .cm-game-board { display: grid; grid-template-columns: repeat(8, 1fr); width: 100%; aspect-ratio: 1; border-radius: 8px; overflow: hidden; border: 2px solid var(--border-gold); box-shadow: 0 0 15px rgba(0, 0, 0, 0.5); }
+
+        /* Action buttons */
+        .board-actions { display: flex; gap: 10px; }
+        .action-btn { flex: 1; padding: 11px; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.25s ease; font-family: 'Syne', sans-serif; }
+        .action-btn.primary { background: var(--gold-gradient); border: none; color: #0a0908; font-weight: 700; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2); }
+        .action-btn.primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4); filter: brightness(1.05); }
+        .action-btn.primary:disabled { background: rgba(25, 20, 14, 0.5); border: 1px solid var(--border-gold); color: var(--text-faint); cursor: not-allowed; box-shadow: none; filter: none; }
+        .action-btn.secondary { background: rgba(10, 9, 8, 0.4); border: 1px solid var(--border-gold); color: var(--text-muted); }
+        .action-btn.secondary:hover { border-color: var(--gold-primary); color: var(--gold-light); background: rgba(212, 175, 55, 0.05); }
+
+        /* Game over overlay */
+        .game-over-overlay { position: absolute; inset: 0; background: rgba(10, 9, 8, 0.85); border-radius: 20px; display: none; place-items: center; backdrop-filter: blur(8px); z-index: 50; }
+        .game-over-card { background: var(--bg-card); border: 1px solid var(--gold-primary); border-radius: 18px; padding: 40px 36px; text-align: center; max-width: 320px; width: 90%; box-shadow: 0 0 50px rgba(212, 175, 55, 0.3); }
+        .go-kicker { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.2em; color: var(--gold-primary); text-transform: uppercase; margin-bottom: 10px; font-weight: 600; }
+        .game-over-card h2 { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 800; color: var(--gold-light); margin: 0 0 8px; }
+        .game-over-card p { color: var(--text-muted); font-size: 14px; margin: 0 0 28px; }
+        .go-actions { display: flex; gap: 10px; }
+
+        /* History panel */
+        .history-panel { background: var(--bg-card); border: 1px solid var(--border-gold); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 14px; max-height: 700px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7); backdrop-filter: blur(12px); }
+        .history-head { display: flex; align-items: flex-start; justify-content: space-between; }
+        .hh-label { font-size: 11px; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 2px; font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+        .history-head h2 { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 700; color: var(--gold-light); margin: 0; }
+        .move-count-badge { background: rgba(212, 175, 55, 0.15); border: 1px solid var(--border-gold); color: var(--gold-light); font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+        .review-controls { display: flex; align-items: center; gap: 8px; background: rgba(25, 20, 14, 0.6); border-radius: 10px; padding: 10px 12px; border: 1px solid var(--border-gold); }
+        .review-controls button { background: transparent; border: 1px solid var(--border-gold); border-radius: 6px; color: var(--text-muted); padding: 5px 12px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
+        .review-controls button:hover:not(:disabled) { border-color: var(--gold-primary); color: var(--gold-light); background: rgba(212, 175, 55, 0.1); }
+        .review-controls button:disabled { opacity: 0.25; cursor: not-allowed; }
+        .review-controls span { flex: 1; text-align: center; font-size: 12px; color: var(--text-muted); font-family: 'Syne', sans-serif; }
+        .move-history { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; scrollbar-width: thin; scrollbar-color: var(--border-gold) transparent; }
+        .move-history p { color: var(--text-faint); font-size: 13px; }
+        .move-item { background: rgba(25, 20, 14, 0.5); border: 1px solid rgba(212, 175, 55, 0.15); border-radius: 8px; padding: 10px 14px; font-size: 13px; }
+        .move-num { color: var(--gold-primary); font-weight: 700; margin-right: 4px; font-family: 'JetBrains Mono', monospace; }
+        .move-san { color: var(--text-main); font-weight: 500; }
+        .move-sq { color: var(--text-faint); font-size: 11px; margin-left: 6px; }
+
+        .mode-card.coach::before {
+          background: radial-gradient(ellipse at top left, rgba(212, 175, 55, 0.2), transparent 70%);
+        }
+
+        .mode-btn-coach {
+          width: 100%;
+          padding: 13px;
+          background: rgba(212, 175, 55, 0.12);
+          border: 1px solid var(--border-gold);
+          border-radius: 10px;
+          color: var(--gold-light);
+          font-family: 'Syne', sans-serif;
+          font-size: 13px;
+          font-weight: 600;
+          letter-spacing: 0.05em;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .mode-btn-coach:hover {
+          background: var(--gold-gradient);
+          border-color: var(--gold-primary);
+          color: #0a0908;
+          font-weight: 700;
+        }
+
+        .coach-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+          gap: 12px;
+          margin-top: 32px;
+        }
+
+        .coach-card {
+          background: var(--bg-card);
+          border: 1px solid var(--border-gold);
+          border-radius: 14px;
+          padding: 18px 12px;
+          text-align: center;
+          cursor: pointer;
+          transition: border-color 0.2s, background 0.2s, transform 0.15s;
+        }
+
+        .coach-card:hover {
+          border-color: var(--gold-primary);
+          background: rgba(212, 175, 55, 0.15);
+          transform: translateY(-2px);
+        }
+
+        .coach-icon {
+          font-size: 1.7rem;
+          margin-bottom: 8px;
+        }
+
+        .coach-name {
+          font-size: 13px;
+          font-weight: 700;
+          color: var(--text-main);
+        }
+
+        .coach-rating {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 13px;
+          font-weight: 800;
+          color: var(--gold-primary);
+          margin-top: 2px;
+        }
+
+        .coach-title {
+          font-size: 10px;
+          color: var(--text-muted);
+          margin-top: 2px;
+        }
+
+        @media (max-width: 780px) {
+          .mode-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        .coach-panel {
+          background: rgba(25, 20, 14, 0.7);
+          border: 1px solid var(--border-gold);
+          border-radius: 12px;
+          padding: 14px;
+        }
+
+        .coach-panel-head {
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+          align-items: center;
+          margin-bottom: 8px;
+        }
+
+        .coach-panel-head span {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 11px;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: var(--gold-primary);
+          font-weight: 600;
+        }
+
+        .coach-panel-head strong {
+          color: var(--gold-light);
+          font-size: 13px;
+        }
+
+        #coachAdviceText {
+          color: var(--text-muted);
+          font-size: 13px;
+          line-height: 1.6;
+        }
+    </style>
+    </head>
+
+    <body class="cm-body">
+        <%- include("../partials/navbar") %>
+        <main>
+            <!-- GAME MODE SECTION -->
+
+            <section id="gameModeScreen" class="play-screen">
+                <span class="kicker">ChessMaster</span>
+                <h1 class="screen-title">Play Chess</h1>
+                <p class="screen-sub">Choose your game mode, then select a time
+                    control.</p>
+
+                <div class="mode-grid">
+                    <article class="mode-card friend">
+                        <span class="mode-icon">👥</span>
+                        <h3>2 Players</h3>
+                        <p>Play locally with a friend on the same device.</p>
+                        <button type="button" id="selectHumanBtn"
+                            class="mode-btn-friend">
+                            Play vs Friend
+                        </button>
+                    </article>
+
+                    <article class="mode-card bot">
+                        <span class="mode-icon">🤖</span>
+                        <h3>vs Computer</h3>
+                        <p>Challenge one of 32 AI bots from 100 to 3200
+                            rating.</p>
+                        <button type="button" id="selectBotBtn"
+                            class="mode-btn-bot">
+                            Play vs Bot
+                        </button>
+                    </article>
+
+                    <article class="mode-card online">
+                        <span class="mode-icon">🌐</span>
+                        <h3>Play Online</h3>
+                        <p>Find a real player and play a live match with
+                            real-time moves.</p>
+                        <button type="button" id="selectOnlineBtn"
+                            class="mode-btn-online">
+                            Find Online Match
+                        </button>
+                    </article>
+                </div>
+            </section>
+
+            <!-- BOT SELECT -->
+            <section id="botSelectScreen" class="play-screen"
+                style="display:none;">
+                <span class="kicker">Choose Opponent</span>
+                <h1 class="screen-title">Select a Bot</h1>
+                <p class="screen-sub">From complete beginner to Super
+                    Grandmaster.</p>
+                <div id="botGrid" class="bot-grid"></div>
+                <div><button type="button" id="backToModeBtn" class="back-btn">←
+                        Back</button></div>
+            </section>
+
+            <!-- TIME CONTROL -->
+            <section id="timeControlScreen" class="play-screen"
+                style="display:none;">
+                <span class="kicker">Time Control</span>
+                <h1 class="screen-title">How long to play?</h1>
+                <p class="screen-sub">Pick Rapid, Blitz, or Bullet before
+                    starting.</p>
+                <div class="time-grid">
+                    <div class="time-card">
+                        <h3>⏱ Rapid</h3>
+                        <p>Longer games with deeper calculation.</p>
+                        <div class="time-btns">
+                            <button type="button" data-mode="rapid"
+                                data-minutes="10" data-increment="0">10 +
+                                0</button>
+                            <button type="button" data-mode="rapid"
+                                data-minutes="15" data-increment="10">15 +
+                                10</button>
+                            <button type="button" data-mode="rapid"
+                                data-minutes="30" data-increment="0">30 +
+                                0</button>
+                        </div>
+                    </div>
+                    <div class="time-card">
+                        <h3>⚡ Blitz</h3>
+                        <p>Fast games demanding quick decisions.</p>
+                        <div class="time-btns">
+                            <button type="button" data-mode="blitz"
+                                data-minutes="3" data-increment="0">3 +
+                                0</button>
+                            <button type="button" data-mode="blitz"
+                                data-minutes="3" data-increment="2">3 +
+                                2</button>
+                            <button type="button" data-mode="blitz"
+                                data-minutes="5" data-increment="0">5 +
+                                0</button>
+                        </div>
+                    </div>
+                    <div class="time-card">
+                        <h3>🔥 Bullet</h3>
+                        <p>Speed chess. Every second counts.</p>
+                        <div class="time-btns">
+                            <button type="button" data-mode="bullet"
+                                data-minutes="1" data-increment="0">1 +
+                                0</button>
+                            <button type="button" data-mode="bullet"
+                                data-minutes="1" data-increment="1">1 +
+                                1</button>
+                            <button type="button" data-mode="bullet"
+                                data-minutes="2" data-increment="1">2 +
+                                1</button>
+                        </div>
+                    </div>
+                </div>
+                <div><button type="button" id="backFromTimeBtn"
+                        class="back-btn">← Back</button></div>
+            </section>
+
+            <!-- PLAYER SETUP -->
+            <section id="playerSetupScreen" class="play-screen"
+                style="display:none;">
+                <span class="kicker">Players</span>
+                <h1 class="screen-title">Who's playing?</h1>
+                <p class="screen-sub">Enter player names before starting the
+                    game.</p>
+                <div class="player-form">
+                    <label>♔ White Player
+                        <input id="whitePlayer" type="text"
+                            value="<%= currentUser ? currentUser.username : '' %>"
+                            placeholder="White player name">
+                    </label>
+                    <label>♚ Black Player
+                        <input id="blackPlayer" type="text"
+                            placeholder="Black player name">
+                    </label>
+                    <button id="confirmPlayersBtn" type="button"
+                        class="continue-btn">Continue →</button>
+                </div>
+            </section>
+
+            <!-- GAME AREA -->
+            <div id="gameArea" class="game-layout" style="display:none;">
+
+                <section class="board-shell" style="position:relative;">
+
+                    <div class="player-strip" id="blackStrip">
+                        <div class="ps-left">
+                            <div class="ps-avatar black-av">♚</div>
+                            <div>
+                                <div class="ps-name" id="blackName">Black</div>
+                                <div class="ps-thinking" id="botThinking">🤖
+                                    thinking...</div>
+                            </div>
+                        </div>
+                        <div class="ps-clock" id="blackClock">00:00</div>
+                    </div>
+
+                    <div class="board-status">
+                        <span class="status-turn" id="turnIndicator">White to
+                            move</span>
+                        <span class="status-badge active"
+                            id="gameStatus">Active</span>
+                    </div>
+
+                    <div class="board-scroll">
+                        <div id="chessBoard" class="cm-game-board"></div>
+                    </div>
+
+                    <div class="player-strip" id="whiteStrip">
+                        <div class="ps-left">
+                            <div class="ps-avatar white-av">♔</div>
+                            <div>
+                                <div class="ps-name" id="whiteName">White</div>
+                            </div>
+                        </div>
+                        <div class="ps-clock" id="whiteClock">00:00</div>
+                    </div>
+
+                    <div class="board-actions">
+                        <button id="startGameBtn" type="button"
+                            class="action-btn primary">Start Game</button>
+                        <button id="changeTimeBtn" type="button"
+                            class="action-btn secondary">Change Time</button>
+                    </div>
+
+                    <div id="gameOverModal" class="game-over-overlay">
+                        <div class="game-over-card">
+                            <div class="go-kicker">Game Over</div>
+                            <h2 id="gameOverTitle">Checkmate</h2>
+                            <p id="gameOverMessage">White wins.</p>
+                            <div class="go-actions">
+                                <button id="newGameBtn" type="button"
+                                    class="action-btn primary">New Game</button>
+
+                                <button type="button"
+                                    class="action-btn secondary"
+                                    onclick="window.location.href='/play'">←
+                                    Back</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </section>
+
+                <aside class="history-panel">
+                    <div id="coachPanel" class="coach-panel"
+                        style="display:none;">
+                        <div class="coach-panel-head">
+                            <span>Coach Advice</span>
+                            <strong id="coachNameLabel">Coach</strong>
+                        </div>
+
+                        <p id="coachAdviceText">
+                            Select a coach and start the game. Your coach will
+                            guide you after moves.
+                        </p>
+                    </div>
+                    <div class="history-head">
+                        <div>
+                            <div class="hh-label">Match Log</div>
+                            <h2>Move History</h2>
+                        </div>
+                        <span class="move-count-badge" id="moveCount">0</span>
+                    </div>
+                    <div class="review-controls">
+                        <button id="prevMoveBtn" type="button"
+                            title="Previous">⟵</button>
+                        <span id="reviewStatus">Live</span>
+                        <button id="nextMoveBtn" type="button"
+                            title="Next">⟶</button>
+                    </div>
+                    <div id="moveHistory" class="move-history"><p>No moves
+                            yet.</p></div>
+
+                </aside>
+
+            </div>
+
+        </main>
+
+        <%- include("../partials/footer") %>
+
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+        <script>
+        window.BOARD_THEME = "<%= currentUser ? currentUser.boardTheme || 'classic' : 'classic' %>";
+    </script>
+        <script src="/js/board.js"></script>
+        <script src="/js/bot.js"></script>
+
+        <script>
+  window.PLAYER_COLOR = "w";
+  window.isCoachMode = false;
+  window.selectedCoach = null;
+
+  document.getElementById("selectOnlineBtn").addEventListener("click", () => {
+    window.location.href = "/online";
+});
+
+  function syncPlayerNames() {
+    const wn = document.getElementById("whiteName");
+    const bn = document.getElementById("blackName");
+
+    if (wn) wn.textContent = whitePlayerInput.value.trim() || "White";
+    if (bn) bn.textContent = blackPlayerInput.value.trim() || "Black";
+  }
+  confirmPlayersBtn.addEventListener("click", () => {
+    if (isBotMode && selectedBot) {
+      const playerName = whitePlayerInput.value.trim() || "Player";
+      const botName = `${selectedBot.name} (${selectedBot.rating})`;
+      const playerIsWhite = Math.random() >= 0.5;
+
+      if (playerIsWhite) {
+        whitePlayerInput.value = playerName;
+        blackPlayerInput.value = botName;
+        window.PLAYER_COLOR = "w";
+      } else {
+        whitePlayerInput.value = botName;
+        blackPlayerInput.value = playerName;
+        window.PLAYER_COLOR = "b";
+      }
+
+      initStockfish();
+    }
+
+    const wn = document.getElementById("whiteName");
+    const bn = document.getElementById("blackName");
+
+    if (window.PLAYER_COLOR === "b") {
+      if (wn) wn.textContent = blackPlayerInput.value.trim();
+      if (bn) bn.textContent = whitePlayerInput.value.trim();
+    } else {
+      if (wn) wn.textContent = whitePlayerInput.value.trim();
+      if (bn) bn.textContent = blackPlayerInput.value.trim();
+    }
+  });
+
+  const whiteStrip = document.getElementById("whiteStrip");
+  const blackStrip = document.getElementById("blackStrip");
+
+  function patchStrips() {
+    if (!whiteStrip || !blackStrip) return;
+
+    const isWhiteTurn = game.turn() === "w";
+
+    whiteStrip.classList.toggle("active-turn", isWhiteTurn && gameStarted);
+    blackStrip.classList.toggle("active-turn", !isWhiteTurn && gameStarted);
+
+    whiteStrip.classList.toggle("low-time", whiteTime <= 10 && !!selectedMode);
+    blackStrip.classList.toggle("low-time", blackTime <= 10 && !!selectedMode);
+  }
+
+  const __uc = updateClocks;
+  updateClocks = function () {
+    __uc();
+    patchStrips();
+  };
+
+  const __ui = updateInfo;
+  updateInfo = function () {
+    __ui();
+
+    document.querySelectorAll("#moveHistory > div").forEach((el) => {
+      el.className = "move-item";
+    });
+  };
+
+  document.getElementById("selectHumanBtn").addEventListener("click", () => {
+    isBotMode = false;
+    selectedBot = null;
+
+    window.isCoachMode = false;
+    window.selectedCoach = null;
+    window.PLAYER_COLOR = "w";
+
+    document.getElementById("gameModeScreen").style.display = "none";
+    timeControlScreen.style.display = "block";
+  });
+
+  document.getElementById("selectBotBtn").addEventListener("click", () => {
+    isBotMode = true;
+
+    window.isCoachMode = false;
+    window.selectedCoach = null;
+
+    document.getElementById("gameModeScreen").style.display = "none";
+    document.getElementById("botSelectScreen").style.display = "block";
+
+    buildBotGrid();
+  });
+
+  document.getElementById("backToModeBtn").addEventListener("click", () => {
+    document.getElementById("botSelectScreen").style.display = "none";
+    document.getElementById("gameModeScreen").style.display = "block";
+  });
+
+  document.getElementById("backFromTimeBtn").addEventListener("click", () => {
+    timeControlScreen.style.display = "none";
+
+    if (isBotMode) {
+      document.getElementById("botSelectScreen").style.display = "block";
+    } else {
+      document.getElementById("gameModeScreen").style.display = "block";
+    }
+  });
+</script>
+
+    </body>
+</html>

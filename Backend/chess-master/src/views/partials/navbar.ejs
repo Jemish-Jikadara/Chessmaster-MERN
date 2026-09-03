@@ -1,0 +1,83 @@
+<nav
+  style="background:#15120e; border-bottom:1px solid rgba(243,234,217,0.08); position:sticky; top:0; z-index:100; backdrop-filter:blur(10px);">
+  <div
+    style="max-width:1200px; margin:0 auto; padding:0 24px; height:60px; display:flex; align-items:center; justify-content:space-between;">
+    <a href="/"
+      style="display:flex; align-items:center; gap:8px; text-decoration:none; font-family:'Fraunces',serif; font-size:18px; font-weight:700; color:#f3ead9;">
+      <span style="font-size:22px; color:#c9a227;">♞</span>
+      ChessMaster
+    </a>
+
+    <button id="menuBtn" type="button"
+      style="display:none; background:transparent; border:1px solid rgba(243,234,217,0.1); color:#f3ead9; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:18px;">☰</button>
+
+    <div id="navLinks" style="display:flex; align-items:center; gap:8px;">
+      <a href="/"
+        style="padding:7px 14px; color:#b6a892; text-decoration:none; font-size:14px; border-radius:8px; transition:color 0.2s;">Home</a>
+      <a href="/play"
+        style="padding:7px 14px; color:#b6a892; text-decoration:none; font-size:14px; border-radius:8px; transition:color 0.2s;">Play</a>
+      <a href="/leaderboard"
+        style="padding:7px 14px; color:#b6a892; text-decoration:none; font-size:14px; border-radius:8px; transition:color 0.2s;">Leaderboard</a>
+      <a href="/about"
+        style="padding:7px 14px; color:#b6a892; text-decoration:none; font-size:14px; border-radius:8px; transition:color 0.2s;">About</a>
+
+      <% if (currentUser) { %>
+
+      <a href="/profile"
+        style="display:flex;
+          align-items:center;
+          gap:10px;
+          text-decoration:none;
+          color:#f3ead9;
+          padding:6px 12px;
+          border-radius:999px;
+          transition:.25s;">
+
+        <img
+          src="<%= currentUser.profileImage %>"
+          alt="Profile"
+          style="
+            width:34px;
+            height:34px;
+            border-radius:50%;
+            object-fit:cover;
+            border:2px solid #c9a227;
+        ">
+
+        <span style="
+        font-size:14px;
+        font-weight:600;
+        color:#f3ead9;">
+          <%= currentUser.username %>
+        </span>
+
+      </a>
+      <!--
+      <form action="/logout" method="POST" style="margin:0;">
+        <button type="submit"
+          style="padding:7px 14px; background:transparent; border:1px solid rgba(243,234,217,0.1); color:#b6a892; font-size:14px; border-radius:8px; cursor:pointer; transition:all 0.2s;">Logout</button>
+      </form> -->
+      <% } else { %>
+      <a href="/login"
+        style="padding:7px 14px; color:#b6a892; text-decoration:none; font-size:14px; border-radius:8px;">Login</a>
+      <a href="/register"
+        style="padding:8px 18px; background:linear-gradient(135deg,#c9a227,#a9791f); color:#1a1408; text-decoration:none; font-size:14px; font-weight:600; border-radius:8px; box-shadow:0 4px 14px rgba(201,162,39,0.3);">Register</a>
+      <% } %>
+    </div>
+  </div>
+</nav>
+
+<style>
+@media (max-width: 768px) {
+  #menuBtn { display:block !important; }
+  #navLinks { display:none !important; flex-direction:column; position:absolute; top:60px; left:0; right:0; background:#15120e; border-bottom:1px solid rgba(243,234,217,0.08); padding:16px 24px; gap:4px !important; }
+  #navLinks.cm-open { display:flex !important; }
+}
+</style>
+<script>
+  const menuBtn = document.getElementById("menuBtn");
+  const navLinks = document.getElementById("navLinks");
+  if (menuBtn && navLinks) {
+    menuBtn.addEventListener("click", () => navLinks.classList.toggle("cm-open"));
+  }
+</script>

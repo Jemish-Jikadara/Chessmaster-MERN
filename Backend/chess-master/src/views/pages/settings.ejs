@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>ChessMaster | Settings</title>
+        <link rel="stylesheet" href="/css/style.css">
+        <link
+            href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+            rel="stylesheet">
+        <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:var(--cm-bg); color:var(--cm-ink); }
+
+        :root {
+            --cm-bg: #0f0f0f;
+            --cm-bg-2: #161616;
+            --cm-bg-3: #1e1e1e;
+            --cm-line: rgba(243,234,217,0.08);
+            --cm-line-soft: rgba(243,234,217,0.04);
+            --cm-ink: #f0ece4;
+            --cm-ink-dim: #7a7570;
+            --cm-ink-faint: #4a4642;
+            --cm-brass: #c9a84c;
+            --cm-brass-lt: #e8c97a;
+            --cm-brass-dim: rgba(201,168,76,0.15);
+            --cm-sage: #7a9569;
+            --cm-sage-lt: #a4c191;
+            --cm-rust: #b5541f;
+        }
+
+        .settings-wrap { min-height:100vh; background:var(--cm-bg); }
+        .settings-banner {
+            background: linear-gradient(135deg, rgba(201,162,39,0.10) 0%, rgba(122,149,105,0.07) 50%, transparent 100%);
+            border-bottom:1px solid var(--cm-line);
+            padding:40px 24px 0;
+            position:relative;
+            overflow:hidden;
+        }
+        .settings-banner::before {
+            content:''; position:absolute; width:600px; height:600px;
+            background: radial-gradient(circle, rgba(201,162,39,0.12) 0%, transparent 70%);
+            top:-200px; right:-100px; pointer-events:none;
+        }
+        .banner-inner { max-width:1100px; margin:0 auto; position:relative; z-index:1; }
+        .back-link { display:inline-flex; align-items:center; gap:6px; color:var(--cm-ink-dim); font-size:13px; text-decoration:none; margin-bottom:20px; transition:color 0.2s; }
+        .back-link:hover { color:var(--cm-ink); }
+        .settings-title { font-family:'Fraunces',serif; font-size:clamp(1.8rem,4vw,2.6rem); font-weight:700; color:var(--cm-ink); margin:0 0 6px; letter-spacing:-0.02em; }
+        .settings-sub { font-size:14px; color:var(--cm-ink-dim); margin:0 0 24px; }
+
+        .settings-tabs { display:flex; gap:0; border-top:1px solid var(--cm-line); margin-top:4px; }
+        .tab { padding:14px 20px; font-size:13px; font-weight:600; color:var(--cm-ink-faint); cursor:pointer; border-bottom:2px solid transparent; transition:all 0.2s; font-family:'Fraunces',serif; text-decoration:none; }
+        .tab.active { color:var(--cm-ink); border-bottom-color:var(--cm-brass); }
+        .tab:hover { color:var(--cm-ink); }
+
+        .settings-body { max-width:1100px; margin:0 auto; padding:28px 24px 80px; display:grid; grid-template-columns:260px 1fr; gap:24px; }
+        @media (max-width:900px) { .settings-body { grid-template-columns:1fr; } }
+
+        /* -- LEFT SIDEBAR -- */
+        .sidebar { display:flex; flex-direction:column; gap:6px; }
+        .sidebar-item {
+            display:flex; align-items:center; gap:12px;
+            padding:12px 16px; border-radius:12px;
+            cursor:pointer; transition:all 0.2s;
+            border:1px solid transparent;
+            text-decoration:none;
+        }
+        .sidebar-item:hover { background:rgba(243,234,217,0.03); border-color:var(--cm-line); }
+        .sidebar-item.active {
+            background:rgba(201,168,76,0.08);
+            border-color:rgba(201,168,76,0.25);
+        }
+        .sidebar-icon { font-size:18px; width:28px; text-align:center; }
+        .sidebar-text { flex:1; }
+        .sidebar-label { font-size:14px; font-weight:500; color:var(--cm-ink); }
+        .sidebar-desc { font-size:11px; color:var(--cm-ink-faint); margin-top:1px; }
+        .sidebar-item.active .sidebar-label { color:var(--cm-brass-lt); }
+        .coming-soon-badge {
+            font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em;
+            padding:2px 6px; border-radius:4px;
+            background:rgba(201,168,76,0.12); color:var(--cm-brass-lt);
+            border:1px solid rgba(201,168,76,0.2);
+        }
+
+        /* -- RIGHT CONTENT -- */
+        .content-panel { background:var(--cm-bg-2); border:1px solid var(--cm-line); border-radius:16px; padding:28px; min-height:400px; }
+        .content-section { display:none; animation:fadeSlide 0.3s ease; }
+        .content-section.active { display:block; }
+        @keyframes fadeSlide {
+            from { opacity:0; transform:translateX(12px); }
+            to { opacity:1; transform:translateX(0); }
+        }
+
+        .section-header { margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid var(--cm-line); }
+        .section-header h2 { font-family:'Fraunces',serif; font-size:20px; font-weight:700; color:var(--cm-ink); margin:0 0 6px; }
+        .section-header p { font-size:13px; color:var(--cm-ink-dim); margin:0; }
+
+        /* -- BOARD THEME -- */
+        .theme-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:14px; }
+        .theme-card {
+            border:2px solid var(--cm-line); border-radius:14px; overflow:hidden;
+            cursor:pointer; transition:border-color 0.2s, transform 0.15s; position:relative;
+            background:var(--cm-bg-3);
+        }
+        .theme-card:hover { border-color:rgba(201,168,76,0.3); transform:translateY(-3px); }
+        .theme-card.active { border-color:var(--cm-brass); }
+        .theme-card.active::after {
+            content:'✓'; position:absolute; top:8px; right:8px;
+            width:24px; height:24px; background:var(--cm-brass);
+            border-radius:50%; font-size:13px; color:#0f0f0f;
+            font-weight:700; line-height:24px; text-align:center;
+        }
+        .theme-preview { display:grid; grid-template-columns:repeat(4,1fr); aspect-ratio:1; width:100%; }
+        .theme-preview-sq { aspect-ratio:1; }
+        .theme-name { padding:12px; font-family:'Fraunces',serif; font-size:13px; color:var(--cm-ink); text-align:center; background:var(--cm-bg-2); }
+
+        .theme-classic .light { background:#f0d9b5; } .theme-classic .dark { background:#b58863; }
+        .theme-midnight .light { background:#6b7fa3; } .theme-midnight .dark { background:#2c3e6b; }
+        .theme-forest .light { background:#ffffdd; } .theme-forest .dark { background:#6faa3f; }
+        .theme-ocean .light { background:#d6eaf8; } .theme-ocean .dark { background:#2e86c1; }
+        .theme-ruby .light { background:#f5cba7; } .theme-ruby .dark { background:#b91c1c; }
+        .theme-walnut .light { background:#e8d5b0; } .theme-walnut .dark { background:#6b4226; }
+
+        #saveStatus { margin-top:16px; font-size:13px; color:var(--cm-sage-lt); display:none; font-weight:500; }
+
+        /* -- COMING SOON -- */
+        .coming-soon-box {
+            display:flex; flex-direction:column; align-items:center; justify-content:center;
+            padding:60px 20px; text-align:center;
+        }
+        .coming-soon-icon { font-size:64px; margin-bottom:16px; opacity:0.6; }
+        .coming-soon-title { font-family:'Fraunces',serif; font-size:22px; font-weight:700; color:var(--cm-ink); margin-bottom:8px; }
+        .coming-soon-text { font-size:14px; color:var(--cm-ink-dim); max-width:320px; line-height:1.6; }
+        .coming-soon-hint {
+            margin-top:20px; padding:10px 16px; border-radius:8px;
+            background:rgba(201,168,76,0.06); border:1px solid rgba(201,168,76,0.15);
+            font-size:12px; color:var(--cm-brass-lt);
+        }
+
+        /* -- ACCOUNT ACTIONS -- */
+        .account-actions { display:flex; flex-direction:column; gap:12px; margin-top:8px; }
+        .btn-logout {
+            width:100%; padding:14px 20px; background:var(--cm-bg-3);
+            border:1px solid var(--cm-line); border-radius:12px;
+            color:var(--cm-ink); font-size:14px; font-weight:600;
+            cursor:pointer; display:flex; align-items:center; gap:10px;
+            transition:all 0.2s; font-family:'Inter',sans-serif;
+        }
+        .btn-logout:hover { background:rgba(201,168,76,0.08); border-color:rgba(201,168,76,0.25); color:var(--cm-brass-lt); }
+        .btn-delete {
+            width:100%; padding:14px 20px; background:transparent;
+            border:1px solid rgba(181,84,31,0.25); border-radius:12px;
+            color:#e08a5b; font-size:14px; font-weight:600;
+            cursor:pointer; display:flex; align-items:center; gap:10px;
+            transition:all 0.2s; font-family:'Inter',sans-serif;
+        }
+        .btn-delete:hover { background:rgba(181,84,31,0.08); border-color:rgba(181,84,31,0.4); }
+
+        /* -- MODAL -- */
+        .modal-overlay {
+            position:fixed; top:0; left:0; right:0; bottom:0;
+            background:rgba(0,0,0,0.7); display:none;
+            align-items:center; justify-content:center;
+            z-index:1000; backdrop-filter:blur(4px);
+        }
+        .modal-overlay.active { display:flex; }
+        .modal-box {
+            background:var(--cm-bg-2); border:1px solid var(--cm-line);
+            border-radius:16px; padding:32px; max-width:420px; width:90%; text-align:center;
+        }
+        .modal-icon { font-size:48px; margin-bottom:16px; }
+        .modal-title { font-family:'Fraunces',serif; font-size:20px; color:var(--cm-ink); margin:0 0 8px; }
+        .modal-text { font-size:14px; color:var(--cm-ink-dim); margin:0 0 24px; line-height:1.6; }
+        .modal-warning {
+            background:rgba(181,84,31,0.08); border:1px solid rgba(181,84,31,0.2);
+            border-radius:8px; padding:12px; font-size:13px; color:#e08a5b; margin-bottom:24px;
+        }
+        .modal-btns { display:flex; gap:12px; }
+        .modal-btns button { flex:1; padding:12px; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; transition:all 0.2s; font-family:'Inter',sans-serif; }
+        .btn-cancel { background:var(--cm-bg-3); border:1px solid var(--cm-line); color:var(--cm-ink); }
+        .btn-cancel:hover { border-color:rgba(201,168,76,0.3); }
+        .btn-confirm-delete { background:rgba(181,84,31,0.12); border:1px solid rgba(181,84,31,0.35); color:#e08a5b; }
+        .btn-confirm-delete:hover { background:rgba(181,84,31,0.2); }
+
+        @media (max-width:900px) {
+            .settings-body { grid-template-columns:1fr; }
+            .sidebar { flex-direction:row; overflow-x:auto; padding-bottom:8px; }
+            .sidebar-item { min-width:140px; flex-direction:column; gap:4px; padding:12px; }
+            .sidebar-text { text-align:center; }
+            .sidebar-desc { display:none; }
+        }
+    </style>
+    </head>
+    <body class="cm-body settings-wrap">
+
+        <%- include("../partials/navbar") %>
+
+        <div class="settings-banner">
+            <div class="banner-inner">
+                <a href="/profile" class="back-link">← Back to Profile</a>
+                <h1 class="settings-title">Settings</h1>
+                <p class="settings-sub">Customize your ChessMaster
+                    experience.</p>
+                <div class="settings-tabs">
+                    <span class="tab active"
+                        onclick="switchTab('general')">General</span>
+                </div>
+            </div>
+        </div>
+
+        <main>
+            <div class="settings-body">
+
+                <!-- LEFT SIDEBAR -->
+                <div class="sidebar">
+                    <div class="sidebar-item active"
+                        onclick="showSection('theme', this)">
+                        <span class="sidebar-icon">🎨</span>
+                        <div class="sidebar-text">
+                            <div class="sidebar-label">Board Theme</div>
+                            <div class="sidebar-desc">Chessboard colors</div>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-item"
+                        onclick="showSection('background', this)">
+                        <span class="sidebar-icon">🖼️</span>
+                        <div class="sidebar-text">
+                            <div class="sidebar-label">Background</div>
+                            <div class="sidebar-desc">Page background</div>
+                        </div>
+                        <span class="coming-soon-badge">Soon</span>
+                    </div>
+
+                    <div class="sidebar-item"
+                        onclick="showSection('pieces', this)">
+                        <span class="sidebar-icon">♟️</span>
+                        <div class="sidebar-text">
+                            <div class="sidebar-label">Pieces</div>
+                            <div class="sidebar-desc">Piece style & design</div>
+                        </div>
+                        <span class="coming-soon-badge">Soon</span>
+                    </div>
+
+                    <div class="sidebar-item"
+                        onclick="showSection('sound', this)">
+                        <span class="sidebar-icon">🔊</span>
+                        <div class="sidebar-text">
+                            <div class="sidebar-label">Sound</div>
+                            <div class="sidebar-desc">Move & game sounds</div>
+                        </div>
+                        <span class="coming-soon-badge">Soon</span>
+                    </div>
+
+                    <div class="sidebar-item"
+                        onclick="showSection('notifications', this)">
+                        <span class="sidebar-icon">🔔</span>
+                        <div class="sidebar-text">
+                            <div class="sidebar-label">Notifications</div>
+                            <div class="sidebar-desc">Alerts & emails</div>
+                        </div>
+                        <span class="coming-soon-badge">Soon</span>
+                    </div>
+
+                    <div class="sidebar-item"
+                        onclick="showSection('privacy', this)">
+                        <span class="sidebar-icon">🔒</span>
+                        <div class="sidebar-text">
+                            <div class="sidebar-label">Privacy</div>
+                            <div class="sidebar-desc">Visibility settings</div>
+                        </div>
+                        <span class="coming-soon-badge">Soon</span>
+                    </div>
+
+                    <div class="sidebar-item"
+                        onclick="showSection('account', this)">
+                        <span class="sidebar-icon">⚙️</span>
+                        <div class="sidebar-text">
+                            <div class="sidebar-label">Account</div>
+                            <div class="sidebar-desc">Logout & delete</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT CONTENT -->
+                <div class="content-panel">
+
+                    <!-- BOARD THEME -->
+                    <div class="content-section active" id="section-theme">
+                        <div class="section-header">
+                            <h2>Board Theme</h2>
+                            <p>Choose how your chess board looks. Your
+                                preference is saved to your account.</p>
+                        </div>
+                        <div class="theme-grid">
+                            <% const themes = [
+                            { id: "classic", name: "Classic" },
+                            { id: "midnight", name: "Midnight" },
+                            { id: "forest", name: "Forest" },
+                            { id: "ocean", name: "Ocean" },
+                            { id: "ruby", name: "Ruby" },
+                            { id: "walnut", name: "Walnut" }
+                            ]; %>
+                            <% themes.forEach(theme => { %>
+                            <div
+                                class="theme-card theme-<%= theme.id %> <%= user.boardTheme === theme.id ? 'active' : '' %>"
+                                data-theme="<%= theme.id %>">
+                                <div class="theme-preview">
+                                    <% for(let i = 0; i < 16; i++) { %>
+                                    <div
+                                        class="theme-preview-sq <%= (Math.floor(i/4) + i) % 2 === 0 ? 'light' : 'dark' %>"></div>
+                                    <% } %>
+                                </div>
+                                <div class="theme-name"><%= theme.name %></div>
+                            </div>
+                            <% }) %>
+                        </div>
+                        <div id="saveStatus">✓ Theme saved!</div>
+                    </div>
+
+                    <!-- BACKGROUND -->
+                    <div class="content-section" id="section-background">
+                        <div class="section-header">
+                            <h2>Background</h2>
+                            <p>Customize the page background appearance.</p>
+                        </div>
+                        <div class="coming-soon-box">
+                            <div class="coming-soon-icon">🖼️</div>
+                            <div class="coming-soon-title">Coming Soon</div>
+                            <div class="coming-soon-text">Background
+                                customization will be available in a future
+                                update. Stay tuned!</div>
+                        </div>
+                    </div>
+
+                    <!-- PIECES -->
+                    <div class="content-section" id="section-pieces">
+                        <div class="section-header">
+                            <h2>Piece Style</h2>
+                            <p>Choose your preferred chess piece design.</p>
+                        </div>
+                        <div class="coming-soon-box">
+                            <div class="coming-soon-icon">♟️</div>
+                            <div class="coming-soon-title">Coming Soon</div>
+                            <div class="coming-soon-text">Multiple piece sets
+                                (Classic, Modern, Neo, etc.) will be added
+                                soon.</div>
+                        </div>
+                    </div>
+
+                    <!-- SOUND -->
+                    <div class="content-section" id="section-sound">
+                        <div class="section-header">
+                            <h2>Sound Settings</h2>
+                            <p>Control game sounds and notifications.</p>
+                        </div>
+                        <div class="coming-soon-box">
+                            <div class="coming-soon-icon">🔊</div>
+                            <div class="coming-soon-title">Coming Soon</div>
+                            <div class="coming-soon-text">Sound effects for
+                                moves, captures, check, and game end will be
+                                added.</div>
+                        </div>
+                    </div>
+
+                    <!-- NOTIFICATIONS -->
+                    <div class="content-section" id="section-notifications">
+                        <div class="section-header">
+                            <h2>Notifications</h2>
+                            <p>Manage your email and push notification
+                                preferences.</p>
+                        </div>
+                        <div class="coming-soon-box">
+                            <div class="coming-soon-icon">🔔</div>
+                            <div class="coming-soon-title">Coming Soon</div>
+                            <div class="coming-soon-text">Email alerts for
+                                friend requests, game invites, and match results
+                                coming soon.</div>
+                        </div>
+                    </div>
+
+                    <!-- PRIVACY -->
+                    <div class="content-section" id="section-privacy">
+                        <div class="section-header">
+                            <h2>Privacy</h2>
+                            <p>Control who can see your profile and game
+                                history.</p>
+                        </div>
+                        <div class="coming-soon-box">
+                            <div class="coming-soon-icon">🔒</div>
+                            <div class="coming-soon-title">Coming Soon</div>
+                            <div class="coming-soon-text">Profile visibility,
+                                game history privacy, and block user features
+                                coming soon.</div>
+                        </div>
+                    </div>
+
+                    <!-- ACCOUNT -->
+                    <div class="content-section" id="section-account">
+                        <div class="section-header">
+                            <h2>Manage Account</h2>
+                            <p>Logout or permanently delete your account and all
+                                associated data.</p>
+                        </div>
+                        <div class="account-actions">
+                            <form action="/logout" method="POST"
+                                style="margin:0;">
+                                <button type="submit" class="btn-logout">
+                                    <span>🚪</span> Logout
+                                </button>
+                            </form>
+                            <button type="button" class="btn-delete"
+                                onclick="showDeleteModal()">
+                                <span>🗑️</span> Delete Account
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+
+        <!-- Delete Account Modal -->
+        <div class="modal-overlay" id="deleteModal">
+            <div class="modal-box">
+                <div class="modal-icon">⚠️</div>
+                <h3 class="modal-title">Delete Account?</h3>
+                <p class="modal-text">This will permanently delete your account,
+                    ratings, statistics, friends, and game history. This action
+                    cannot be undone.</p>
+                <div class="modal-warning">⚠️ All your data will be lost
+                    forever!</div>
+                <div class="modal-btns">
+                    <button class="btn-cancel"
+                        onclick="hideDeleteModal()">Cancel</button>
+                    <button class="btn-confirm-delete"
+                        onclick="confirmDelete()">Delete Forever</button>
+                </div>
+            </div>
+        </div>
+
+        <%- include("../partials/footer") %>
+
+        <script>
+        // Sidebar section switch
+        function showSection(sectionId, el) {
+            document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
+            el.classList.add('active');
+
+            document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById('section-' + sectionId).classList.add('active');
+        }
+
+        // Theme selection
+        const themeCards = document.querySelectorAll('.theme-card');
+        const saveStatus = document.getElementById('saveStatus');
+
+        themeCards.forEach(card => {
+            card.addEventListener('click', async () => {
+                const theme = card.dataset.theme;
+                themeCards.forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+
+                try {
+                    const res = await fetch('/api/settings/theme', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ boardTheme: theme })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        saveStatus.style.display = 'block';
+                        setTimeout(() => saveStatus.style.display = 'none', 2000);
+                    }
+                } catch (err) {
+                    console.error('Theme save failed:', err);
+                }
+            });
+        });
+
+        // Delete Account Modal
+        function showDeleteModal() {
+            document.getElementById('deleteModal').classList.add('active');
+        }
+        function hideDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('active');
+        }
+        async function confirmDelete() {
+            try {
+                const res = await fetch('/api/settings/delete-account', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    window.location.href = '/login';
+                } else {
+                    alert(data.message || 'Failed to delete account.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Something went wrong.');
+            }
+        }
+        document.getElementById('deleteModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('deleteModal')) hideDeleteModal();
+        });
+    </script>
+
+    </body>
+</html>

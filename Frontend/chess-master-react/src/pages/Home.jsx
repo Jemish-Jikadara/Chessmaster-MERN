@@ -1,0 +1,378 @@
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { getSocket } from '../lib/socket';
+import api from '../api/axios';
+
+// ==========================================
+// Yeh CSS tujhe EJS ke <style> tag se mila tha
+// Baad mein isko alag Home.css mein daal dena
+// ==========================================
+const pageStyles = `
+.h-hero{ position:relative; overflow:hidden; padding:110px 0 80px; }
+.h-hero::before{ content:''; position:absolute; width:640px; height:640px; background:radial-gradient(circle,rgba(201,162,39,0.16) 0%,transparent 70%); top:-160px; left:-160px; pointer-events:none; }
+.h-hero::after{ content:''; position:absolute; width:520px; height:520px; background:radial-gradient(circle,rgba(122,149,105,0.14) 0%,transparent 70%); bottom:-120px; right:-80px; pointer-events:none; }
+.h-grid{ display:grid; grid-template-columns:1.05fr 0.95fr; gap:64px; align-items:center; position:relative; z-index:1; }
+.stats-container { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.stat-badge { display: inline-flex; align-items: center; gap: 8px; background-color: #1f2937; color: #f3f4f6; padding: 6px 14px; border-radius: 9999px; font-size: 14px; font-weight: 500; border: 1px solid #374151; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); transition: all 0.2s ease-in-out; }
+.stat-badge:hover { border-color: #4b5563; transform: translateY(-1px); }
+.stat-badge strong { color: #ffffff; font-weight: 700; }
+.live-dot-wrapper { position: relative; display: flex; height: 10px; width: 10px; }
+.live-dot-ping { position: absolute; display: inline-flex; height: 100%; width: 100%; border-radius: 50%; background-color: #4ade80; opacity: 0.75; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; }
+.live-dot-main { position: relative; display: inline-flex; height: 10px; width: 10px; border-radius: 50%; background-color: #22c55e; }
+@keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+@media (max-width:960px){ .h-grid{ grid-template-columns:1fr; text-align:center; } }
+.h-btns{ display:flex; gap:12px; flex-wrap:wrap; margin-top:32px; }
+@media (max-width:960px){ .h-btns{ justify-content:center; } }
+.h-stats{ display:flex; gap:36px; margin-top:48px; padding-top:28px; border-top:1px solid var(--cm-line); flex-wrap:wrap; }
+@media (max-width:960px){ .h-stats{ justify-content:center; } }
+.h-stats div{ text-align:left; }
+@media (max-width:960px){ .h-stats div{ text-align:center; } }
+.h-stats strong{ font-family:var(--cm-serif); font-size:26px; font-weight:700; display:block; color:var(--cm-brass-lt); }
+.h-stats span{ font-size:11px; color:var(--cm-ink-faint); text-transform:uppercase; letter-spacing:0.09em; font-family:var(--cm-mono); }
+.board-frame{ position:relative; background:linear-gradient(160deg,#2b2016,#1a140d); border:1px solid rgba(201,162,39,0.25); border-radius:22px; padding:22px; box-shadow:0 30px 60px -20px rgba(0,0,0,0.6); }
+.board-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.board-top .cm2-tag{ margin-bottom:2px; }
+.board-top h3{ font-family:var(--cm-serif); font-size:16px; color:var(--cm-ink); font-weight:600; }
+.live-dot-wrap{ display:flex; align-items:center; gap:6px; font-family:var(--cm-mono); font-size:11px; color:var(--cm-sage-lt); background:rgba(122,149,105,0.1); border:1px solid rgba(122,149,105,0.3); padding:4px 10px; border-radius:100px; }
+.live-dot{ width:6px; height:6px; border-radius:50%; background:var(--cm-sage-lt); animation:cmblink 1.6s ease-in-out infinite; }
+@keyframes cmblink{ 0%,100%{opacity:1} 50%{opacity:0.25} }
+.board-outer{ display:grid; grid-template-columns:20px 1fr; grid-template-rows:1fr 20px; gap:4px; }
+.board-ranks{ display:grid; grid-template-rows:repeat(8,1fr); font-family:var(--cm-mono); font-size:10px; color:var(--cm-ink-faint); }
+.board-ranks span{ display:flex; align-items:center; justify-content:center; }
+.board-files{ display:grid; grid-template-columns:repeat(8,1fr); font-family:var(--cm-mono); font-size:10px; color:var(--cm-ink-faint); grid-column:2; }
+.board-files span{ display:flex; align-items:center; justify-content:center; }
+.board-8{ grid-column:2; grid-row:1; display:grid; grid-template-columns:repeat(8,1fr); grid-template-rows:repeat(8,1fr); border-radius:8px; overflow:hidden; border:2px solid rgba(201,162,39,0.3); aspect-ratio:1; }
+.board-8 .sqlt{ background:var(--cm-board-lt); }
+.board-8 .sqdk{ background:var(--cm-board-dk); }
+.board-8 .sq{ display:flex; align-items:center; justify-content:center; position:relative; }
+.board-8 .sq img{ width:82%; height:82%; object-fit:contain; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.35)); }
+.board-bottom{ display:flex; gap:8px; margin-top:16px; }
+.board-bottom .bc-tag{ flex:1; padding:10px; background:rgba(243,234,217,0.03); border:1px solid var(--cm-line); border-radius:10px; text-align:center; }
+.board-bottom .bc-tag span{ font-size:9px; color:var(--cm-ink-faint); display:block; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:3px; font-family:var(--cm-mono); }
+.board-bottom .bc-tag strong{ font-size:13px; color:var(--cm-ink); font-family:var(--cm-serif); }
+.battle-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:44px; }
+@media (max-width:900px){ .battle-grid{ grid-template-columns:1fr; } }
+.battle-card{ display:flex; flex-direction:column; height:100%; }
+.battle-icon{ width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:18px; }
+.battle-card p{ font-size:13.5px; color:var(--cm-ink-dim); line-height:1.65; flex-grow:1; margin-bottom:18px; }
+.battle-link{ font-family:var(--cm-mono); font-size:13px; font-weight:500; text-decoration:none; display:inline-flex; align-items:center; gap:6px; }
+.feat-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:40px; }
+@media (max-width:768px){ .feat-grid{ grid-template-columns:1fr; } }
+.feat-icon{ width:42px; height:42px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:19px; margin-bottom:14px; }
+.feat-card p{ font-size:13px; color:var(--cm-ink-dim); line-height:1.6; }
+.how-wrap{ background:var(--cm-bg-2); border-top:1px solid var(--cm-line); border-bottom:1px solid var(--cm-line); }
+.steps-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:36px; margin-top:48px; }
+@media (max-width:768px){ .steps-grid{ grid-template-columns:1fr; } }
+.step{ text-align:center; padding:10px; }
+.step-num{ width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--cm-serif); font-size:19px; font-weight:700; margin:0 auto 18px; border:1.5px solid rgba(201,162,39,0.4); color:var(--cm-brass-lt); background:rgba(201,162,39,0.08); }
+.step p{ font-size:13px; color:var(--cm-ink-dim); line-height:1.6; max-width:280px; margin:0 auto; }
+.cta-wrap{ padding:100px 0; text-align:center; position:relative; overflow:hidden; }
+.cta-wrap::before{ content:''; position:absolute; width:760px; height:380px; background:radial-gradient(ellipse,rgba(201,162,39,0.12) 0%,transparent 70%); top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none; }
+.cta-inner{ position:relative; z-index:1; max-width:600px; margin:0 auto; }
+.cta-btns{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:30px; }
+`;
+
+const Home = ({ currentUser }) => {
+  // ==========================================
+  // Live user count ke liye state (EJS mein id="active-user-count" tha)
+  // ==========================================
+  const [onlineCount, setOnlineCount] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
+
+  useEffect(() => {
+    const socket = getSocket();
+
+    const onUpdate = (count) => setOnlineCount(count);
+    socket.on("activeUsersUpdate", onUpdate);
+
+    // Component destroy hone pe listener hatana (memory leak nahi hoga)
+    return () => socket.off("activeUsersUpdate", onUpdate);
+  }, []);
+
+  useEffect(() => {
+    api.get('/api/stats')
+      .then((res) => setTotalUsers(res.data.totalUsers || 0))
+      .catch(() => setTotalUsers(0));
+  }, []);
+
+  // ==========================================
+  // Chess board banane ka logic (EJS ke for loops ki jagah)
+  // ==========================================
+  const backRow = ["rook", "knight", "bishop", "queen", "king", "bishop", "knight", "rook"];
+  const boardSquares = [];
+
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      const isLight = (row + col) % 2 === 0;
+      let piece = null;
+
+      if (row === 0) piece = { color: "black", type: backRow[col] };
+      else if (row === 1) piece = { color: "black", type: "pawn" };
+      else if (row === 6) piece = { color: "white", type: "pawn" };
+      else if (row === 7) piece = { color: "white", type: backRow[col] };
+
+      boardSquares.push(
+        <div key={`${row}-${col}`} className={`sq ${isLight ? 'sqlt' : 'sqdk'}`}>
+          {piece && (
+            <img
+              src={`/images/pieces/${piece.color}-${piece.type}.png`}
+              alt={`${piece.color} ${piece.type}`}
+            />
+          )}
+        </div>
+      );
+    }
+  }
+
+  return (
+    <>
+      {/* EJS ke <style> tag ka content yahan inject kiya hai */}
+      <style dangerouslySetInnerHTML={{ __html: pageStyles }} />
+
+      <main>
+        {/* ====== HERO SECTION ====== */}
+        <section className="h-hero">
+          <div className="cm2-wrap h-grid">
+            <div>
+              {/* Stats badges */}
+              <div className="stats-container">
+                <div className="stat-badge">
+                  <span className="live-dot-wrapper">
+                    <span className="live-dot-ping"></span>
+                    <span className="live-dot-main"></span>
+                  </span>
+                  <span>Online: <strong>{onlineCount}</strong></span>
+                </div>
+                <div className="stat-badge">
+                  <span>👥</span>
+                  <span>Total Members: <strong>{totalUsers || 0}</strong></span>
+                </div>
+              </div>
+
+              <span className="cm2-eyebrow">
+                <span className="sq"></span>1.e4 e5 2.Nf3 — it's your move
+              </span>
+
+              <h1 className="cm2-h1">
+                Play real chess.<br />
+                <span className="cm2-accent">Against friends,</span><br />
+                <span className="cm2-accent-sage">bots, or strangers online.</span>
+              </h1>
+
+              <p className="cm2-sub">
+                ChessMaster is a full chess platform, not a demo board: local two-player,
+                32 rated Stockfish bots, live online multiplayer, a friends list you can
+                challenge, and every game saved for replay.
+              </p>
+
+              <div className="h-btns">
+                <Link to="/play" className="cm2-btn cm2-btn-primary">♟ Play Now</Link>
+                {!currentUser ? (
+                  <Link to="/register" className="cm2-btn cm2-btn-secondary">Create Free Account →</Link>
+                ) : (
+                  <Link to="/online" className="cm2-btn cm2-btn-secondary">Play Online →</Link>
+                )}
+              </div>
+
+              <div className="h-stats">
+                <div><strong>32</strong><span>AI Bots</span></div>
+                <div><strong>Live</strong><span>Online PvP</span></div>
+                <div><strong>6</strong><span>Board Themes</span></div>
+                <div><strong>100%</strong><span>Free</span></div>
+              </div>
+            </div>
+
+            {/* Chess board card */}
+            <div className="board-frame">
+              <div className="board-top">
+                <div>
+                  <div className="cm2-tag">Starting Position</div>
+                  <h3>Ready when you are</h3>
+                </div>
+                <div className="live-dot-wrap">
+                  <span className="live-dot"></span>Engine idle
+                </div>
+              </div>
+
+              <div className="board-outer">
+                <div className="board-ranks">
+                  <span>8</span><span>7</span><span>6</span><span>5</span>
+                  <span>4</span><span>3</span><span>2</span><span>1</span>
+                </div>
+                <div className="board-8">
+                  {boardSquares}
+                </div>
+                <div></div>
+                <div className="board-files">
+                  <span>a</span><span>b</span><span>c</span><span>d</span>
+                  <span>e</span><span>f</span><span>g</span><span>h</span>
+                </div>
+              </div>
+
+              <div className="board-bottom">
+                <div className="bc-tag"><span>Turn</span><strong>White</strong></div>
+                <div className="bc-tag"><span>Mode</span><strong>Your Choice</strong></div>
+                <div className="bc-tag"><span>Engine</span><strong>Stockfish</strong></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div className="cm2-wrap"><div className="cm2-divider"></div></div>
+
+        {/* ====== CHOOSE YOUR BATTLE ====== */}
+        <section className="cm2-section">
+          <div className="cm2-wrap">
+            <span className="cm2-eyebrow"><span className="sq"></span>Three ways to play</span>
+            <h2 className="cm2-h2">Pick your opponent</h2>
+            <p className="cm2-sub">Same board, three completely different fights.</p>
+
+            <div className="battle-grid">
+              <div className="cm2-card battle-card">
+                <div className="battle-icon" style={{ background: 'rgba(122,149,105,0.15)' }}>🧑‍🤝‍🧑</div>
+                <h3 className="cm2-h3">Play a Friend</h3>
+                <p>Pass-and-play on one screen. Perfect for settling the argument over who's actually better, right now, no setup.</p>
+                <Link to="/play" className="battle-link" style={{ color: 'var(--cm-sage-lt)' }}>Start a local game →</Link>
+              </div>
+
+              <div className="cm2-card battle-card">
+                <div className="battle-icon" style={{ background: 'rgba(201,162,39,0.15)' }}>🤖</div>
+                <h3 className="cm2-h3">Challenge a Bot</h3>
+                <p>32 opponents from 100 to 3200 rating, all running on Stockfish. Lose to one, then come back and beat it.</p>
+                <Link to="/play" className="battle-link" style={{ color: 'var(--cm-brass-lt)' }}>Pick a bot →</Link>
+              </div>
+
+              <div className="cm2-card battle-card">
+                <div className="battle-icon" style={{ background: 'rgba(181,84,31,0.16)' }}>🌐</div>
+                <h3 className="cm2-h3">Go Online</h3>
+                <p>Real-time multiplayer over Socket.IO. Add friends, send a challenge, and play live from anywhere.</p>
+                <Link to="/online" className="battle-link" style={{ color: '#e08a5b' }}>Find an opponent →</Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div className="cm2-wrap"><div className="cm2-divider"></div></div>
+
+        {/* ====== FEATURES ====== */}
+        <section className="cm2-section">
+          <div className="cm2-wrap">
+            <span className="cm2-eyebrow"><span className="sq"></span>Everything included</span>
+            <h2 className="cm2-h2">A full board, not a toy</h2>
+            <p className="cm2-sub">From move validation to a friends list — the parts a real chess site needs, all built in.</p>
+
+            <div className="feat-grid">
+              <div className="cm2-card feat-card">
+                <div className="feat-icon" style={{ background: 'rgba(201,162,39,0.15)' }}>♟</div>
+                <h3 className="cm2-h3">Interactive Board</h3>
+                <p>Click or drag pieces, see legal move hints, captures, and check highlights in real time.</p>
+              </div>
+
+              <div className="cm2-card feat-card">
+                <div className="feat-icon" style={{ background: 'rgba(122,149,105,0.15)' }}>🤖</div>
+                <h3 className="cm2-h3">32 AI Bots</h3>
+                <p>Challenge bots from 100 to 3200 rating, powered by Stockfish — the world's strongest chess engine.</p>
+              </div>
+
+              <div className="cm2-card feat-card">
+                <div className="feat-icon" style={{ background: 'rgba(181,84,31,0.16)' }}>🌐</div>
+                <h3 className="cm2-h3">Online Multiplayer</h3>
+                <p>Live games over Socket.IO — create a room, share it, or match with a friend directly from your list.</p>
+              </div>
+
+              <div className="cm2-card feat-card">
+                <div className="feat-icon" style={{ background: 'rgba(201,162,39,0.15)' }}>🧑‍🤝‍🧑</div>
+                <h3 className="cm2-h3">Friends & Challenges</h3>
+                <p>Search players by username, send friend requests, and challenge anyone on your list to a game.</p>
+              </div>
+
+              <div className="cm2-card feat-card">
+                <div className="feat-icon" style={{ background: 'rgba(122,149,105,0.15)' }}>⏱</div>
+                <h3 className="cm2-h3">Time Controls</h3>
+                <p>Rapid, Blitz, or Bullet — clocks tick, increment applies, timeout ends the game automatically.</p>
+              </div>
+
+              <div className="cm2-card feat-card">
+                <div className="feat-icon" style={{ background: 'rgba(181,84,31,0.16)' }}>▶</div>
+                <h3 className="cm2-h3">Game Replay</h3>
+                <p>Every game is auto-saved and fully replayable — step through moves and review your decisions.</p>
+              </div>
+
+              <div className="cm2-card feat-card">
+                <div className="feat-icon" style={{ background: 'rgba(201,162,39,0.15)' }}>🏆</div>
+                <h3 className="cm2-h3">Leaderboard & Ratings</h3>
+                <p>Every result is saved to MongoDB — wins, losses, draws, and an Elo-style rating for every player.</p>
+              </div>
+
+              <div className="cm2-card feat-card">
+                <div className="feat-icon" style={{ background: 'rgba(122,149,105,0.15)' }}>🎨</div>
+                <h3 className="cm2-h3">Board Themes</h3>
+                <p>Six themes — Classic, Midnight, Forest, Ocean, Ruby, Walnut — saved to your profile in Settings.</p>
+              </div>
+
+              <div className="cm2-card feat-card">
+                <div className="feat-icon" style={{ background: 'rgba(181,84,31,0.16)' }}>👤</div>
+                <h3 className="cm2-h3">Player Profiles</h3>
+                <p>A profile page with your stats, history, and rating — set up once at registration, editable anytime.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ====== HOW IT WORKS ====== */}
+        <div className="how-wrap">
+          <section className="cm2-section">
+            <div className="cm2-wrap" style={{ textAlign: 'center' }}>
+              <span className="cm2-eyebrow" style={{ margin: '0 auto 16px' }}>
+                <span className="sq"></span>Getting started
+              </span>
+              <h2 className="cm2-h2">Three moves to your first game</h2>
+
+              <div className="steps-grid">
+                <div className="step">
+                  <div className="step-num">1</div>
+                  <h3 className="cm2-h3">Create an account</h3>
+                  <p>Free, no card required. Your stats, friends, and games are saved to your profile from move one.</p>
+                </div>
+                <div className="step">
+                  <div className="step-num">2</div>
+                  <h3 className="cm2-h3">Pick your opponent</h3>
+                  <p>A friend on the same screen, a Stockfish bot, or someone online — choose your time control and go.</p>
+                </div>
+                <div className="step">
+                  <div className="step-num">3</div>
+                  <h3 className="cm2-h3">Review and improve</h3>
+                  <p>Every game is auto-saved. Replay it, check the leaderboard, and get back to the board.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        {/* ====== CTA ====== */}
+        <div className="cta-wrap">
+          <div className="cta-inner">
+            <span className="cm2-eyebrow" style={{ margin: '0 auto 20px' }}>
+              <span className="sq"></span>Checkmate awaits
+            </span>
+            <h2 className="cm2-h1" style={{ fontSize: 'clamp(2rem,4.5vw,3.2rem)' }}>
+              Your next move<br />
+              <span className="cm2-accent">starts here.</span>
+            </h2>
+            <p className="cm2-sub" style={{ margin: '0 auto' }}>
+              Join ChessMaster — play, learn, and challenge yourself every day.
+            </p>
+            <div className="cta-btns">
+              <Link to={currentUser ? '/play' : '/register'} className="cm2-btn cm2-btn-primary">
+                ♟ {currentUser ? 'Play Now' : 'Get Started Free'}
+              </Link>
+              <Link to="/leaderboard" className="cm2-btn cm2-btn-secondary">View Leaderboard →</Link>
+            </div>
+          </div>
+        </div>
+      </main>
+    </>
+  );
+};
+
+export default Home;

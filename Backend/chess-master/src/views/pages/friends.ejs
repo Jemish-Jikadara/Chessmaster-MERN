@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friends | ChessMaster</title>
+
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/theme-redesign.css">
+    <link rel="stylesheet" href="/css/friends.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --gold: #C9A227;
+            --gold-light: #F0D265;
+            --gold-dark: #8F6B18;
+            --bg-dark: #0A0A0C;
+            --card-bg: rgba(22, 22, 26, 0.75);
+            --card-border: rgba(201, 162, 39, 0.15);
+            --card-border-hover: rgba(201, 162, 39, 0.4);
+            --text-main: #F5F2EA;
+            --text-muted: #8E8E93;
+            --danger: #FF453A;
+            --danger-bg: rgba(255, 69, 58, 0.1);
+        }
+
+        body.cm-body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(201, 162, 39, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(201, 162, 39, 0.03) 0%, transparent 50%);
+            min-height: 100vh;
+        }
+
+        /* Hero Banner */
+        .friends-hero {
+            padding: 45px 0 25px;
+            border-bottom: 1px solid var(--card-border);
+            background: linear-gradient(180deg, rgba(20,20,25,0.8) 0%, rgba(10,10,12,0) 100%);
+        }
+
+        .hero-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .hero-user {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .friends-avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 700;
+            color: #000;
+            border: 2px solid var(--gold);
+            box-shadow: 0 0 20px rgba(201, 162, 39, 0.25);
+            overflow: hidden;
+        }
+
+        .friends-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .hero-info h1 {
+            font-family: 'Fraunces', serif;
+            font-size: 32px;
+            margin: 0 0 4px 0;
+        }
+
+        .hero-info p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* Stats Row */
+        .stats-pills {
+            display: flex;
+            gap: 12px;
+        }
+
+        .stat-pill {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 10px 18px;
+            border-radius: 12px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-pill .num {
+            font-family: 'Fraunces', serif;
+            font-size: 20px;
+            color: var(--gold-light);
+            font-weight: 700;
+        }
+
+        .stat-pill .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+        }
+
+        /* Grid Layout */
+        .dashboard-grid {
+            max-width: 1200px;
+            margin: 32px auto;
+            padding: 0 24px;
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 24px;
+        }
+
+        .dash-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 20px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            font-family: 'Fraunces', serif;
+            font-size: 18px;
+            color: var(--gold-light);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Search Input */
+        .search-box {
+            position: relative;
+        }
+
+        .friend-search-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+        }
+
+        .friend-search-input:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 12px rgba(201, 162, 39, 0.2);
+        }
+
+        /* User Rows Layout */
+        .user-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid transparent;
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .user-row:hover {
+            border-color: var(--card-border-hover);
+            background: rgba(201, 162, 39, 0.04);
+            transform: translateY(-1px);
+        }
+
+        .user-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .mini-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: #000;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .mini-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-info .name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .user-info .sub {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Action Buttons */
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-action {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            filter: brightness(1.1);
+            box-shadow: 0 0 10px rgba(201, 162, 39, 0.3);
+        }
+
+        .btn-danger {
+            background: var(--danger-bg);
+            color: var(--danger);
+            border: 1px solid rgba(255, 69, 58, 0.2);
+        }
+
+        .btn-danger:hover {
+            background: rgba(255, 69, 58, 0.2);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+            font-size: 13px;
+            border: 1px dashed var(--card-border);
+            border-radius: 10px;
+        }
+
+        @media (max-width: 850px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            .hero-inner {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body class="cm-body">
+
+    <%- include("../partials/navbar") %>
+
+    <!-- HERO HEADER -->
+    <header class="friends-hero">
+        <div class="hero-inner">
+            <div class="hero-user">
+                <div class="friends-avatar">
+                    <% if(user.profileImage){ %>
+                        <img src="<%= user.profileImage %>" alt="Profile">
+                    <% } else { %>
+                        <%= user.username.charAt(0).toUpperCase() %>
+                    <% } %>
+                </div>
+                <div class="hero-info">
+                    <h1>Friends Network</h1>
+                    <p>Connect, challenge, and grow your network.</p>
+                </div>
+            </div>
+
+            <div class="stats-pills">
+                <div class="stat-pill">
+                    <div class="num"><%= user.friends.length %></div>
+                    <div class="label">Friends</div>
+                </div>
+                <div class="stat-pill">
+                    <div class="num"><%= user.friendRequests.length %></div>
+                    <div class="label">Requests</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- DASHBOARD CONTENT -->
+    <main class="dashboard-grid">
+
+        <!-- LEFT COLUMN: Search & Requests -->
+        <div class="dash-left">
+            
+            <!-- SEARCH CARD -->
+            <div class="dash-card">
+                <div class="card-title">Find Players</div>
+                <div class="search-box">
+                    <input type="text" id="friendSearch" class="friend-search-input" placeholder="Search by username...">
+                </div>
+                <div id="searchResults" style="margin-top: 14px;"></div>
+            </div>
+
+            <!-- REQUESTS CARD -->
+            <div class="dash-card">
+                <div class="card-title">
+                    Pending Requests 
+                    <span style="font-size: 12px; opacity: 0.7; font-family: sans-serif;">(<%= user.friendRequests.length %>)</span>
+                </div>
+
+                <div id="requestsWrapper">
+                    <% if(user.friendRequests.length === 0){ %>
+                        <div class="empty-state">No pending invites.</div>
+                    <% } %>
+
+                    <% user.friendRequests.forEach(request => { %>
+                        <div class="user-row">
+                            <div class="user-meta">
+                                <div class="mini-avatar">
+                                    <%= request.username.charAt(0).toUpperCase() %>
+                                </div>
+                                <div class="user-info">
+                                    <div class="name"><%= request.username %></div>
+                                    <% if(request.fullName){ %>
+                                        <div class="sub"><%= request.fullName %></div>
+                                    <% } %>
+                                </div>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn-action btn-primary" onclick="acceptRequest('<%= request._id %>')">Accept</button>
+                                <button class="btn-action btn-danger" onclick="declineRequest('<%= request._id %>')">Decline</button>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: Friends List -->
+        <div class="dash-right">
+            <div class="dash-card">
+                <div class="card-title">All Connections</div>
+
+                <div id="friendsList">
+                    <% if(user.friends.length === 0){ %>
+                        <div class="empty-state">You haven't added any friends yet. Search for players to build your network!</div>
+                    <% } %>
+
+                    <% user.friends.forEach(friend => { %>
+                        <div class="user-row">
+                            <div class="user-meta">
+                                <div class="mini-avatar">
+                                    <% if(friend.profileImage){ %>
+                                        <img src="<%= friend.profileImage %>" alt="Avatar">
+                                    <% } else { %>
+                                        <%= friend.username.charAt(0).toUpperCase() %>
+                                    <% } %>
+                                </div>
+                                <div class="user-info">
+                                    <div class="name"><%= friend.username %></div>
+                                    <% if(friend.fullName){ %>
+                                        <div class="sub"><%= friend.fullName %></div>
+                                    <% } %>
+                                </div>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn-action btn-danger" onclick="removeFriend('<%= friend._id %>')">Remove</button>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <%- include("../partials/footer") %>
+
+    <!-- API SCRIPT (Unchanged Logic) -->
+    <script>
+    let searchTimeout;
+
+    document.getElementById("friendSearch").addEventListener("input", (e) => {
+        clearTimeout(searchTimeout);
+        const q = e.target.value.trim();
+
+        if(q.length < 2) {
+            document.getElementById("searchResults").innerHTML = "";
+            return;
+        }
+
+        searchTimeout = setTimeout(async () => {
+            const res = await fetch(`/api/users/search?q=${encodeURIComponent(q)}`);
+            const data = await res.json();
+            const box = document.getElementById("searchResults");
+
+            if(!data.users.length) {
+                box.innerHTML = `<div class="empty-state">No users found</div>`;
+                return;
+            }
+
+            box.innerHTML = data.users.map(user => `
+                <div class="user-row">
+                    <div class="user-meta">
+                        <div class="mini-avatar">
+                            ${user.username.charAt(0).toUpperCase()}
+                        </div>
+                        <div class="user-info">
+                            <div class="name">${user.username}</div>
+                        </div>
+                    </div>
+                    <button class="btn-action btn-primary" onclick="sendRequest('${user._id}', this)">Add</button>
+                </div>
+            `).join("");
+        }, 300);
+    });
+
+    async function sendRequest(id, btn) {
+        const res = await fetch("/api/friends/request", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: id })
+        });
+        const data = await res.json();
+        btn.innerHTML = data.success ? "Sent" : data.message;
+        btn.disabled = true;
+    }
+
+    async function acceptRequest(id) {
+        const res = await fetch("/api/friends/accept", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: id })
+        });
+        const data = await res.json();
+        if(data.success) location.reload();
+    }
+
+    async function declineRequest(id) {
+        const res = await fetch("/api/friends/decline", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: id })
+        });
+        const data = await res.json();
+        if(data.success) location.reload();
+    }
+
+    async function removeFriend(id) {
+        if(!confirm("Remove this friend?")) return;
+        const res = await fetch("/api/friends/remove", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: id })
+        });
+        const data = await res.json();
+        if(data.success) location.reload();
+    }
+    </script>
+</body>
+</html>

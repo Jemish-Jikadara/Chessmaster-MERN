@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>ChessMaster | Setup Profile</title>
+        <link rel="stylesheet" href="/css/style.css">
+        <link
+            href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap"
+            rel="stylesheet">
+        <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:#080810; color:#f0ece4; min-height:100vh; }
+        .auth-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:80px 24px; position:relative; overflow:hidden; }
+        .auth-wrap::before { content:''; position:absolute; width:500px; height:500px; background:radial-gradient(circle,rgba(124,58,237,0.18) 0%,transparent 70%); top:-100px; left:-100px; pointer-events:none; }
+        .auth-wrap::after { content:''; position:absolute; width:400px; height:400px; background:radial-gradient(circle,rgba(236,72,153,0.12) 0%,transparent 70%); bottom:-50px; right:5%; pointer-events:none; }
+        .auth-card { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.09); border-radius:20px; padding:40px 36px; width:100%; max-width:500px; position:relative; z-index:1; backdrop-filter:blur(10px); }
+
+        .steps { display:flex; align-items:center; gap:8px; margin-bottom:28px; }
+        .step-item { display:flex; align-items:center; gap:6px; }
+        .step-dot { width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; font-family:'Syne',sans-serif; }
+        .step-dot.done { background:linear-gradient(135deg,#7c3aed,#ec4899); color:#fff; }
+        .step-dot.active { background:linear-gradient(135deg,#7c3aed,#ec4899); color:#fff; }
+        .step-label { font-size:12px; }
+        .step-label.done { color:#6b7280; }
+        .step-label.active { color:#a78bfa; }
+        .step-line { flex:1; height:1px; background:linear-gradient(90deg,rgba(124,58,237,0.5),rgba(255,255,255,0.08)); }
+
+        .auth-kicker { font-family:'Syne',sans-serif; font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color:#a78bfa; margin-bottom:10px; display:block; }
+        .auth-title { font-family:'Syne',sans-serif; font-size:2rem; font-weight:800; color:#f0ece4; margin:0 0 8px; letter-spacing:-0.02em; }
+        .auth-sub { font-size:14px; color:#6b7280; margin:0 0 28px; line-height:1.6; }
+        .alert { padding:12px 16px; border-radius:10px; font-size:13px; margin-bottom:20px; }
+        .alert-error { background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); color:#f87171; }
+        .alert-success { background:rgba(74,222,128,0.1); border:1px solid rgba(74,222,128,0.25); color:#4ade80; }
+
+        .setup-form { display:flex; flex-direction:column; gap:16px; }
+        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        @media (max-width:480px) { .form-row { grid-template-columns:1fr; } }
+
+        .setup-form label { display:flex; flex-direction:column; gap:6px; font-size:11px; font-family:'Syne',sans-serif; letter-spacing:0.12em; color:#6b7280; text-transform:uppercase; }
+        .setup-form input,
+        .setup-form select,
+        .setup-form textarea { padding:13px 16px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:#f0ece4; font-size:14px; font-family:'Inter',sans-serif; outline:none; transition:border-color 0.2s; }
+        .setup-form input:focus,
+        .setup-form select:focus,
+        .setup-form textarea:focus { border-color:rgba(124,58,237,0.5); }
+        .setup-form input::placeholder,
+        .setup-form textarea::placeholder { color:#374151; }
+        .setup-form select option { background:#161616; color:#f0ece4; }
+        .setup-form textarea { resize:none; height:80px; }
+
+        .optional-tag { font-size:10px; color:#4b5563; text-transform:lowercase; letter-spacing:0; margin-left:4px; }
+
+        .submit-btn { padding:14px; background:linear-gradient(135deg,#7c3aed,#ec4899); border:none; border-radius:10px; color:#fff; font-family:'Syne',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:transform 0.2s,box-shadow 0.2s; box-shadow:0 4px 20px rgba(124,58,237,0.3); margin-top:4px; }
+        .submit-btn:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(124,58,237,0.45); }
+        .skip-link { text-align:center; margin-top:12px; }
+        .skip-link a { color:#4b5563; font-size:13px; text-decoration:none; transition:color 0.2s; }
+        .skip-link a:hover { color:#6b7280; }
+    </style>
+    </head>
+    <body class="cm-body">
+        <%- include("../partials/navbar") %>
+        <div class="auth-wrap">
+            <div class="auth-card">
+
+                <div class="steps">
+                    <div class="step-item">
+                        <div class="step-dot done">✓</div>
+                        <span class="step-label done">Account</span>
+                    </div>
+                    <div class="step-line"></div>
+                    <div class="step-item">
+                        <div class="step-dot active">2</div>
+                        <span class="step-label active">Profile</span>
+                    </div>
+                </div>
+
+                <span class="auth-kicker">Step 2 of 2</span>
+                <h1 class="auth-title">Setup Profile</h1>
+                <p class="auth-sub">Tell us about yourself — you can always
+                    change this later.</p>
+
+                <% if (error && error.length > 0) { %>
+                <div class="alert alert-error"><%= error[0] %></div>
+                <% } %>
+
+                <form action="/setup-profile" method="POST"
+                    enctype="multipart/form-data"
+                    class="setup-form">
+                    <label>
+                        Profile Image <span class="optional-tag">optional</span>
+                        <input type="file" name="profileImage" accept="image/*">
+                    </label>
+                    <label>Username *
+                        <input type="text" name="username"
+                            placeholder="e.g. chesswizard42" minlength="3"
+                            maxlength="24" required>
+                    </label>
+
+                    <div class="form-row">
+                        <label>Full Name <span
+                                class="optional-tag">optional</span>
+                            <input type="text" name="fullName"
+                                placeholder="Your name" maxlength="50">
+                        </label>
+                        <label>Country <span
+                                class="optional-tag">optional</span>
+                            <select name="country">
+                                <option value>Select country</option>
+                                <option value="IN">🇮🇳 India</option>
+                                <option value="US">🇺🇸 United States</option>
+                                <option value="GB">🇬🇧 United Kingdom</option>
+                                <option value="RU">🇷🇺 Russia</option>
+                                <option value="DE">🇩🇪 Germany</option>
+                                <option value="FR">🇫🇷 France</option>
+                                <option value="BR">🇧🇷 Brazil</option>
+                                <option value="CN">🇨🇳 China</option>
+                                <option value="JP">🇯🇵 Japan</option>
+                                <option value="AU">🇦🇺 Australia</option>
+                                <option value="CA">🇨🇦 Canada</option>
+                                <option value="PK">🇵🇰 Pakistan</option>
+                                <option value="BD">🇧🇩 Bangladesh</option>
+                                <option value="NG">🇳🇬 Nigeria</option>
+                                <option value="ZA">🇿🇦 South Africa</option>
+                                <option value="OTHER">🌍 Other</option>
+                            </select>
+                        </label>
+                    </div>
+
+                    <label>Date of Birth <span
+                            class="optional-tag">optional</span>
+                        <input type="date" name="dateOfBirth">
+                    </label>
+
+                    <label>Bio <span class="optional-tag">optional</span>
+                        <textarea name="bio"
+                            placeholder="Tell other players about yourself..."
+                            maxlength="200"></textarea>
+                    </label>
+
+                    <button type="submit" class="submit-btn">Complete Setup
+                        →</button>
+                </form>
+
+                <div class="skip-link">
+                    <a href="/setup-profile?skip=true">Skip for now →</a>
+                </div>
+
+            </div>
+        </div>
+        <%- include("../partials/footer") %>
+    </body>
+</html>

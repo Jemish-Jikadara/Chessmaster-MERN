@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>ChessMaster | Edit Profile</title>
+
+        <link rel="stylesheet" href="/css/style.css">
+        <link rel="stylesheet" href="/css/theme-redesign.css">
+
+        <link
+            href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,600&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+            rel="stylesheet">
+
+        <style>
+/* ==========================================================================
+   GOLDEN THEME VARIABLES & OVERRIDES
+   ========================================================================== */
+:root {
+  --gold-primary: #d4af37;
+  --gold-light: #f3e5ab;
+  --gold-dark: #aa7c11;
+  --gold-gradient: linear-gradient(135deg, #fce082 0%, #d4af37 50%, #996515 100%);
+  --gold-glow: 0 0 25px rgba(212, 175, 55, 0.22);
+  
+  --bg-dark: #0a0908;
+  --bg-card: rgba(18, 15, 11, 0.85);
+  --border-gold: rgba(212, 175, 55, 0.28);
+  --border-gold-hover: rgba(212, 175, 55, 0.6);
+  
+  --text-main: #fefcf0;
+  --text-muted: #c5a880;
+  --text-faint: #8c7355;
+  --input-bg: rgba(25, 20, 14, 0.7);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-dark) !important;
+  background-image: 
+    radial-gradient(circle at 50% 10%, rgba(212, 175, 55, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(170, 124, 17, 0.08) 0%, transparent 60%);
+  background-attachment: fixed;
+  color: var(--text-main);
+  min-height: 100vh;
+}
+
+/* ==========================================================================
+   AUTH WRAPPER & CONTAINER CARD
+   ========================================================================== */
+.auth-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 650px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-gold);
+  border-radius: 22px;
+  padding: 45px 40px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), var(--gold-glow);
+  backdrop-filter: blur(12px);
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--gold-gradient);
+}
+
+/* ==========================================================================
+   TYPOGRAPHY
+   ========================================================================== */
+.auth-kicker {
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold-primary);
+  margin-bottom: 8px;
+  display: inline-block;
+  font-weight: 600;
+}
+
+.auth-title {
+  font-family: 'Fraunces', serif;
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--gold-light);
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+}
+
+.auth-sub {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+/* ==========================================================================
+   AVATAR DISPLAY
+   ========================================================================== */
+.avatar-box {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.avatar {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid var(--gold-primary);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.35), inset 0 0 10px rgba(0, 0, 0, 0.8);
+  background: #0d0b08;
+  position: relative;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.avatar:hover {
+  transform: scale(1.03);
+  border-color: var(--gold-light);
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ==========================================================================
+   FORM CONTROLS
+   ========================================================================== */
+.setup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+@media(max-width: 650px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  .auth-card {
+    padding: 30px 20px;
+  }
+}
+
+.setup-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gold-light);
+}
+
+.setup-form input,
+.setup-form textarea,
+.setup-form select {
+  padding: 13px 16px;
+  background: var(--input-bg);
+  border: 1px solid var(--border-gold);
+  border-radius: 12px;
+  color: var(--text-main);
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  transition: all 0.25s ease;
+}
+
+.setup-form input:focus,
+.setup-form textarea:focus,
+.setup-form select:focus {
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.25);
+  background: rgba(30, 24, 16, 0.85);
+}
+
+/* Style Date Picker Icons for Webkit */
+.setup-form input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8) sepia(1) saturate(5) hue-rotate(5deg);
+  cursor: pointer;
+}
+
+/* Custom File Input Styling */
+.setup-form input[type="file"] {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.setup-form input[type="file"]::-webkit-file-upload-button {
+  background: var(--gold-gradient);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  color: #0a0908;
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: 10px;
+  transition: opacity 0.2s ease;
+}
+
+.setup-form input[type="file"]::-webkit-file-upload-button:hover {
+  opacity: 0.9;
+}
+
+.setup-form select option {
+  background-color: #120f0b;
+  color: var(--text-main);
+}
+
+.setup-form textarea {
+  resize: none;
+  height: 95px;
+}
+
+.optional-tag {
+  font-size: 10px;
+  color: var(--text-faint);
+  text-transform: lowercase;
+  font-weight: normal;
+}
+
+/* ==========================================================================
+   BUTTONS
+   ========================================================================== */
+.button-row {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.btn-save {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 14px;
+  background: var(--gold-gradient);
+  color: #0a0908;
+  letter-spacing: 0.03em;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
+}
+
+.btn-save:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
+  filter: brightness(1.05);
+}
+
+.btn-cancel {
+  flex: 1;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border-gold);
+  text-decoration: none;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-muted);
+  transition: all 0.25s ease;
+  background: rgba(10, 9, 8, 0.4);
+}
+
+.btn-cancel:hover {
+  border-color: var(--gold-primary);
+  color: var(--gold-light);
+  background: rgba(212, 175, 55, 0.05);
+}
+        </style>
+    </head>
+
+    <body class="cm-body">
+
+        <%- include("../partials/navbar") %>
+
+        <div class="auth-wrap">
+
+            <div class="auth-card">
+
+                <span class="auth-kicker">
+                    Edit Profile
+                </span>
+
+                <h1 class="auth-title">
+                    Update Your Profile
+                </h1>
+
+                <p class="auth-sub">
+                    Update your personal information and profile picture.
+                </p>
+
+                <div class="avatar-box">
+
+                    <div class="avatar">
+
+                        <img
+                            id="previewImage"
+                            src="<%= user.profileImage ? user.profileImage : '/images/default-avatar.png' %>"
+                            alt="Profile">
+
+                    </div>
+
+                </div>
+
+                <form
+                    action="/profile/edit"
+                    method="POST"
+                    enctype="multipart/form-data"
+                    class="setup-form">
+
+                    <label>
+
+                        Profile Image
+                        <span class="optional-tag">
+                            optional
+                        </span>
+
+                        <input
+                            type="file"
+                            name="profileImage"
+                            accept="image/*"
+                            id="profileImageInput">
+
+                    </label>
+
+                    <label>
+
+                        Username *
+
+                        <input
+                            type="text"
+                            name="username"
+                            value="<%= user.username %>"
+                            required>
+
+                    </label>
+
+                    <div class="form-row">
+
+                        <label>
+
+                            Full Name
+
+                            <input
+                                type="text"
+                                name="fullName"
+                                value="<%= user.fullName || '' %>">
+
+                        </label>
+
+                        <label>
+
+                            Country
+
+                            <select name="country">
+
+                                <option value>Select Country</option>
+
+                                <option value="IN"
+                                    <%=user.country==="IN"?"selected":"" %>>🇮🇳
+                                    India</option>
+
+                                <option value="US"
+                                    <%=user.country==="US"?"selected":"" %>>🇺🇸
+                                    United States</option>
+
+                                <option value="GB"
+                                    <%=user.country==="GB"?"selected":"" %>>🇬🇧
+                                    United Kingdom</option>
+
+                                <option value="RU"
+                                    <%=user.country==="RU"?"selected":"" %>>🇷🇺
+                                    Russia</option>
+
+                                <option value="DE"
+                                    <%=user.country==="DE"?"selected":"" %>>🇩🇪
+                                    Germany</option>
+
+                                <option value="FR"
+                                    <%=user.country==="FR"?"selected":"" %>>🇫🇷
+                                    France</option>
+
+                                <option value="BR"
+                                    <%=user.country==="BR"?"selected":"" %>>🇧🇷
+                                    Brazil</option>
+
+                                <option value="CN"
+                                    <%=user.country==="CN"?"selected":"" %>>🇨🇳
+                                    China</option>
+
+                                <option value="JP"
+                                    <%=user.country==="JP"?"selected":"" %>>🇯🇵
+                                    Japan</option>
+
+                                <option value="AU"
+                                    <%=user.country==="AU"?"selected":"" %>>🇦🇺
+                                    Australia</option>
+
+                                <option value="CA"
+                                    <%=user.country==="CA"?"selected":"" %>>🇨🇦
+                                    Canada</option>
+
+                                <option value="OTHER"
+                                    <%=user.country==="OTHER"?"selected":""
+                                    %>>🌍 Other</option>
+
+                            </select>
+
+                        </label>
+
+                    </div>
+
+                    <label>
+
+                        Date Of Birth
+
+                        <input
+                            type="date"
+                            name="dateOfBirth"
+                            value="<%= user.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : '' %>">
+
+                    </label>
+
+                    <label>
+
+                        Bio
+                        <span class="optional-tag">
+                            optional
+                        </span>
+
+                        <textarea
+                            name="bio"
+                            maxlength="200"
+                            placeholder="Tell other players about yourself..."><%= user.bio || "" %></textarea>
+
+                    </label>
+
+                    <div class="button-row">
+
+                        <a
+                            href="/profile"
+                            class="btn-cancel">
+
+                            Cancel
+
+                        </a>
+
+                        <button
+                            type="submit"
+                            class="btn-save">
+
+                            Save Changes →
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+        <%- include("../partials/footer") %>
+
+        <script>
+            const fileInput = document.getElementById("profileImageInput");
+            const preview = document.getElementById("previewImage");
+
+            fileInput.addEventListener("change", (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    preview.src = ev.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        </script>
+
+    </body>
+</html>
