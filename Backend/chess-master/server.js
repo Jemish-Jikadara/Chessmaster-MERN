@@ -51,7 +51,6 @@ app.use(session({
   secure: process.env.NODE_ENV === "production",
   sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
 }
-  }
 }));
 
 // This backend is now a pure JSON API for the React frontend (chess-master-react).
