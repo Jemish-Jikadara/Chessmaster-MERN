@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = 'http://localhost:3000';
+const SOCKET_URL = 'https://chess-master-algd.onrender.com/';
 
 let socket = null;
 
