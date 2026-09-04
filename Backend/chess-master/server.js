@@ -55,6 +55,14 @@ app.use(session({
   sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
 }
 }));
+// Health check route
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "ChessMaster server is healthy",
+    uptime: process.uptime()
+  });
+});
 
 // This backend is now a pure JSON API for the React frontend (chess-master-react).
 app.get("/", (req, res) => {
