@@ -20,15 +20,18 @@ const { calculateElo } = require("./src/utils/rating");
 const app = express();
 const server = http.createServer(app);
 
+const allowedOrigins = [
+  "https://chessmaster-frontend.vercel.app",
+  "https://localhost"
+];
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true
   }
 });
 const PORT = process.env.PORT || 3000;
-
 connectDB();
 app.set("trust proxy", 1);
 app.use(express.static(path.join(__dirname, "public")));
@@ -36,7 +39,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: allowedOrigins,
   credentials: true
 }));
 
