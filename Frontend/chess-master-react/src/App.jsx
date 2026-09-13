@@ -8,6 +8,8 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import SetupProfile from './pages/SetupProfile';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Play from './pages/Play';
@@ -36,6 +38,8 @@ function App() {
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />
             <Route path="setup-profile" element={<SetupProfile />} />
+            <Route path="forgot-password" element={<ForgotPassword />} />
+            <Route path="reset-password/:token" element={<ResetPassword />} />
             <Route path="leaderboard" element={<Leaderboard />} />
             <Route path="about" element={<About />} />
 

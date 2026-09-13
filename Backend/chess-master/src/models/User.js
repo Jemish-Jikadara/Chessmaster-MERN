@@ -10,6 +10,8 @@ const userSchema = new mongoose.Schema(
       trim: true,
       lowercase: true
     },
+    resetPasswordToken: String,
+  resetPasswordExpires: Date,
   //   mobile: {
   //   type: String,
   //   required: false,

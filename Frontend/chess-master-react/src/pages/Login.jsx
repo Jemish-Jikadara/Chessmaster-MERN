@@ -289,6 +289,11 @@ const Login = () => {
                   required
                 />
               </label>
+              <div className="forgot-password-link">
+  <Link to="/forgot-password">
+    Forgot Password?
+  </Link>
+</div>
 
               <button type="submit" className="login-submit" disabled={loading}>
                 {loading ? 'Logging in...' : 'Login →'}
