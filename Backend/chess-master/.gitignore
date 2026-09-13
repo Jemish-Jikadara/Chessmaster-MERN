@@ -3,3 +3,5 @@ node_modules/
 
 # environment variables
 .env
+
+google-auth.js

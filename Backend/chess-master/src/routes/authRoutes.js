@@ -7,7 +7,7 @@ const { isAuthenticated, isGuest } = require("../middleware/authMiddleware");
 const upload = require("../middleware/upload");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
-const nodemailer = require("nodemailer");
+const { google } = require("googleapis");
 const User = require("../models/User"); 
 const router = express.Router();
 function handleUpload(req, res, next) {
@@ -46,32 +46,87 @@ router.post("/forgot-password", async (req, res) => {
     user.resetPasswordToken = token;
     user.resetPasswordExpires = Date.now() + 15 * 60 * 1000;
     await user.save();
+const resetLink = `${process.env.CLIENT_URL}/reset-password/${token}`;
 
-    const resetLink = `${process.env.CLIENT_URL}/reset-password/${token}`;
+// Gmail API authentication
+const oauth2Client = new google.auth.OAuth2(
+  process.env.GMAIL_CLIENT_ID,
+  process.env.GMAIL_CLIENT_SECRET,
+  "http://localhost:3000/oauth2callback"
+);
 
-  const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+oauth2Client.setCredentials({
+  refresh_token: process.env.GMAIL_REFRESH_TOKEN
+});
+
+const gmail = google.gmail({
+  version: "v1",
+  auth: oauth2Client
+});
+
+// Email content
+const emailBody = `
+  <h2>ChessMaster Password Reset</h2>
+
+  <p>You requested to reset your ChessMaster password.</p>
+
+  <p>
+    Click the button below to reset your password:
+  </p>
+
+  <p>
+    <a href="${resetLink}"
+       style="
+         display:inline-block;
+         padding:12px 20px;
+         background:#d4af37;
+         color:#000;
+         text-decoration:none;
+         border-radius:6px;
+         font-weight:bold;
+       ">
+      Reset Password
+    </a>
+  </p>
+
+  <p>This reset link is valid for <strong>15 minutes</strong>.</p>
+
+  <p>If you did not request this password reset, you can safely ignore this email.</p>
+
+  <p>— ChessMaster Team</p>
+`;
+
+// Create email
+const rawMessage = [
+  `From: ChessMaster <${process.env.EMAIL_USER}>`,
+  `To: ${email}`,
+  `Subject: Password Reset Request`,
+  `MIME-Version: 1.0`,
+  `Content-Type: text/html; charset=UTF-8`,
+  "",
+  emailBody
+].join("\r\n");
+
+// Gmail API requires Base64URL encoding
+const encodedMessage = Buffer
+  .from(rawMessage)
+  .toString("base64")
+  .replace(/\+/g, "-")
+  .replace(/\//g, "_")
+  .replace(/=+$/, "");
+
+// Send email through Gmail API
+await gmail.users.messages.send({
+  userId: "me",
+  requestBody: {
+    raw: encodedMessage
   }
 });
 
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Password Reset Request",
-      html: `
-        <h3>You requested a password reset</h3>
-        <p>Click the link below to reset your password (valid for 15 minutes):</p>
-        <a href="${resetLink}">${resetLink}</a>
-        <p>If you didn't request this, ignore this email.</p>
-      `,
-    });
-
-    res.json({ message: "Reset link sent to your email" });
+res.json({
+  success: true,
+  message: "Reset link sent to your email"
+});
   } catch (err) {
     console.error("FORGOT PASSWORD ERROR:", err);
   console.error("FULL ERROR:", err.stack);
