@@ -77,7 +77,13 @@ router.post("/forgot-password", async (req, res) => {
 
     res.json({ message: "Reset link sent to your email" });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("FORGOT PASSWORD ERROR:", err);
+  console.error("FULL ERROR:", err.stack);
+
+  return res.status(500).json({
+    success: false,
+    message: err.message
+  });
   }
 });
 // RESET PASSWORD — update password using reset token
