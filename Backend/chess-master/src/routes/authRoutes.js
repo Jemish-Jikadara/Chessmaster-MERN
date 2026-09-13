@@ -7,9 +7,12 @@ const { isAuthenticated, isGuest } = require("../middleware/authMiddleware");
 const upload = require("../middleware/upload");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
+const dns = require("dns");
 const nodemailer = require("nodemailer");
 const User = require("../models/User"); 
 const router = express.Router();
+
+dns.setDefaultResultOrder("ipv4first");
 
 function handleUpload(req, res, next) {
   upload.single("profileImage")(req, res, function (err) {
@@ -50,17 +53,14 @@ router.post("/forgot-password", async (req, res) => {
 
     const resetLink = `${process.env.CLIENT_URL}/reset-password/${token}`;
 
-    const transporter = nodemailer.createTransport({
+  const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
   secure: false,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
-  },
-  tls: {
-  family: 4
-}
+  }
 });
 
     await transporter.sendMail({
