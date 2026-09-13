@@ -5,7 +5,7 @@ const express = require("express");
 const authController = require("../controllers/authController");
 const { isAuthenticated, isGuest } = require("../middleware/authMiddleware");
 const upload = require("../middleware/upload");
-
+const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const User = require("../models/User"); 
