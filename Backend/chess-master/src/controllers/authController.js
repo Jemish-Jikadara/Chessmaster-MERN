@@ -4,6 +4,7 @@ const Game = require("../models/Game");
 const Rating = require("../models/Rating");
 const Friend = require("../models/Friend");
 const Statistic = require("../models/Statistic");
+const crypto = require("crypto");
 
 function sessionUserFromDoc(user) {
   return {
@@ -53,18 +54,20 @@ async function registerUser(req, res) {
     // }
 
     const hashedPassword = await bcrypt.hash(password, 12);
+    const setupToken = crypto.randomBytes(32).toString("hex");
     const tempUsername = "user_" + Date.now();
 
     if (existingUser && !existingUser.profileSetup) {
       existingUser.password = hashedPassword;
-      //existingUser.mobile = mobile;
+      existingUser.setupToken = setupToken;
       await existingUser.save();
     } else {
       const user = await User.create({
         email,
         password: hashedPassword,
         username: tempUsername,
-        profileSetup: false
+        profileSetup: false,
+        setupToken
       });
       await Rating.create({ user: user._id });
       await Friend.create({ user: user._id });
@@ -74,7 +77,7 @@ async function registerUser(req, res) {
     req.session.setupEmail = email;
 
     return req.session.save(() => {
-      res.status(201).json({ success: true, needsProfileSetup: true, email });
+      res.status(201).json({ success: true, needsProfileSetup: true, email, setupToken });
     });
   } catch (error) {
     console.error("Register error:", error);
@@ -85,19 +88,29 @@ async function registerUser(req, res) {
 // ── PROFILE SETUP STEP 2 ─────────────────────
 async function setupProfile(req, res) {
   try {
-    const { username, fullName, country, bio, dateOfBirth } = req.body;
+    const {
+  username,
+  fullName,
+  country,
+  bio,
+  dateOfBirth,
+  profileImage,
+  setupToken,
+  email: bodyEmail
+} = req.body;
 
-    const email = req.session.setupEmail || req.session.user?.email;
+const email = req.session.setupEmail || req.session.user?.email || bodyEmail;
 
-    if (!email) {
-      return res.status(400).json({ success: false, message: "Please register first." });
-    }
+    if (!email && !setupToken) {
+  return res.status(400).json({ success: false, message: "Please register first." });
+}
 
     if (!username || username.length < 3 || username.length > 24) {
       return res.status(400).json({ success: false, message: "Username must be 3-24 characters." });
     }
-
-    const user = await User.findOne({ email });
+const user = setupToken
+  ? await User.findOne({ setupToken, profileSetup: false })
+  : await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found." });
     }
@@ -117,9 +130,12 @@ async function setupProfile(req, res) {
     user.bio = bio?.trim() || "";
     user.dateOfBirth = dateOfBirth || null;
     user.profileSetup = true;
-    if (req.file) {
-      user.profileImage = req.file.path; // Cloudinary hosted URL
-    }
+   if (req.file) {
+  user.profileImage = req.file.path;
+} else if (profileImage && profileImage.trim()) {
+  user.profileImage = profileImage.trim();
+}
+user.setupToken = null;
 
     await user.save();
     req.session.setupEmail = null;

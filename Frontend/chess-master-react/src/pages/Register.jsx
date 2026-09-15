@@ -42,9 +42,14 @@ const Register = () => {
    setLoading(true);
 
     try {
-      await register(formData);
-      setSuccess('Account created! Let\'s set up your profile...');
-      setTimeout(() => navigate('/setup-profile'), 800);
+      const data = await register(formData);
+
+if (data.setupToken) {
+  localStorage.setItem('setupToken', data.setupToken);
+}
+
+setSuccess('Account created! Let\'s set up your profile...');
+setTimeout(() => navigate('/setup-profile'), 800);
     } catch (err) {
       console.log("Registration error:", err);
       setError(err?.response?.data?.message || 'Something went wrong. Please try again.');

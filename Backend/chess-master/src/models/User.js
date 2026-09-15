@@ -33,6 +33,10 @@ const userSchema = new mongoose.Schema(
       maxlength: 24,
       unique: true
     },
+    setupToken: {
+  type: String,
+  default: null
+},
     fullName: {
       type: String,
       trim: true,
