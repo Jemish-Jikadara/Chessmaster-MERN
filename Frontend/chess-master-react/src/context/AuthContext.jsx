@@ -21,25 +21,24 @@ export function AuthProvider({ children }) {
       setLoading(false);
     }
   };
-
-  const login = async (email, password) => {
-    const res = await api.post('/login', { email, password });
-    if (res.data.user) setUser(res.data.user);
-    return res.data;
-  };
+const login = async (email, password) => {
+  const res = await api.post('/login', { email, password });
+  if (res.data.token) localStorage.setItem('authToken', res.data.token);
+  if (res.data.user) setUser(res.data.user);
+  return res.data;
+};
 
   const register = async (payload) => {
     const res = await api.post('/register', payload);
     return res.data;
-  };
-
-  const setupProfile = async (formData) => {
-    const res = await api.post('/setup-profile', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    if (res.data.user) setUser(res.data.user);
-    return res.data;
-  };
+  };const setupProfile = async (formData) => {
+  const res = await api.post('/setup-profile', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  if (res.data.token) localStorage.setItem('authToken', res.data.token);
+  if (res.data.user) setUser(res.data.user);
+  return res.data;
+};
 
   const updateProfile = async (formData) => {
     const res = await api.post('/profile/edit', formData, {
@@ -48,12 +47,17 @@ export function AuthProvider({ children }) {
     if (res.data.user) setUser(res.data.user);
     return res.data;
   };
+const logout = async () => {
+  localStorage.removeItem('authToken');
 
-  const logout = async () => {
+  try {
     await api.post('/logout');
-    setUser(null);
-  };
+  } catch (err) {
+    console.log("logout error:", err);
+  }
 
+  setUser(null);
+};
   return (
     <AuthContext.Provider value={{ user, login, register, setupProfile, updateProfile, logout, loading, checkAuth }}>
       {children}

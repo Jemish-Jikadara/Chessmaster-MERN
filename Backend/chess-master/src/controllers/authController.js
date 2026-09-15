@@ -5,7 +5,16 @@ const Rating = require("../models/Rating");
 const Friend = require("../models/Friend");
 const Statistic = require("../models/Statistic");
 const crypto = require("crypto");
+const jwt = require("jsonwebtoken");
 
+
+function createAuthToken(user) {
+  return jwt.sign(
+    sessionUserFromDoc(user),
+    process.env.JWT_SECRET || "chessmasterjwtsecret",
+    { expiresIn: "7d" }
+  );
+}
 function sessionUserFromDoc(user) {
   return {
     id: user._id,
@@ -142,7 +151,11 @@ user.setupToken = null;
     req.session.user = sessionUserFromDoc(user);
 
     return req.session.save(() => {
-      res.status(200).json({ success: true, user: req.session.user });
+res.status(200).json({
+  success: true,
+  user: req.session.user,
+  token: createAuthToken(user)
+});
     });
   } catch (error) {
     console.error("Setup profile error:", error);
@@ -181,7 +194,11 @@ async function loginUser(req, res) {
     req.session.user = sessionUserFromDoc(user);
 
     return req.session.save(() => {
-      res.status(200).json({ success: true, user: req.session.user });
+     res.status(200).json({
+  success: true,
+  user: req.session.user,
+  token: createAuthToken(user)
+});
     });
   } catch (error) {
     console.error("Login error:", error);

@@ -204,6 +204,6 @@ router.post("/reset-password/:token", async (req, res) => {
     });
   }
 });
-router.get("/api/me", authController.getMe);
+router.get("/api/me",isAuthenticated, authController.getMe);
 
 module.exports = router;
