@@ -3,79 +3,693 @@ import { Link } from 'react-router-dom';
 import { getSocket } from '../lib/socket';
 import api from '../api/axios';
 
-// ==========================================
-// Yeh CSS tujhe EJS ke <style> tag se mila tha
-// Baad mein isko alag Home.css mein daal dena
-// ==========================================
 const pageStyles = `
-.h-hero{ position:relative; overflow:hidden; padding:110px 0 80px; }
-.h-hero::before{ content:''; position:absolute; width:640px; height:640px; background:radial-gradient(circle,rgba(201,162,39,0.16) 0%,transparent 70%); top:-160px; left:-160px; pointer-events:none; }
-.h-hero::after{ content:''; position:absolute; width:520px; height:520px; background:radial-gradient(circle,rgba(122,149,105,0.14) 0%,transparent 70%); bottom:-120px; right:-80px; pointer-events:none; }
-.h-grid{ display:grid; grid-template-columns:1.05fr 0.95fr; gap:64px; align-items:center; position:relative; z-index:1; }
-.stats-container { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.stat-badge { display: inline-flex; align-items: center; gap: 8px; background-color: #1f2937; color: #f3f4f6; padding: 6px 14px; border-radius: 9999px; font-size: 14px; font-weight: 500; border: 1px solid #374151; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); transition: all 0.2s ease-in-out; }
-.stat-badge:hover { border-color: #4b5563; transform: translateY(-1px); }
-.stat-badge strong { color: #ffffff; font-weight: 700; }
-.live-dot-wrapper { position: relative; display: flex; height: 10px; width: 10px; }
-.live-dot-ping { position: absolute; display: inline-flex; height: 100%; width: 100%; border-radius: 50%; background-color: #4ade80; opacity: 0.75; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; }
-.live-dot-main { position: relative; display: inline-flex; height: 10px; width: 10px; border-radius: 50%; background-color: #22c55e; }
-@keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
-@media (max-width:960px){ .h-grid{ grid-template-columns:1fr; text-align:center; } }
-.h-btns{ display:flex; gap:12px; flex-wrap:wrap; margin-top:32px; }
-@media (max-width:960px){ .h-btns{ justify-content:center; } }
-.h-stats{ display:flex; gap:36px; margin-top:48px; padding-top:28px; border-top:1px solid var(--cm-line); flex-wrap:wrap; }
-@media (max-width:960px){ .h-stats{ justify-content:center; } }
-.h-stats div{ text-align:left; }
-@media (max-width:960px){ .h-stats div{ text-align:center; } }
-.h-stats strong{ font-family:var(--cm-serif); font-size:26px; font-weight:700; display:block; color:var(--cm-brass-lt); }
-.h-stats span{ font-size:11px; color:var(--cm-ink-faint); text-transform:uppercase; letter-spacing:0.09em; font-family:var(--cm-mono); }
-.board-frame{ position:relative; background:linear-gradient(160deg,#2b2016,#1a140d); border:1px solid rgba(201,162,39,0.25); border-radius:22px; padding:22px; box-shadow:0 30px 60px -20px rgba(0,0,0,0.6); }
-.board-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-.board-top .cm2-tag{ margin-bottom:2px; }
-.board-top h3{ font-family:var(--cm-serif); font-size:16px; color:var(--cm-ink); font-weight:600; }
-.live-dot-wrap{ display:flex; align-items:center; gap:6px; font-family:var(--cm-mono); font-size:11px; color:var(--cm-sage-lt); background:rgba(122,149,105,0.1); border:1px solid rgba(122,149,105,0.3); padding:4px 10px; border-radius:100px; }
-.live-dot{ width:6px; height:6px; border-radius:50%; background:var(--cm-sage-lt); animation:cmblink 1.6s ease-in-out infinite; }
-@keyframes cmblink{ 0%,100%{opacity:1} 50%{opacity:0.25} }
-.board-outer{ display:grid; grid-template-columns:20px 1fr; grid-template-rows:1fr 20px; gap:4px; }
-.board-ranks{ display:grid; grid-template-rows:repeat(8,1fr); font-family:var(--cm-mono); font-size:10px; color:var(--cm-ink-faint); }
-.board-ranks span{ display:flex; align-items:center; justify-content:center; }
-.board-files{ display:grid; grid-template-columns:repeat(8,1fr); font-family:var(--cm-mono); font-size:10px; color:var(--cm-ink-faint); grid-column:2; }
-.board-files span{ display:flex; align-items:center; justify-content:center; }
-.board-8{ grid-column:2; grid-row:1; display:grid; grid-template-columns:repeat(8,1fr); grid-template-rows:repeat(8,1fr); border-radius:8px; overflow:hidden; border:2px solid rgba(201,162,39,0.3); aspect-ratio:1; }
-.board-8 .sqlt{ background:var(--cm-board-lt); }
-.board-8 .sqdk{ background:var(--cm-board-dk); }
-.board-8 .sq{ display:flex; align-items:center; justify-content:center; position:relative; }
-.board-8 .sq img{ width:82%; height:82%; object-fit:contain; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.35)); }
-.board-bottom{ display:flex; gap:8px; margin-top:16px; }
-.board-bottom .bc-tag{ flex:1; padding:10px; background:rgba(243,234,217,0.03); border:1px solid var(--cm-line); border-radius:10px; text-align:center; }
-.board-bottom .bc-tag span{ font-size:9px; color:var(--cm-ink-faint); display:block; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:3px; font-family:var(--cm-mono); }
-.board-bottom .bc-tag strong{ font-size:13px; color:var(--cm-ink); font-family:var(--cm-serif); }
-.battle-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:44px; }
-@media (max-width:900px){ .battle-grid{ grid-template-columns:1fr; } }
-.battle-card{ display:flex; flex-direction:column; height:100%; }
-.battle-icon{ width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:18px; }
-.battle-card p{ font-size:13.5px; color:var(--cm-ink-dim); line-height:1.65; flex-grow:1; margin-bottom:18px; }
-.battle-link{ font-family:var(--cm-mono); font-size:13px; font-weight:500; text-decoration:none; display:inline-flex; align-items:center; gap:6px; }
-.feat-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:40px; }
-@media (max-width:768px){ .feat-grid{ grid-template-columns:1fr; } }
-.feat-icon{ width:42px; height:42px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:19px; margin-bottom:14px; }
-.feat-card p{ font-size:13px; color:var(--cm-ink-dim); line-height:1.6; }
-.how-wrap{ background:var(--cm-bg-2); border-top:1px solid var(--cm-line); border-bottom:1px solid var(--cm-line); }
-.steps-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:36px; margin-top:48px; }
-@media (max-width:768px){ .steps-grid{ grid-template-columns:1fr; } }
-.step{ text-align:center; padding:10px; }
-.step-num{ width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--cm-serif); font-size:19px; font-weight:700; margin:0 auto 18px; border:1.5px solid rgba(201,162,39,0.4); color:var(--cm-brass-lt); background:rgba(201,162,39,0.08); }
-.step p{ font-size:13px; color:var(--cm-ink-dim); line-height:1.6; max-width:280px; margin:0 auto; }
-.cta-wrap{ padding:100px 0; text-align:center; position:relative; overflow:hidden; }
-.cta-wrap::before{ content:''; position:absolute; width:760px; height:380px; background:radial-gradient(ellipse,rgba(201,162,39,0.12) 0%,transparent 70%); top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none; }
-.cta-inner{ position:relative; z-index:1; max-width:600px; margin:0 auto; }
-.cta-btns{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:30px; }
+.h-page{
+  --h-bg:#0f1411;
+  --h-panel:#1b241d;
+  --h-panel-2:#222d24;
+  --h-line:rgba(255,255,255,0.09);
+  --h-text:#f5f7f1;
+  --h-muted:#aeb7aa;
+  --h-soft:#d7ded0;
+  --h-green:#81b64c;
+  --h-green-2:#95c95e;
+  --h-dark-green:#5d8b32;
+  --h-gold:#f0c15b;
+  --h-orange:#e58b42;
+  background:
+    linear-gradient(180deg,rgba(129,182,76,0.08),transparent 360px),
+    radial-gradient(circle at 15% 8%,rgba(129,182,76,0.18),transparent 34%),
+    radial-gradient(circle at 85% 12%,rgba(240,193,91,0.1),transparent 32%),
+    var(--h-bg);
+  color:var(--h-text);
+  overflow:hidden;
+}
+
+.h-page *{ box-sizing:border-box; }
+
+.h-hero{
+  position:relative;
+  padding:88px 0 72px;
+}
+
+.h-hero::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size:58px 58px;
+  mask-image:linear-gradient(to bottom,#000,transparent 78%);
+  pointer-events:none;
+}
+
+.h-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1.02fr) minmax(320px,0.98fr);
+  gap:56px;
+  align-items:center;
+  position:relative;
+  z-index:1;
+}
+
+.h-copy{
+  max-width:650px;
+}
+
+.stats-container{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:24px;
+}
+
+.stat-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:9px;
+  min-height:36px;
+  color:#eef6e9;
+  background:rgba(255,255,255,0.07);
+  border:1px solid rgba(255,255,255,0.11);
+  padding:7px 13px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:700;
+  box-shadow:0 12px 28px rgba(0,0,0,0.18);
+  backdrop-filter:blur(12px);
+}
+
+.stat-badge strong{
+  color:#ffffff;
+  font-weight:800;
+}
+
+.live-dot-wrapper{
+  position:relative;
+  display:flex;
+  height:10px;
+  width:10px;
+}
+
+.live-dot-ping{
+  position:absolute;
+  display:inline-flex;
+  height:100%;
+  width:100%;
+  border-radius:50%;
+  background-color:#89e263;
+  opacity:.72;
+  animation:ping 1.5s cubic-bezier(0,0,.2,1) infinite;
+}
+
+.live-dot-main{
+  position:relative;
+  display:inline-flex;
+  height:10px;
+  width:10px;
+  border-radius:50%;
+  background-color:#89e263;
+  box-shadow:0 0 0 4px rgba(137,226,99,0.13);
+}
+
+@keyframes ping{
+  75%,100%{ transform:scale(2.3); opacity:0; }
+}
+
+.cm2-eyebrow{
+  display:inline-flex;
+  align-items:center;
+  gap:9px;
+  color:var(--h-green-2);
+  font-size:12px;
+  line-height:1;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.14em;
+  margin-bottom:18px;
+}
+
+.cm2-eyebrow .sq{
+  width:9px;
+  height:9px;
+  border-radius:2px;
+  background:var(--h-green);
+  box-shadow:0 0 0 5px rgba(129,182,76,.12);
+}
+
+.cm2-h1{
+  margin:0;
+  color:var(--h-text);
+  font-size:clamp(2.7rem,6.2vw,5.7rem);
+  line-height:.94;
+  letter-spacing:0;
+  font-weight:900;
+}
+
+.cm2-accent{
+  color:var(--h-green-2);
+}
+
+.cm2-accent-sage{
+  color:#e5ecd9;
+}
+
+.cm2-h2{
+  margin:0;
+  color:var(--h-text);
+  font-size:clamp(2rem,4vw,3.4rem);
+  line-height:1.02;
+  letter-spacing:0;
+  font-weight:900;
+}
+
+.cm2-h3{
+  margin:0 0 10px;
+  color:var(--h-text);
+  font-size:20px;
+  line-height:1.2;
+  font-weight:850;
+}
+
+.cm2-sub{
+  max-width:620px;
+  margin:22px 0 0;
+  color:var(--h-muted);
+  font-size:17px;
+  line-height:1.72;
+}
+
+.h-btns{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-top:34px;
+}
+
+.cm2-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:48px;
+  padding:0 20px;
+  border-radius:8px;
+  font-size:15px;
+  font-weight:850;
+  text-decoration:none;
+  border:1px solid transparent;
+  transition:transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
+}
+
+.cm2-btn:hover{
+  transform:translateY(-2px);
+}
+
+.cm2-btn-primary{
+  color:#10180e;
+  background:linear-gradient(180deg,#9bd761,#7fb64a);
+  box-shadow:0 16px 30px rgba(129,182,76,.25), inset 0 1px rgba(255,255,255,.45);
+}
+
+.cm2-btn-primary:hover{
+  background:linear-gradient(180deg,#a8e372,#82bd4a);
+  box-shadow:0 20px 38px rgba(129,182,76,.32), inset 0 1px rgba(255,255,255,.55);
+}
+
+.cm2-btn-secondary{
+  color:#f4f7ef;
+  background:rgba(255,255,255,.075);
+  border-color:rgba(255,255,255,.13);
+}
+
+.cm2-btn-secondary:hover{
+  background:rgba(255,255,255,.11);
+  border-color:rgba(255,255,255,.2);
+}
+
+.h-stats{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(88px,1fr));
+  gap:10px;
+  max-width:560px;
+  margin-top:42px;
+}
+
+.h-stats div{
+  padding:16px 14px;
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:10px;
+}
+
+.h-stats strong{
+  display:block;
+  color:#ffffff;
+  font-size:26px;
+  line-height:1;
+  font-weight:900;
+  margin-bottom:7px;
+}
+
+.h-stats span{
+  display:block;
+  color:var(--h-muted);
+  font-size:11px;
+  line-height:1.25;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+
+.board-frame{
+  position:relative;
+  padding:18px;
+  border-radius:16px;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03)),
+    #1a211b;
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 32px 80px rgba(0,0,0,.46);
+}
+
+.board-frame::before{
+  content:'';
+  position:absolute;
+  inset:-1px;
+  border-radius:16px;
+  background:linear-gradient(135deg,rgba(149,201,94,.45),transparent 34%,rgba(240,193,91,.26));
+  z-index:-1;
+}
+
+.board-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:14px;
+}
+
+.cm2-tag{
+  display:inline-flex;
+  color:#c5ceb9;
+  font-size:10px;
+  font-weight:850;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  margin-bottom:5px;
+}
+
+.board-top h3{
+  margin:0;
+  font-size:17px;
+  color:#ffffff;
+  font-weight:850;
+}
+
+.live-dot-wrap{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  white-space:nowrap;
+  color:#bfe7a4;
+  background:rgba(129,182,76,.12);
+  border:1px solid rgba(129,182,76,.24);
+  padding:7px 11px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:800;
+}
+
+.live-dot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:#89e263;
+  animation:cmblink 1.6s ease-in-out infinite;
+}
+
+@keyframes cmblink{
+  0%,100%{opacity:1}
+  50%{opacity:.32}
+}
+
+.board-outer{
+  display:grid;
+  grid-template-columns:20px 1fr;
+  grid-template-rows:1fr 20px;
+  gap:5px;
+}
+
+.board-ranks{
+  display:grid;
+  grid-template-rows:repeat(8,1fr);
+  color:#899381;
+  font-size:10px;
+  font-weight:800;
+}
+
+.board-ranks span{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.board-files{
+  grid-column:2;
+  display:grid;
+  grid-template-columns:repeat(8,1fr);
+  color:#899381;
+  font-size:10px;
+  font-weight:800;
+}
+
+.board-files span{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.board-8{
+  grid-column:2;
+  grid-row:1;
+  display:grid;
+  grid-template-columns:repeat(8,1fr);
+  grid-template-rows:repeat(8,1fr);
+  overflow:hidden;
+  aspect-ratio:1;
+  border-radius:8px;
+  border:2px solid rgba(255,255,255,.11);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.16);
+}
+
+.board-8 .sqlt{
+  background:#eeeed2;
+}
+
+.board-8 .sqdk{
+  background:#769656;
+}
+
+.board-8 .sq{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+}
+
+.board-8 .sq img{
+  width:82%;
+  height:82%;
+  object-fit:contain;
+  filter:drop-shadow(0 3px 3px rgba(0,0,0,.36));
+}
+
+.board-bottom{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-top:14px;
+}
+
+.board-bottom .bc-tag{
+  padding:11px 8px;
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:8px;
+  text-align:center;
+}
+
+.board-bottom .bc-tag span{
+  display:block;
+  margin-bottom:4px;
+  color:#9ca796;
+  font-size:9px;
+  font-weight:850;
+  text-transform:uppercase;
+  letter-spacing:.11em;
+}
+
+.board-bottom .bc-tag strong{
+  color:#ffffff;
+  font-size:13px;
+  font-weight:850;
+}
+
+.cm2-wrap{
+  width:min(1180px,calc(100% - 40px));
+  margin:0 auto;
+}
+
+.cm2-divider{
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.13),transparent);
+}
+
+.cm2-section{
+  padding:76px 0;
+}
+
+.cm2-card{
+  position:relative;
+  height:100%;
+  padding:22px;
+  border-radius:12px;
+  background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.04));
+  border:1px solid rgba(255,255,255,.1);
+  box-shadow:0 20px 44px rgba(0,0,0,.18);
+  transition:transform .2s ease, border-color .2s ease, background .2s ease;
+}
+
+.cm2-card:hover{
+  transform:translateY(-4px);
+  border-color:rgba(129,182,76,.34);
+  background:linear-gradient(180deg,rgba(255,255,255,.095),rgba(255,255,255,.048));
+}
+
+.battle-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;
+  margin-top:34px;
+}
+
+.battle-card{
+  display:flex;
+  flex-direction:column;
+}
+
+.battle-icon,
+.feat-icon{
+  width:44px;
+  height:44px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:10px;
+  margin-bottom:16px;
+  font-size:21px;
+}
+
+.battle-card p,
+.feat-card p{
+  color:var(--h-muted);
+  font-size:14px;
+  line-height:1.65;
+  margin:0;
+}
+
+.battle-card p{
+  flex-grow:1;
+  margin-bottom:18px;
+}
+
+.battle-link{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  width:max-content;
+  color:var(--h-green-2) !important;
+  font-size:14px;
+  font-weight:850;
+  text-decoration:none;
+}
+
+.feat-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;
+  margin-top:34px;
+}
+
+.how-wrap{
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.02)),
+    #121914;
+  border-top:1px solid rgba(255,255,255,.08);
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.steps-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:18px;
+  margin-top:42px;
+}
+
+.step{
+  padding:28px 22px;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:12px;
+  text-align:center;
+}
+
+.step-num{
+  width:52px;
+  height:52px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin:0 auto 18px;
+  border-radius:12px;
+  color:#12200e;
+  background:linear-gradient(180deg,#9fdb65,#7fb64a);
+  font-size:22px;
+  font-weight:950;
+  box-shadow:0 14px 28px rgba(129,182,76,.18);
+}
+
+.step p{
+  max-width:290px;
+  margin:0 auto;
+  color:var(--h-muted);
+  font-size:14px;
+  line-height:1.65;
+}
+
+.cta-wrap{
+  position:relative;
+  padding:90px 0 100px;
+  text-align:center;
+}
+
+.cta-wrap::before{
+  content:'';
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:min(760px,90vw);
+  height:360px;
+  transform:translate(-50%,-50%);
+  background:radial-gradient(ellipse,rgba(129,182,76,.18),transparent 68%);
+  pointer-events:none;
+}
+
+.cta-inner{
+  position:relative;
+  z-index:1;
+  width:min(680px,calc(100% - 40px));
+  margin:0 auto;
+}
+
+.cta-btns{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-top:30px;
+}
+
+@media (max-width:960px){
+  .h-hero{ padding:64px 0 58px; }
+  .h-grid{
+    grid-template-columns:1fr;
+    gap:38px;
+    text-align:center;
+  }
+  .h-copy{
+    max-width:none;
+  }
+  .stats-container,
+  .h-btns{
+    justify-content:center;
+  }
+  .cm2-sub{
+    margin-left:auto;
+    margin-right:auto;
+  }
+  .h-stats{
+    margin-left:auto;
+    margin-right:auto;
+  }
+}
+
+@media (max-width:820px){
+  .battle-grid,
+  .feat-grid,
+  .steps-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+@media (max-width:560px){
+  .cm2-wrap{
+    width:min(100% - 24px,1180px);
+  }
+
+  .h-hero{
+    padding:46px 0 44px;
+  }
+
+  .cm2-h1{
+    font-size:clamp(2.35rem,13vw,3.7rem);
+  }
+
+  .cm2-sub{
+    font-size:15px;
+    line-height:1.65;
+  }
+
+  .h-stats{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .board-frame{
+    padding:12px;
+    border-radius:14px;
+  }
+
+  .board-top{
+    align-items:flex-start;
+  }
+
+  .live-dot-wrap{
+    padding:6px 9px;
+  }
+
+  .board-bottom{
+    grid-template-columns:1fr;
+  }
+
+  .cm2-section{
+    padding:56px 0;
+  }
+
+  .cm2-card,
+  .step{
+    padding:20px;
+  }
+
+  .cta-wrap{
+    padding:68px 0 76px;
+  }
+}
 `;
 
 const Home = ({ currentUser }) => {
-  // ==========================================
-  // Live user count ke liye state (EJS mein id="active-user-count" tha)
-  // ==========================================
   const [onlineCount, setOnlineCount] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
 
@@ -85,7 +699,6 @@ const Home = ({ currentUser }) => {
     const onUpdate = (count) => setOnlineCount(count);
     socket.on("activeUsersUpdate", onUpdate);
 
-    // Component destroy hone pe listener hatana (memory leak nahi hoga)
     return () => socket.off("activeUsersUpdate", onUpdate);
   }, []);
 
@@ -95,9 +708,6 @@ const Home = ({ currentUser }) => {
       .catch(() => setTotalUsers(0));
   }, []);
 
-  // ==========================================
-  // Chess board banane ka logic (EJS ke for loops ki jagah)
-  // ==========================================
   const backRow = ["rook", "knight", "bishop", "queen", "king", "bishop", "knight", "rook"];
   const boardSquares = [];
 
@@ -126,15 +736,12 @@ const Home = ({ currentUser }) => {
 
   return (
     <>
-      {/* EJS ke <style> tag ka content yahan inject kiya hai */}
       <style dangerouslySetInnerHTML={{ __html: pageStyles }} />
 
-      <main>
-        {/* ====== HERO SECTION ====== */}
+      <main className="h-page">
         <section className="h-hero">
           <div className="cm2-wrap h-grid">
-            <div>
-              {/* Stats badges */}
+            <div className="h-copy">
               <div className="stats-container">
                 <div className="stat-badge">
                   <span className="live-dot-wrapper">
@@ -154,15 +761,14 @@ const Home = ({ currentUser }) => {
               </span>
 
               <h1 className="cm2-h1">
-                Play real chess.<br />
-                <span className="cm2-accent">Against friends,</span><br />
-                <span className="cm2-accent-sage">bots, or strangers online.</span>
+                Play chess<br />
+                <span className="cm2-accent">your way.</span><br />
+                <span className="cm2-accent-sage">Win the next game.</span>
               </h1>
 
               <p className="cm2-sub">
-                ChessMaster is a full chess platform, not a demo board: local two-player,
-                32 rated Stockfish bots, live online multiplayer, a friends list you can
-                challenge, and every game saved for replay.
+                ChessMaster brings fast online matches, local games, Stockfish bots,
+                make friends, saved replays, ratings, and profiles into one clean place.
               </p>
 
               <div className="h-btns">
@@ -182,7 +788,6 @@ const Home = ({ currentUser }) => {
               </div>
             </div>
 
-            {/* Chess board card */}
             <div className="board-frame">
               <div className="board-top">
                 <div>
@@ -220,33 +825,32 @@ const Home = ({ currentUser }) => {
 
         <div className="cm2-wrap"><div className="cm2-divider"></div></div>
 
-        {/* ====== CHOOSE YOUR BATTLE ====== */}
         <section className="cm2-section">
           <div className="cm2-wrap">
             <span className="cm2-eyebrow"><span className="sq"></span>Three ways to play</span>
-            <h2 className="cm2-h2">Pick your opponent</h2>
-            <p className="cm2-sub">Same board, three completely different fights.</p>
+            <h2 className="cm2-h2">Choose your next match</h2>
+            <p className="cm2-sub">Jump into a quick game, train against bots, or challenge real players online.</p>
 
             <div className="battle-grid">
               <div className="cm2-card battle-card">
-                <div className="battle-icon" style={{ background: 'rgba(122,149,105,0.15)' }}>🧑‍🤝‍🧑</div>
+                <div className="battle-icon" style={{ background: 'rgba(129,182,76,0.16)' }}>🧑‍🤝‍🧑</div>
                 <h3 className="cm2-h3">Play a Friend</h3>
-                <p>Pass-and-play on one screen. Perfect for settling the argument over who's actually better, right now, no setup.</p>
-                <Link to="/play" className="battle-link" style={{ color: 'var(--cm-sage-lt)' }}>Start a local game →</Link>
+                <p>Pass-and-play on one screen. Perfect for quick games, rematches, and settling the score instantly.</p>
+                <Link to="/play" className="battle-link">Start a local game →</Link>
               </div>
 
               <div className="cm2-card battle-card">
-                <div className="battle-icon" style={{ background: 'rgba(201,162,39,0.15)' }}>🤖</div>
+                <div className="battle-icon" style={{ background: 'rgba(240,193,91,0.16)' }}>🤖</div>
                 <h3 className="cm2-h3">Challenge a Bot</h3>
-                <p>32 opponents from 100 to 3200 rating, all running on Stockfish. Lose to one, then come back and beat it.</p>
-                <Link to="/play" className="battle-link" style={{ color: 'var(--cm-brass-lt)' }}>Pick a bot →</Link>
+                <p>32 opponents from 100 to 3200 rating, powered by Stockfish for practice at every level.</p>
+                <Link to="/play" className="battle-link">Pick a bot →</Link>
               </div>
 
               <div className="cm2-card battle-card">
-                <div className="battle-icon" style={{ background: 'rgba(181,84,31,0.16)' }}>🌐</div>
+                <div className="battle-icon" style={{ background: 'rgba(229,139,66,0.16)' }}>🌐</div>
                 <h3 className="cm2-h3">Go Online</h3>
-                <p>Real-time multiplayer over Socket.IO. Add friends, send a challenge, and play live from anywhere.</p>
-                <Link to="/online" className="battle-link" style={{ color: '#e08a5b' }}>Find an opponent →</Link>
+                <p>Play live multiplayer, add friends, send challenges, and compete from anywhere.</p>
+                <Link to="/online" className="battle-link">Find an opponent →</Link>
               </div>
             </div>
           </div>
@@ -254,72 +858,70 @@ const Home = ({ currentUser }) => {
 
         <div className="cm2-wrap"><div className="cm2-divider"></div></div>
 
-        {/* ====== FEATURES ====== */}
         <section className="cm2-section">
           <div className="cm2-wrap">
             <span className="cm2-eyebrow"><span className="sq"></span>Everything included</span>
-            <h2 className="cm2-h2">A full board, not a toy</h2>
-            <p className="cm2-sub">From move validation to a friends list — the parts a real chess site needs, all built in.</p>
+            <h2 className="cm2-h2">Built for real games</h2>
+            <p className="cm2-sub">All the core pieces a chess platform needs, from legal moves to saved match history.</p>
 
             <div className="feat-grid">
               <div className="cm2-card feat-card">
-                <div className="feat-icon" style={{ background: 'rgba(201,162,39,0.15)' }}>♟</div>
+                <div className="feat-icon" style={{ background: 'rgba(129,182,76,0.16)' }}>♟</div>
                 <h3 className="cm2-h3">Interactive Board</h3>
                 <p>Click or drag pieces, see legal move hints, captures, and check highlights in real time.</p>
               </div>
 
               <div className="cm2-card feat-card">
-                <div className="feat-icon" style={{ background: 'rgba(122,149,105,0.15)' }}>🤖</div>
+                <div className="feat-icon" style={{ background: 'rgba(240,193,91,0.16)' }}>🤖</div>
                 <h3 className="cm2-h3">32 AI Bots</h3>
-                <p>Challenge bots from 100 to 3200 rating, powered by Stockfish — the world's strongest chess engine.</p>
+                <p>Challenge bots from 100 to 3200 rating, powered by Stockfish.</p>
               </div>
 
               <div className="cm2-card feat-card">
-                <div className="feat-icon" style={{ background: 'rgba(181,84,31,0.16)' }}>🌐</div>
+                <div className="feat-icon" style={{ background: 'rgba(229,139,66,0.16)' }}>🌐</div>
                 <h3 className="cm2-h3">Online Multiplayer</h3>
-                <p>Live games over Socket.IO — create a room, share it, or match with a friend directly from your list.</p>
+                <p>Live games over Socket.IO — create a room, share it, or match with a friend.</p>
               </div>
 
               <div className="cm2-card feat-card">
-                <div className="feat-icon" style={{ background: 'rgba(201,162,39,0.15)' }}>🧑‍🤝‍🧑</div>
-                <h3 className="cm2-h3">Friends & Challenges</h3>
-                <p>Search players by username, send friend requests, and challenge anyone on your list to a game.</p>
+                <div className="feat-icon" style={{ background: 'rgba(129,182,76,0.16)' }}>🧑‍🤝‍🧑</div>
+                <h3 className="cm2-h3">Friends</h3>
+                <p>Search players by username, send friend requests.</p>
               </div>
 
               <div className="cm2-card feat-card">
-                <div className="feat-icon" style={{ background: 'rgba(122,149,105,0.15)' }}>⏱</div>
+                <div className="feat-icon" style={{ background: 'rgba(240,193,91,0.16)' }}>⏱</div>
                 <h3 className="cm2-h3">Time Controls</h3>
-                <p>Rapid, Blitz, or Bullet — clocks tick, increment applies, timeout ends the game automatically.</p>
+                <p>Rapid, Blitz, or Bullet — clocks tick, increment applies, and timeout ends the game.</p>
               </div>
 
               <div className="cm2-card feat-card">
-                <div className="feat-icon" style={{ background: 'rgba(181,84,31,0.16)' }}>▶</div>
+                <div className="feat-icon" style={{ background: 'rgba(229,139,66,0.16)' }}>▶</div>
                 <h3 className="cm2-h3">Game Replay</h3>
-                <p>Every game is auto-saved and fully replayable — step through moves and review your decisions.</p>
+                <p>Every game is auto-saved and fully replayable so you can review each move.</p>
               </div>
 
               <div className="cm2-card feat-card">
-                <div className="feat-icon" style={{ background: 'rgba(201,162,39,0.15)' }}>🏆</div>
+                <div className="feat-icon" style={{ background: 'rgba(129,182,76,0.16)' }}>🏆</div>
                 <h3 className="cm2-h3">Leaderboard & Ratings</h3>
-                <p>Every result is saved to MongoDB — wins, losses, draws, and an Elo-style rating for every player.</p>
+                <p>Wins, losses, draws, and an Elo-style rating are saved for every player.</p>
               </div>
 
               <div className="cm2-card feat-card">
-                <div className="feat-icon" style={{ background: 'rgba(122,149,105,0.15)' }}>🎨</div>
+                <div className="feat-icon" style={{ background: 'rgba(240,193,91,0.16)' }}>🎨</div>
                 <h3 className="cm2-h3">Board Themes</h3>
-                <p>Six themes — Classic, Midnight, Forest, Ocean, Ruby, Walnut — saved to your profile in Settings.</p>
+                <p>Six board themes saved to your profile so your setup follows you.</p>
               </div>
 
               <div className="cm2-card feat-card">
-                <div className="feat-icon" style={{ background: 'rgba(181,84,31,0.16)' }}>👤</div>
+                <div className="feat-icon" style={{ background: 'rgba(229,139,66,0.16)' }}>👤</div>
                 <h3 className="cm2-h3">Player Profiles</h3>
-                <p>A profile page with your stats, history, and rating — set up once at registration, editable anytime.</p>
+                <p>Your stats, history, and rating live in one profile you can update anytime.</p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* ====== HOW IT WORKS ====== */}
         <div className="how-wrap">
           <section className="cm2-section">
             <div className="cm2-wrap" style={{ textAlign: 'center' }}>
@@ -332,24 +934,23 @@ const Home = ({ currentUser }) => {
                 <div className="step">
                   <div className="step-num">1</div>
                   <h3 className="cm2-h3">Create an account</h3>
-                  <p>Free, no card required. Your stats, friends, and games are saved to your profile from move one.</p>
+                  <p>Free, no card required. Your stats, friends, and games are saved from move one.</p>
                 </div>
                 <div className="step">
                   <div className="step-num">2</div>
                   <h3 className="cm2-h3">Pick your opponent</h3>
-                  <p>A friend on the same screen, a Stockfish bot, or someone online — choose your time control and go.</p>
+                  <p>Choose a friend, a Stockfish bot, or someone online, then set your time control.</p>
                 </div>
                 <div className="step">
                   <div className="step-num">3</div>
                   <h3 className="cm2-h3">Review and improve</h3>
-                  <p>Every game is auto-saved. Replay it, check the leaderboard, and get back to the board.</p>
+                  <p>Replay saved games, check the leaderboard, and come back stronger.</p>
                 </div>
               </div>
             </div>
           </section>
         </div>
 
-        {/* ====== CTA ====== */}
         <div className="cta-wrap">
           <div className="cta-inner">
             <span className="cm2-eyebrow" style={{ margin: '0 auto 20px' }}>
@@ -359,7 +960,7 @@ const Home = ({ currentUser }) => {
               Your next move<br />
               <span className="cm2-accent">starts here.</span>
             </h2>
-            <p className="cm2-sub" style={{ margin: '0 auto' }}>
+            <p className="cm2-sub" style={{ margin: '18px auto 0' }}>
               Join ChessMaster — play, learn, and challenge yourself every day.
             </p>
             <div className="cta-btns">
