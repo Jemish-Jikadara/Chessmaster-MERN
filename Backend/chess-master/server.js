@@ -122,6 +122,7 @@ rooms[roomId] = {
     increment: tc.increment || 0,
 
     turn: "w",
+    moves: [],
 
     lastUpdate: Date.now(),
 
@@ -204,17 +205,21 @@ rooms[roomId].timer = setInterval(() => {
 
     socketToRoom[socket.id] = roomId;
 
-    if (rooms[roomId]) {
+    const room = rooms[roomId];
 
-        rooms[roomId].sockets.add(socket.id);
+    if (room) {
 
-        // NEW
+        room.sockets.add(socket.id);
+
+        // Tell the other player that the opponent reconnected
         socket.to(roomId).emit("opponentReconnected");
 
-        socket.emit("timerUpdate", {
-            whiteTime: rooms[roomId].whiteTime,
-            blackTime: rooms[roomId].blackTime,
-            turn: rooms[roomId].turn
+        // Send the complete current game state to the reconnecting player
+        socket.emit("onlineGameState", {
+            moves: room.moves,
+            whiteTime: room.whiteTime,
+            blackTime: room.blackTime,
+            turn: room.turn
         });
 
     }
@@ -225,7 +230,7 @@ rooms[roomId].timer = setInterval(() => {
 
     const room = rooms[roomId];
     if (!room) return;
-
+    room.moves.push(move);
     // First move timer stop
     if (!room.moved) {
         room.moved = true;

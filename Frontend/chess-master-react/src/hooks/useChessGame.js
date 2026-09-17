@@ -19,7 +19,23 @@ function formatTime(seconds) {
   const s = safe % 60;
   return `${m}:${String(s).padStart(2, '0')}`;
 }
+const LOCAL_GAME_KEY = 'cmLocalGame';
 
+function saveLocalGame(data) {
+  localStorage.setItem(LOCAL_GAME_KEY, JSON.stringify(data));
+}
+
+function loadLocalGame() {
+  try {
+    return JSON.parse(localStorage.getItem(LOCAL_GAME_KEY) || 'null');
+  } catch {
+    return null;
+  }
+}
+
+function clearLocalGame() {
+  localStorage.removeItem(LOCAL_GAME_KEY);
+}
 /**
  * Local game engine hook — ports public/js/board.js + public/js/bot.js.
  * Drives a single local Chess() instance for pass-and-play and bot games.
@@ -36,6 +52,8 @@ export default function useChessGame({ onGameOver } = {}) {
   const [gameOverInfo, setGameOverInfo] = useState(null);
   const [whiteTime, setWhiteTime] = useState(0);
   const [blackTime, setBlackTime] = useState(0);
+  const whiteTimeRef = useRef(0);
+const blackTimeRef = useRef(0);
   const [positionHistory, setPositionHistory] = useState([gameRef.current.fen()]);
   const [reviewIndex, setReviewIndex] = useState(0);
   const [isReviewing, setIsReviewing] = useState(false);
@@ -53,6 +71,13 @@ export default function useChessGame({ onGameOver } = {}) {
   useEffect(() => {
     gameOverRef.current = gameOver;
   }, [gameOver]);
+  useEffect(() => {
+  whiteTimeRef.current = whiteTime;
+}, [whiteTime]);
+
+useEffect(() => {
+  blackTimeRef.current = blackTime;
+}, [blackTime]);
 
   const refreshBoardState = useCallback(() => {
     const g = gameRef.current;
@@ -100,6 +125,7 @@ export default function useChessGame({ onGameOver } = {}) {
 
   const finishGame = useCallback((title, message) => {
     if (timerRef.current) clearInterval(timerRef.current);
+    clearLocalGame();
     setGameStarted(false);
     setGameOver(true);
     setIsReviewing(false);
@@ -145,6 +171,16 @@ export default function useChessGame({ onGameOver } = {}) {
     setSelectedSquare(null);
     setLegalMoves([]);
     refreshBoardState();
+    saveLocalGame({
+  moves: gameRef.current.history({ verbose: true }),
+  whiteTime: whiteTimeRef.current,
+blackTime: blackTimeRef.current,
+  increment: incrementRef.current,
+  isBot: botModeRef.current,
+  bot: selectedBotRef.current,
+  playerColor: playerColorRef.current,
+  gameStarted: true
+});
     checkGameOver();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshBoardState, checkGameOver]);
@@ -262,16 +298,42 @@ export default function useChessGame({ onGameOver } = {}) {
       }
       if (g.turn() === 'w') {
         setWhiteTime((t) => {
-          const next = t - 1;
-          if (next <= 0) finishGame('Time Out', 'Black wins on time.');
-          return Math.max(0, next);
-        });
+  const next = Math.max(0, t - 1);
+  whiteTimeRef.current = next;
+
+  saveLocalGame({
+    moves: gameRef.current.history({ verbose: true }),
+    whiteTime: next,
+    blackTime: blackTimeRef.current,
+    increment: incrementRef.current,
+    isBot: botModeRef.current,
+    bot: selectedBotRef.current,
+    playerColor: playerColorRef.current,
+    gameStarted: true
+  });
+
+  if (next <= 0) finishGame('Time Out', 'Black wins on time.');
+  return next;
+});
       } else {
         setBlackTime((t) => {
-          const next = t - 1;
-          if (next <= 0) finishGame('Time Out', 'White wins on time.');
-          return Math.max(0, next);
-        });
+  const next = Math.max(0, t - 1);
+  blackTimeRef.current = next;
+
+  saveLocalGame({
+    moves: gameRef.current.history({ verbose: true }),
+    whiteTime: whiteTimeRef.current,
+    blackTime: next,
+    increment: incrementRef.current,
+    isBot: botModeRef.current,
+    bot: selectedBotRef.current,
+    playerColor: playerColorRef.current,
+    gameStarted: true
+  });
+
+  if (next <= 0) finishGame('Time Out', 'White wins on time.');
+  return next;
+});
       }
     }, 1000);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -321,6 +383,57 @@ export default function useChessGame({ onGameOver } = {}) {
     g.load(positionHistory[reviewIndex]);
     return g;
   }, [isReviewing, positionHistory, reviewIndex]);
+  const restoreGame = useCallback((saved) => {
+  if (!saved) return false;
+
+  gameRef.current.reset();
+
+  (saved.moves || []).forEach((m) => {
+    gameRef.current.move({
+      from: m.from,
+      to: m.to,
+      promotion: m.promotion || 'q'
+    });
+  });
+
+  incrementRef.current = saved.increment || 0;
+  botModeRef.current = !!saved.isBot;
+  selectedBotRef.current = saved.bot || null;
+  playerColorRef.current = saved.playerColor || 'w';
+
+  setWhiteTime(saved.whiteTime || 0);
+  setBlackTime(saved.blackTime || 0);
+  setGameStarted(!!saved.gameStarted);
+  setGameOver(false);
+  setGameOverInfo(null);
+  setSelectedSquare(null);
+  setLegalMoves([]);
+  setLastMove(null);
+  setBotThinking(false);
+
+  const positions = [new Chess().fen()];
+  const replay = new Chess();
+
+  (saved.moves || []).forEach((m) => {
+    replay.move({
+      from: m.from,
+      to: m.to,
+      promotion: m.promotion || 'q'
+    });
+    positions.push(replay.fen());
+  });
+
+  setPositionHistory(positions);
+  setReviewIndex(positions.length - 1);
+  setIsReviewing(false);
+  refreshBoardState();
+
+  if (saved.isBot) initStockfish();
+  if (saved.gameStarted) {
+  startTimer();
+}
+  return true;
+}, [refreshBoardState, initStockfish,startTimer]);
 
   useEffect(() => () => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -363,5 +476,8 @@ export default function useChessGame({ onGameOver } = {}) {
     handleDrop,
     goToMove,
     getWinner,
+    restoreGame,
+loadLocalGame,
+clearLocalGame,
   };
 }

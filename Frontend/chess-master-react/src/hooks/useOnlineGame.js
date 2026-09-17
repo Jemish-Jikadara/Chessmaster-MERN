@@ -153,7 +153,41 @@ export default function useOnlineGame({ user } = {}) {
       if (!move) return;
       afterMove(move);
     };
+const onOnlineGameState = (data) => {
+  // Rebuild the chess position from all server-side moves
+  gameRef.current = new Chess();
 
+  if (Array.isArray(data.moves)) {
+    data.moves.forEach((moveData) => {
+      gameRef.current.move(moveData);
+    });
+  }
+
+  // Restore timer
+  setWhiteTime(Math.max(0, data.whiteTime));
+  setBlackTime(Math.max(0, data.blackTime));
+
+  // Restore board/history
+  setFen(gameRef.current.fen());
+  setHistory(gameRef.current.history({ verbose: true }));
+
+  // Restore last move highlight
+  const restoredHistory = gameRef.current.history({ verbose: true });
+
+  if (restoredHistory.length > 0) {
+    const last = restoredHistory[restoredHistory.length - 1];
+
+    setLastMove({
+      from: last.from,
+      to: last.to
+    });
+  } else {
+    setLastMove(null);
+  }
+
+  setSelectedSquare(null);
+  setLegalMoves([]);
+};
     const onTimerUpdate = (data) => {
       setWhiteTime(Math.max(0, data.whiteTime));
       setBlackTime(Math.max(0, data.blackTime));
@@ -194,6 +228,7 @@ export default function useOnlineGame({ user } = {}) {
 
     socket.on('opponentMove', onOpponentMove);
     socket.on('timerUpdate', onTimerUpdate);
+    socket.on('onlineGameState', onOnlineGameState);
     socket.on('timeOut', onTimeOut);
     socket.on('opponentDisconnected', onOpponentDisconnected);
     socket.on('opponentReconnected', onOpponentReconnected);
@@ -206,6 +241,7 @@ export default function useOnlineGame({ user } = {}) {
 
     return () => {
       socket.off('opponentMove', onOpponentMove);
+      socket.off('onlineGameState', onOnlineGameState);
       socket.off('timerUpdate', onTimerUpdate);
       socket.off('timeOut', onTimeOut);
       socket.off('opponentDisconnected', onOpponentDisconnected);

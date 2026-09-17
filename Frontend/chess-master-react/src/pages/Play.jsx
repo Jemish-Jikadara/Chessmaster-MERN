@@ -39,6 +39,78 @@ const Play = () => {
   const [whitePlayer, setWhitePlayer] = useState(user?.username || '');
   const [blackPlayer, setBlackPlayer] = useState('');
   const [gameStarted, setGameStarted] = useState(false);
+  useEffect(() => {
+  const saved = chess.loadLocalGame?.();
+  if (!saved) return;
+
+  const restored = chess.restoreGame(saved);
+  if (!restored) return;
+
+  setIsBotMode(!!saved.isBot);
+  setSelectedBot(saved.bot || null);
+  setPickedColor(saved.playerColor || 'w');
+
+  setSelectedTime({
+    minutes: Math.max(1, Math.ceil(Math.max(saved.whiteTime || 0, saved.blackTime || 0) / 60)),
+    increment: saved.increment || 0,
+    mode: 'rapid',
+    label: 'Restored'
+  });
+
+  const playerName = user?.username || 'You';
+  const botName = saved.bot ? `${saved.bot.name} (${saved.bot.rating})` : 'Bot';
+
+  if (saved.isBot) {
+    const white = saved.playerColor === 'w' ? playerName : botName;
+    const black = saved.playerColor === 'w' ? botName : playerName;
+    setWhitePlayer(white);
+    setBlackPlayer(black);
+
+    savedRef.current = {
+      white,
+      black,
+      color: saved.playerColor || 'w',
+      mode: 'rapid',
+      minutes: 10,
+      increment: saved.increment || 0,
+    };
+  } else {
+    setWhitePlayer('White Player');
+    setBlackPlayer('Black Player');
+
+    savedRef.current = {
+      white: 'White Player',
+      black: 'Black Player',
+      color: 'w',
+      mode: 'rapid',
+      minutes: 10,
+      increment: saved.increment || 0,
+    };
+  }
+
+  setGameStarted(true);
+  setScreen('game');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
+useEffect(() => {
+  let isRefreshing = false;
+
+  const handleBeforeUnload = () => {
+    isRefreshing = true;
+  };
+
+  window.addEventListener('beforeunload', handleBeforeUnload);
+
+  return () => {
+    window.removeEventListener('beforeunload', handleBeforeUnload);
+
+    if (!isRefreshing) {
+      chess.clearLocalGame?.();
+    }
+  };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
 
   // Bot data (32 bots, 100-3200 rating)
   const bots = [
@@ -197,6 +269,7 @@ const Play = () => {
   const botColor = () => (savedRef.current.color === 'w' ? 'b' : 'w');
 
   const handlePlayAgain = () => {
+     chess.clearLocalGame?.();
     setScreen('mode');
     setIsBotMode(false);
     setSelectedBot(null);
