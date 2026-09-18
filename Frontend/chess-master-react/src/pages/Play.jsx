@@ -13,7 +13,7 @@ const Play = () => {
     onGameOver: async ({ winner, history: moveHistory }) => {
       if (!moveHistory.length) return;
       try {
-        await api.post('/api/games', {
+       const response = await api.post('/api/games', {
           whitePlayer: savedRef.current.white || 'White Player',
           blackPlayer: savedRef.current.black || 'Black Player',
           winner,
@@ -24,6 +24,8 @@ const Play = () => {
           totalMoves: moveHistory.length,
           moves: moveHistory,
         });
+        console.log("Game saved:", response.data);
+        setSavedGameId(response.data?.game?._id || null);
       } catch (err) {
         console.error('Auto-save game failed:', err);
       }
@@ -34,6 +36,7 @@ const Play = () => {
   const [screen, setScreen] = useState('mode');
   const [isBotMode, setIsBotMode] = useState(false);
   const [selectedBot, setSelectedBot] = useState(null);
+  const [savedGameId, setSavedGameId] = useState(null);
   const [pickedColor, setPickedColor] = useState('w');
   const [selectedTime, setSelectedTime] = useState(null);
   const [whitePlayer, setWhitePlayer] = useState(user?.username || '');
@@ -269,6 +272,7 @@ useEffect(() => {
   const botColor = () => (savedRef.current.color === 'w' ? 'b' : 'w');
 
   const handlePlayAgain = () => {
+    setSavedGameId(null);
      chess.clearLocalGame?.();
     setScreen('mode');
     setIsBotMode(false);
@@ -289,28 +293,27 @@ useEffect(() => {
     <>
       <style>{`
         :root {
-          --gold-primary: #d4af37;
-          --gold-light: #f3e5ab;
-          --gold-dark: #aa7c11;
-          --gold-gradient: linear-gradient(135deg, #fce082 0%, #d4af37 50%, #996515 100%);
-          --gold-glow: 0 0 25px rgba(212, 175, 55, 0.22);
-          --bg-dark: #0a0908;
-          --bg-card: rgba(18, 15, 11, 0.85);
-          --border-gold: rgba(212, 175, 55, 0.28);
-          --border-gold-hover: rgba(212, 175, 55, 0.6);
-          --text-main: #fefcf0;
-          --text-muted: #c5a880;
-          --text-faint: #8c7355;
-          --input-bg: rgba(25, 20, 14, 0.7);
+          --h-bg:#0f1411;
+          --h-panel:#1b241d;
+          --h-panel-2:#222d24;
+          --h-line:rgba(255,255,255,0.09);
+          --h-text:#f5f7f1;
+          --h-muted:#aeb7aa;
+          --h-soft:#d7ded0;
+          --h-green:#81b64c;
+          --h-green-2:#95c95e;
+          --h-dark-green:#5d8b32;
+          --h-gold:#f0c15b;
+          --h-orange:#e58b42;
         }
 
         .play-page {
-          background-color: var(--bg-dark);
+          background-color: var(--h-bg);
           background-image: 
-            radial-gradient(circle at 50% 10%, rgba(212, 175, 55, 0.12) 0%, transparent 50%),
-            radial-gradient(circle at 80% 80%, rgba(170, 124, 17, 0.08) 0%, transparent 60%);
+            radial-gradient(circle at 50% 10%, rgba(129,182,76,0.12) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(240,193,91,0.08) 0%, transparent 60%);
           background-attachment: fixed;
-          color: var(--text-main);
+          color: var(--h-text);
           min-height: 100vh;
           font-family: 'Inter', sans-serif;
         }
@@ -332,24 +335,24 @@ useEffect(() => {
           font-size: 11px;
           letter-spacing: 0.2em;
           text-transform: uppercase;
-          color: var(--gold-primary);
+          color: var(--h-green-2);
           margin-bottom: 10px;
           display: block;
-          font-weight: 600;
+          font-weight: 800;
         }
 
         .play-title {
           font-family: 'Fraunces', serif;
           font-size: clamp(2rem, 5vw, 3rem);
           font-weight: 800;
-          color: var(--gold-light);
+          color: var(--h-text);
           margin: 0 0 10px;
           letter-spacing: -0.02em;
           line-height: 1.1;
         }
 
         .play-sub {
-          color: var(--text-muted);
+          color: var(--h-muted);
           font-size: 15px;
           margin: 0 0 44px;
           line-height: 1.6;
@@ -367,8 +370,8 @@ useEffect(() => {
         }
 
         .mode-card {
-          background: var(--bg-card);
-          border: 1px solid var(--border-gold);
+          background: rgba(255,255,255,0.045);
+          border: 1px solid rgba(255,255,255,0.09);
           border-radius: 18px;
           padding: 36px 28px;
           cursor: pointer;
@@ -378,32 +381,41 @@ useEffect(() => {
           backdrop-filter: blur(12px);
         }
 
-        .mode-card::before {
+        .mode-card.friend::before {
           content: '';
           position: absolute;
           inset: 0;
           opacity: 0;
           transition: opacity 0.3s;
           pointer-events: none;
-        }
-
-        .mode-card.friend::before {
-          background: radial-gradient(ellipse at top left, rgba(212, 175, 55, 0.18), transparent 70%);
+          background: radial-gradient(ellipse at top left, rgba(129,182,76,0.18), transparent 70%);
         }
 
         .mode-card.bot::before {
-          background: radial-gradient(ellipse at top left, rgba(243, 229, 171, 0.18), transparent 70%);
+          content: '';
+          position: absolute;
+          inset: 0;
+          opacity: 0;
+          transition: opacity 0.3s;
+          pointer-events: none;
+          background: radial-gradient(ellipse at top left, rgba(240,193,91,0.18), transparent 70%);
         }
 
         .mode-card.online::before {
-          background: radial-gradient(ellipse at top left, rgba(170, 124, 17, 0.25), transparent 70%);
+          content: '';
+          position: absolute;
+          inset: 0;
+          opacity: 0;
+          transition: opacity 0.3s;
+          pointer-events: none;
+          background: radial-gradient(ellipse at top left, rgba(229,139,66,0.25), transparent 70%);
         }
 
         .mode-card:hover {
-          border-color: var(--border-gold-hover);
-          background: rgba(30, 24, 16, 0.85);
+          border-color: rgba(129,182,76,0.35);
+          background: rgba(255,255,255,0.06);
           transform: translateY(-3px);
-          box-shadow: var(--gold-glow);
+          box-shadow: 0 12px 30px rgba(0,0,0,0.35);
         }
 
         .mode-card:hover::before { opacity: 1; }
@@ -418,13 +430,13 @@ useEffect(() => {
           font-family: 'Fraunces', serif;
           font-size: 20px;
           font-weight: 700;
-          color: var(--gold-light);
+          color: var(--h-text);
           margin: 0 0 8px;
         }
 
         .mode-card p {
           font-size: 13px;
-          color: var(--text-muted);
+          color: var(--h-muted);
           line-height: 1.6;
           margin: 0 0 24px;
         }
@@ -432,10 +444,10 @@ useEffect(() => {
         .mode-btn {
           width: 100%;
           padding: 13px;
-          background: rgba(212, 175, 55, 0.12);
-          border: 1px solid var(--border-gold);
+          background: rgba(129,182,76,0.12);
+          border: 1px solid rgba(129,182,76,0.25);
           border-radius: 10px;
-          color: var(--gold-light);
+          color: var(--h-green-2);
           font-family: 'Syne', sans-serif;
           font-size: 13px;
           font-weight: 600;
@@ -445,11 +457,11 @@ useEffect(() => {
         }
 
         .mode-btn:hover {
-          background: var(--gold-gradient);
-          border-color: var(--gold-primary);
-          color: #0a0908;
+          background: rgba(129,182,76,0.2);
+          border-color: rgba(129,182,76,0.45);
+          color: #ffffff;
           font-weight: 700;
-          box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+          box-shadow: 0 4px 15px rgba(129,182,76,0.3);
         }
 
         /* Bot Grid */
@@ -461,8 +473,8 @@ useEffect(() => {
         }
 
         .bot-card {
-          background: var(--bg-card);
-          border: 1px solid var(--border-gold);
+          background: rgba(255,255,255,0.045);
+          border: 1px solid rgba(255,255,255,0.09);
           border-radius: 12px;
           padding: 16px 10px;
           text-align: center;
@@ -471,38 +483,38 @@ useEffect(() => {
         }
 
         .bot-card:hover {
-          border-color: var(--gold-primary);
-          background: rgba(212, 175, 55, 0.15);
+          border-color: rgba(129,182,76,0.35);
+          background: rgba(129,182,76,0.1);
           transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
+          box-shadow: 0 4px 12px rgba(129,182,76,0.2);
         }
 
         .bot-card.selected {
-          border-color: var(--gold-light);
-          background: var(--gold-gradient);
-          color: #0a0908;
+          border-color: var(--h-green);
+          background: rgba(129,182,76,0.15);
+          color: var(--h-text);
         }
 
         .bot-card.selected .bot-name,
         .bot-card.selected .bot-title,
         .bot-card.selected .bot-rating {
-          color: #0a0908 !important;
+          color: var(--h-text) !important;
         }
 
         .bot-icon { font-size: 1.5rem; margin-bottom: 6px; }
-        .bot-name { font-size: 12px; font-weight: 600; color: var(--text-main); }
+        .bot-name { font-size: 12px; font-weight: 600; color: var(--h-text); }
         .bot-rating {
           font-family: 'JetBrains Mono', monospace;
           font-size: 13px;
           font-weight: 700;
           margin: 2px 0;
-          color: var(--gold-primary);
+          color: var(--h-green-2);
         }
-        .bot-title { font-size: 10px; color: var(--text-muted); }
+        .bot-title { font-size: 10px; color: var(--h-muted); }
 
         .bot-card[data-level="beginner"] .bot-rating { color: #6ee7b7; }
         .bot-card[data-level="novice"] .bot-rating { color: #93c5fd; }
-        .bot-card[data-level="intermediate"] .bot-rating { color: var(--gold-light); }
+        .bot-card[data-level="intermediate"] .bot-rating { color: var(--h-green-2); }
         .bot-card[data-level="club"] .bot-rating { color: #fbbf24; }
         .bot-card[data-level="advanced"] .bot-rating { color: #fb923c; }
         .bot-card[data-level="expert"] .bot-rating { color: #f87171; }
@@ -522,8 +534,8 @@ useEffect(() => {
         }
 
         .time-card {
-          background: var(--bg-card);
-          border: 1px solid var(--border-gold);
+          background: rgba(255,255,255,0.045);
+          border: 1px solid rgba(255,255,255,0.09);
           border-radius: 14px;
           padding: 24px 18px;
           transition: border-color 0.2s, box-shadow 0.2s;
@@ -531,21 +543,21 @@ useEffect(() => {
         }
 
         .time-card:hover {
-          border-color: var(--gold-primary);
-          box-shadow: var(--gold-glow);
+          border-color: rgba(129,182,76,0.35);
+          box-shadow: 0 12px 30px rgba(0,0,0,0.35);
         }
 
         .time-card h3 {
           font-family: 'Fraunces', serif;
           font-size: 16px;
           font-weight: 700;
-          color: var(--gold-light);
+          color: var(--h-text);
           margin: 0 0 6px;
         }
 
         .time-card p {
           font-size: 12px;
-          color: var(--text-muted);
+          color: var(--h-muted);
           margin: 0 0 16px;
           line-height: 1.5;
         }
@@ -558,10 +570,10 @@ useEffect(() => {
 
         .time-btns button {
           padding: 10px;
-          background: rgba(25, 20, 14, 0.6);
-          border: 1px solid var(--border-gold);
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.12);
           border-radius: 8px;
-          color: var(--text-main);
+          color: var(--h-text);
           font-family: 'Syne', sans-serif;
           font-size: 13px;
           font-weight: 600;
@@ -570,11 +582,11 @@ useEffect(() => {
         }
 
         .time-btns button:hover {
-          border-color: var(--gold-primary);
-          color: #0a0908;
-          background: var(--gold-gradient);
+          border-color: rgba(129,182,76,0.35);
+          color: #ffffff;
+          background: rgba(129,182,76,0.12);
           font-weight: 700;
-          box-shadow: 0 4px 12px rgba(212, 175, 55, 0.25);
+          box-shadow: 0 4px 12px rgba(129,182,76,0.25);
         }
 
         /* Player Setup */
@@ -593,16 +605,16 @@ useEffect(() => {
           font-size: 11px;
           font-family: 'JetBrains Mono', monospace;
           letter-spacing: 0.12em;
-          color: var(--gold-light);
+          color: var(--h-green-2);
           text-transform: uppercase;
         }
 
         .player-form input {
           padding: 14px 16px;
-          background: var(--input-bg);
-          border: 1px solid var(--border-gold);
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.12);
           border-radius: 10px;
-          color: var(--text-main);
+          color: var(--h-text);
           font-size: 15px;
           font-family: 'Inter', sans-serif;
           outline: none;
@@ -610,34 +622,34 @@ useEffect(() => {
         }
 
         .player-form input:focus {
-          border-color: var(--gold-primary);
-          box-shadow: 0 0 12px rgba(212, 175, 55, 0.25);
-          background: rgba(30, 24, 16, 0.85);
+          border-color: var(--h-green);
+          box-shadow: 0 0 12px rgba(129,182,76,0.25);
+          background: rgba(129,182,76,0.06);
         }
 
         .player-form input::placeholder {
-          color: var(--text-faint);
+          color: var(--h-muted);
         }
 
         .continue-btn {
           padding: 14px;
-          background: var(--gold-gradient);
+          background: linear-gradient(180deg,#9bd761,#7fb64a);
           border: none;
           border-radius: 10px;
-          color: #0a0908;
+          color: #10180e;
           font-family: 'Syne', sans-serif;
           font-size: 14px;
           font-weight: 700;
           cursor: pointer;
           transition: transform 0.2s, box-shadow 0.2s;
-          box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
+          box-shadow: 0 16px 30px rgba(129,182,76,.25), inset 0 1px rgba(255,255,255,.45);
           margin-top: 8px;
         }
 
         .continue-btn:hover {
           transform: translateY(-2px);
-          box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
-          filter: brightness(1.05);
+          background: linear-gradient(180deg,#a8e372,#82bd4a);
+          box-shadow: 0 20px 38px rgba(129,182,76,.32), inset 0 1px rgba(255,255,255,.55);
         }
 
         .back-btn {
@@ -646,10 +658,10 @@ useEffect(() => {
           gap: 6px;
           margin-top: 24px;
           padding: 10px 20px;
-          background: rgba(10, 9, 8, 0.4);
-          border: 1px solid var(--border-gold);
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,255,255,0.12);
           border-radius: 8px;
-          color: var(--text-muted);
+          color: var(--h-text);
           font-size: 13px;
           cursor: pointer;
           transition: all 0.25s ease;
@@ -657,9 +669,34 @@ useEffect(() => {
         }
 
         .back-btn:hover {
-          border-color: var(--gold-primary);
-          color: var(--gold-light);
-          background: rgba(212, 175, 55, 0.05);
+          border-color: rgba(129,182,76,0.35);
+          color: #ffffff;
+          background: rgba(129,182,76,0.1);
+        }
+
+        .game-over-card {
+          position: relative;
+        }
+
+        .game-over-close {
+          position: absolute;
+          top: 10px;
+          right: 12px;
+          width: 32px;
+          height: 32px;
+          border: 1px solid rgba(255,255,255,0.12);
+          background: rgba(255,255,255,0.06);
+          color: var(--h-text);
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 18px;
+          line-height: 1;
+        }
+
+        .game-over-close:hover {
+          border-color: rgba(129,182,76,0.35);
+          color: #ffffff;
+          background: rgba(129,182,76,0.12);
         }
 
         /* Game Layout */
@@ -678,14 +715,14 @@ useEffect(() => {
         }
 
         .board-shell {
-          background: var(--bg-card);
-          border: 1px solid var(--border-gold);
+          background: rgba(255,255,255,0.045);
+          border: 1px solid rgba(255,255,255,0.09);
           border-radius: 20px;
           padding: 20px;
           display: flex;
           flex-direction: column;
           gap: 14px;
-          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), var(--gold-glow);
+          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
           backdrop-filter: blur(12px);
           position: relative;
         }
@@ -695,9 +732,9 @@ useEffect(() => {
           align-items: center;
           justify-content: space-between;
           padding: 12px 14px;
-          background: rgba(25, 20, 14, 0.6);
+          background: rgba(255,255,255,0.04);
           border-radius: 10px;
-          border: 1px solid var(--border-gold);
+          border: 1px solid rgba(255,255,255,0.12);
           transition: all 0.25s ease;
         }
 
@@ -719,26 +756,26 @@ useEffect(() => {
         }
 
         .ps-avatar.white-av {
-          background: var(--gold-light);
-          color: #0a0908;
+          background: var(--h-text);
+          color: var(--h-bg);
           font-weight: bold;
         }
 
         .ps-avatar.black-av {
-          background: #120f0b;
-          border: 1px solid var(--gold-dark);
-          color: var(--gold-light);
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,255,255,0.12);
+          color: var(--h-text);
         }
 
         .ps-name {
           font-size: 14px;
           font-weight: 600;
-          color: var(--text-main);
+          color: var(--h-text);
         }
 
         .ps-thinking {
           font-size: 11px;
-          color: var(--gold-primary);
+          color: var(--h-green-2);
           display: none;
           animation: pulse 1.2s ease-in-out infinite;
           font-family: 'JetBrains Mono', monospace;
@@ -753,19 +790,19 @@ useEffect(() => {
           font-family: 'JetBrains Mono', monospace;
           font-size: 20px;
           font-weight: 700;
-          color: var(--gold-light);
+          color: var(--h-text);
           min-width: 70px;
           text-align: right;
         }
 
         .player-strip.active-turn {
-          border-color: var(--gold-primary);
-          background: rgba(212, 175, 55, 0.12);
-          box-shadow: inset 0 0 10px rgba(212, 175, 55, 0.15);
+          border-color: rgba(129,182,76,0.35);
+          background: rgba(129,182,76,0.1);
+          box-shadow: inset 0 0 10px rgba(129,182,76,0.15);
         }
 
         .player-strip.active-turn .ps-clock {
-          color: var(--gold-primary);
+          color: var(--h-green-2);
         }
 
         .player-strip.low-time .ps-clock {
@@ -780,7 +817,7 @@ useEffect(() => {
         }
 
         .status-turn {
-          color: var(--text-muted);
+          color: var(--h-muted);
           font-family: 'Inter', sans-serif;
         }
 
@@ -793,21 +830,21 @@ useEffect(() => {
         }
 
         .status-badge.active {
-          background: rgba(212, 175, 55, 0.15);
-          color: var(--gold-light);
-          border: 1px solid var(--border-gold);
+          background: rgba(129,182,76,0.15);
+          color: var(--h-green-2);
+          border: 1px solid rgba(129,182,76,0.25);
         }
 
         .status-badge.check {
-          background: rgba(250, 204, 21, 0.15);
-          color: #facc15;
-          border: 1px solid rgba(250, 204, 21, 0.3);
+          background: rgba(240,193,91,0.15);
+          color: var(--h-gold);
+          border: 1px solid rgba(240,193,91,0.3);
         }
 
         .status-badge.over {
-          background: rgba(239, 68, 68, 0.15);
+          background: rgba(239,68,68,0.15);
           color: #ef4444;
-          border: 1px solid rgba(239, 68, 68, 0.3);
+          border: 1px solid rgba(239,68,68,0.3);
         }
 
         .board-scroll {
@@ -822,7 +859,7 @@ useEffect(() => {
           aspect-ratio: 1;
           border-radius: 8px;
           overflow: hidden;
-          border: 2px solid var(--border-gold);
+          border: 2px solid rgba(255,255,255,0.12);
           box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
         }
 
@@ -843,44 +880,43 @@ useEffect(() => {
         }
 
         .action-btn.primary {
-          background: var(--gold-gradient);
+          background: linear-gradient(180deg,#9bd761,#7fb64a);
           border: none;
-          color: #0a0908;
+          color: #10180e;
           font-weight: 700;
-          box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
+          box-shadow: 0 16px 30px rgba(129,182,76,.25), inset 0 1px rgba(255,255,255,.45);
         }
 
         .action-btn.primary:hover {
           transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
-          filter: brightness(1.05);
+          background: linear-gradient(180deg,#a8e372,#82bd4a);
+          box-shadow: 0 20px 38px rgba(129,182,76,.32), inset 0 1px rgba(255,255,255,.55);
         }
 
         .action-btn.primary:disabled {
-          background: rgba(25, 20, 14, 0.5);
-          border: 1px solid var(--border-gold);
-          color: var(--text-faint);
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.12);
+          color: var(--h-muted);
           cursor: not-allowed;
           box-shadow: none;
-          filter: none;
         }
 
         .action-btn.secondary {
-          background: rgba(10, 9, 8, 0.4);
-          border: 1px solid var(--border-gold);
-          color: var(--text-muted);
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,255,255,0.12);
+          color: var(--h-text);
         }
 
         .action-btn.secondary:hover {
-          border-color: var(--gold-primary);
-          color: var(--gold-light);
-          background: rgba(212, 175, 55, 0.05);
+          border-color: rgba(129,182,76,0.35);
+          color: #ffffff;
+          background: rgba(129,182,76,0.1);
         }
 
         .game-over-overlay {
           position: absolute;
           inset: 0;
-          background: rgba(10, 9, 8, 0.85);
+          background: rgba(15,20,17,0.85);
           border-radius: 20px;
           display: none;
           place-items: center;
@@ -893,36 +929,36 @@ useEffect(() => {
         }
 
         .game-over-card {
-          background: var(--bg-card);
-          border: 1px solid var(--gold-primary);
+          background: rgba(255,255,255,0.045);
+          border: 1px solid rgba(255,255,255,0.09);
           border-radius: 18px;
           padding: 40px 36px;
           text-align: center;
           max-width: 320px;
           width: 90%;
-          box-shadow: 0 0 50px rgba(212, 175, 55, 0.3);
+          box-shadow: 0 0 50px rgba(0,0,0,0.4);
         }
 
         .go-kicker {
           font-family: 'JetBrains Mono', monospace;
           font-size: 11px;
           letter-spacing: 0.2em;
-          color: var(--gold-primary);
+          color: var(--h-green-2);
           text-transform: uppercase;
           margin-bottom: 10px;
-          font-weight: 600;
+          font-weight: 800;
         }
 
         .game-over-card h2 {
           font-family: 'Fraunces', serif;
           font-size: 28px;
           font-weight: 800;
-          color: var(--gold-light);
+          color: var(--h-text);
           margin: 0 0 8px;
         }
 
         .game-over-card p {
-          color: var(--text-muted);
+          color: var(--h-muted);
           font-size: 14px;
           margin: 0 0 28px;
         }
@@ -934,15 +970,15 @@ useEffect(() => {
 
         /* History Panel */
         .history-panel {
-          background: var(--bg-card);
-          border: 1px solid var(--border-gold);
+          background: rgba(255,255,255,0.045);
+          border: 1px solid rgba(255,255,255,0.09);
           border-radius: 20px;
           padding: 20px;
           display: flex;
           flex-direction: column;
           gap: 14px;
           max-height: 700px;
-          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
           backdrop-filter: blur(12px);
         }
 
@@ -954,26 +990,26 @@ useEffect(() => {
 
         .hh-label {
           font-size: 11px;
-          color: var(--gold-primary);
+          color: var(--h-green-2);
           text-transform: uppercase;
           letter-spacing: 0.12em;
           margin-bottom: 2px;
           font-family: 'JetBrains Mono', monospace;
-          font-weight: 600;
+          font-weight: 800;
         }
 
         .history-head h2 {
           font-family: 'Fraunces', serif;
           font-size: 16px;
           font-weight: 700;
-          color: var(--gold-light);
+          color: var(--h-text);
           margin: 0;
         }
 
         .move-count-badge {
-          background: rgba(212, 175, 55, 0.15);
-          border: 1px solid var(--border-gold);
-          color: var(--gold-light);
+          background: rgba(129,182,76,0.15);
+          border: 1px solid rgba(129,182,76,0.25);
+          color: var(--h-green-2);
           font-family: 'JetBrains Mono', monospace;
           font-size: 13px;
           font-weight: 700;
@@ -985,17 +1021,17 @@ useEffect(() => {
           display: flex;
           align-items: center;
           gap: 8px;
-          background: rgba(25, 20, 14, 0.6);
+          background: rgba(255,255,255,0.04);
           border-radius: 10px;
           padding: 10px 12px;
-          border: 1px solid var(--border-gold);
+          border: 1px solid rgba(255,255,255,0.12);
         }
 
         .review-controls button {
           background: transparent;
-          border: 1px solid var(--border-gold);
+          border: 1px solid rgba(255,255,255,0.12);
           border-radius: 6px;
-          color: var(--text-muted);
+          color: var(--h-muted);
           padding: 5px 12px;
           cursor: pointer;
           font-size: 14px;
@@ -1003,9 +1039,9 @@ useEffect(() => {
         }
 
         .review-controls button:hover:not(:disabled) {
-          border-color: var(--gold-primary);
-          color: var(--gold-light);
-          background: rgba(212, 175, 55, 0.1);
+          border-color: rgba(129,182,76,0.35);
+          color: var(--h-green-2);
+          background: rgba(129,182,76,0.1);
         }
 
         .review-controls button:disabled {
@@ -1017,7 +1053,7 @@ useEffect(() => {
           flex: 1;
           text-align: center;
           font-size: 12px;
-          color: var(--text-muted);
+          color: var(--h-muted);
           font-family: 'Syne', sans-serif;
         }
 
@@ -1028,36 +1064,36 @@ useEffect(() => {
           flex-direction: column;
           gap: 6px;
           scrollbar-width: thin;
-          scrollbar-color: var(--border-gold) transparent;
+          scrollbar-color: rgba(255,255,255,0.12) transparent;
         }
 
         .move-history p {
-          color: var(--text-faint);
+          color: var(--h-muted);
           font-size: 13px;
         }
 
         .move-item {
-          background: rgba(25, 20, 14, 0.5);
-          border: 1px solid rgba(212, 175, 55, 0.15);
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.09);
           border-radius: 8px;
           padding: 10px 14px;
           font-size: 13px;
         }
 
         .move-num {
-          color: var(--gold-primary);
+          color: var(--h-green-2);
           font-weight: 700;
           margin-right: 4px;
           font-family: 'JetBrains Mono', monospace;
         }
 
         .move-san {
-          color: var(--text-main);
+          color: var(--h-text);
           font-weight: 500;
         }
 
         .move-sq {
-          color: var(--text-faint);
+          color: var(--h-muted);
           font-size: 11px;
           margin-left: 6px;
         }
@@ -1297,6 +1333,14 @@ useEffect(() => {
                 {chess.gameOver && chess.gameOverInfo && (
                   <div id="gameOverModal" className="game-over-overlay" style={{ display: 'grid' }}>
                     <div className="game-over-card">
+                      <button
+    type="button"
+    className="game-over-close"
+    onClick={chess.closeGameOver}
+    aria-label="Close game over"
+  >
+    ✕
+  </button>
                       <div className="go-kicker">Game Over</div>
                       <h2 id="gameOverTitle">{chess.gameOverInfo.title}</h2>
                       <p id="gameOverMessage">{chess.gameOverInfo.message}</p>
@@ -1324,6 +1368,15 @@ useEffect(() => {
                         >
                           New Game
                         </button>
+                        {savedGameId && (
+  <button
+    type="button"
+    className="action-btn secondary"
+    onClick={() => navigate(`/replay/${savedGameId}`)}
+  >
+    ▶ Replay
+  </button>
+)}
                         <button
                           type="button"
                           className="action-btn secondary"
@@ -1353,12 +1406,12 @@ useEffect(() => {
                 </div>
                 <div id="moveHistory" className="move-history">
                   {chess.history.length === 0 ? (
-                    <p style={{ color: '#8c7355' }}>No moves yet.</p>
+                    <p style={{ color: 'var(--h-muted)' }}>No moves yet.</p>
                   ) : (
                     chess.history.map((move, index) => (
-                      <div key={index} style={{ background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: '10px', padding: '10px 14px', marginBottom: '6px', fontSize: '14px' }}>
-                        <span style={{ color: 'var(--gold-primary)', fontWeight: 700 }}>{index + 1}.</span> {move.san}
-                        <span style={{ color: 'var(--text-faint)', fontSize: '11px', marginLeft: '6px' }}>({move.from} → {move.to})</span>
+                      <div key={index} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: '10px', padding: '10px 14px', marginBottom: '6px', fontSize: '14px' }}>
+                        <span style={{ color: 'var(--h-green-2)', fontWeight: 700 }}>{index + 1}.</span> {move.san}
+                        <span style={{ color: 'var(--h-muted)', fontSize: '11px', marginLeft: '6px' }}>({move.from} → {move.to})</span>
                       </div>
                     ))
                   )}

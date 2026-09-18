@@ -17,6 +17,265 @@ const countries = [
   { code: 'OTHER', flag: '🌍', name: 'Other' },
 ];
 
+const pageStyles = `
+.h-page{
+  --h-bg:#0f1411;
+  --h-panel:#1b241d;
+  --h-panel-2:#222d24;
+  --h-line:rgba(255,255,255,0.09);
+  --h-text:#f5f7f1;
+  --h-muted:#aeb7aa;
+  --h-soft:#d7ded0;
+  --h-green:#81b64c;
+  --h-green-2:#95c95e;
+  --h-dark-green:#5d8b32;
+  --h-gold:#f0c15b;
+  --h-orange:#e58b42;
+  background:
+    linear-gradient(180deg,rgba(129,182,76,0.08),transparent 360px),
+    radial-gradient(circle at 15% 8%,rgba(129,182,76,0.18),transparent 34%),
+    radial-gradient(circle at 85% 12%,rgba(240,193,91,0.1),transparent 32%),
+    var(--h-bg);
+  color:var(--h-text);
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:80px 20px;
+}
+
+.h-page *{ box-sizing:border-box; }
+
+.cm2-wrap{
+  width:min(1180px,calc(100% - 40px));
+  margin:0 auto;
+}
+
+.cm2-eyebrow{
+  display:inline-flex;
+  align-items:center;
+  gap:9px;
+  color:var(--h-green-2);
+  font-size:12px;
+  line-height:1;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.14em;
+  margin-bottom:18px;
+}
+
+.cm2-eyebrow .sq{
+  width:9px;
+  height:9px;
+  border-radius:2px;
+  background:var(--h-green);
+  box-shadow:0 0 0 5px rgba(129,182,76,.12);
+}
+
+.cm2-h1{
+  margin:0;
+  color:var(--h-text);
+  font-size:clamp(2.2rem,5vw,3.2rem);
+  line-height:1.02;
+  letter-spacing:0;
+  font-weight:900;
+}
+
+.cm2-accent{
+  color:var(--h-green-2);
+}
+
+.cm2-sub{
+  max-width:520px;
+  margin:14px 0 0;
+  color:var(--h-muted);
+  font-size:15px;
+  line-height:1.7;
+}
+
+.cm2-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:48px;
+  padding:0 20px;
+  border-radius:8px;
+  font-size:15px;
+  font-weight:850;
+  text-decoration:none;
+  border:1px solid transparent;
+  transition:transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
+  width:100%;
+  cursor:pointer;
+}
+
+.cm2-btn:hover{
+  transform:translateY(-2px);
+}
+
+.cm2-btn-primary{
+  color:#10180e;
+  background:linear-gradient(180deg,#9bd761,#7fb64a);
+  box-shadow:0 16px 30px rgba(129,182,76,.25), inset 0 1px rgba(255,255,255,.45);
+}
+
+.cm2-btn-primary:hover{
+  background:linear-gradient(180deg,#a8e372,#82bd4a);
+  box-shadow:0 20px 38px rgba(129,182,76,.32), inset 0 1px rgba(255,255,255,.55);
+}
+
+.cm2-btn:disabled{
+  opacity:0.6;
+  cursor:not-allowed;
+  transform:none;
+}
+
+/* Setup specific */
+.sp-card{
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:12px;
+  padding:36px 32px;
+  width:100%;
+  max-width:650px;
+  position:relative;
+  box-shadow:0 16px 36px rgba(0,0,0,.35);
+}
+
+.sp-kicker{
+  display:inline-block;
+  color:var(--h-green-2);
+  font-size:11px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.18em;
+  margin-bottom:8px;
+}
+
+.sp-title{
+  margin:0 0 8px;
+  color:var(--h-text);
+  font-size:2.2rem;
+  font-weight:900;
+}
+
+.sp-sub{
+  margin:0 0 24px;
+  color:var(--h-muted);
+  font-size:14px;
+  line-height:1.65;
+}
+
+.sp-avatar-box{
+  display:flex;
+  justify-content:center;
+  margin-bottom:26px;
+}
+
+.sp-avatar{
+  width:120px;
+  height:120px;
+  border-radius:50%;
+  overflow:hidden;
+  border:3px solid var(--h-green);
+  box-shadow:0 0 20px rgba(129,182,76,.35);
+  background:#0d0b08;
+}
+
+.sp-avatar img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.sp-form{
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+}
+
+.sp-form-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+}
+
+.sp-form label{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  font-size:11px;
+  font-weight:800;
+  color:var(--h-muted);
+  text-transform:uppercase;
+  letter-spacing:.12em;
+}
+
+.sp-form input,
+.sp-form textarea,
+.sp-form select{
+  padding:13px 16px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:10px;
+  color:#ffffff;
+  font-size:14px;
+  outline:none;
+  transition:all .2s ease;
+}
+
+.sp-form input:focus,
+.sp-form textarea:focus,
+.sp-form select:focus{
+  border-color:var(--h-green);
+  background:rgba(129,182,76,.06);
+  box-shadow:0 0 0 3px rgba(129,182,76,.15);
+}
+
+.sp-form select option{
+  background-color:#0f1411;
+  color:var(--h-text);
+}
+
+.sp-form textarea{
+  resize:none;
+  height:90px;
+}
+
+.sp-optional{
+  font-size:10px;
+  color:var(--h-muted);
+  text-transform:lowercase;
+  font-weight:normal;
+}
+
+.sp-error{
+  color:#f87171;
+  font-size:13px;
+  margin:0;
+}
+
+/* Responsive */
+@media (max-width:650px){
+  .sp-form-row{
+    grid-template-columns:1fr;
+  }
+  .sp-card{
+    padding:28px 22px;
+  }
+}
+
+@media (max-width:560px){
+  .h-page{
+    padding:46px 18px;
+  }
+  .sp-title{
+    font-size:1.9rem;
+  }
+}
+`;
+
 const SetupProfile = () => {
   const { setupProfile } = useAuth();
   const navigate = useNavigate();
@@ -58,19 +317,19 @@ const SetupProfile = () => {
 
     setSaving(true);
     try {
-     const data = new FormData();
-Object.entries(formData).forEach(([key, value]) => data.append(key, value));
+      const data = new FormData();
+      Object.entries(formData).forEach(([key, value]) => data.append(key, value));
 
-const setupToken = localStorage.getItem('setupToken');
-if (setupToken) {
-  data.append('setupToken', setupToken);
-}
+      const setupToken = localStorage.getItem('setupToken');
+      if (setupToken) {
+        data.append('setupToken', setupToken);
+      }
 
-if (imageFile) data.append('profileImage', imageFile);
+      if (imageFile) data.append('profileImage', imageFile);
 
-await setupProfile(data);
-localStorage.removeItem('setupToken');
-navigate('/profile');
+      await setupProfile(data);
+      localStorage.removeItem('setupToken');
+      navigate('/profile');
     } catch (err) {
       setError(err?.response?.data?.message || 'Something went wrong. Please try again.');
     } finally {
@@ -80,43 +339,9 @@ navigate('/profile');
 
   return (
     <>
-      <style>{`
-        :root {
-          --gold-primary: #d4af37;
-          --gold-light: #f3e5ab;
-          --gold-gradient: linear-gradient(135deg, #fce082 0%, #d4af37 50%, #996515 100%);
-          --gold-glow: 0 0 25px rgba(212, 175, 55, 0.22);
-          --bg-card: rgba(18, 15, 11, 0.85);
-          --border-gold: rgba(212, 175, 55, 0.28);
-          --text-main: #fefcf0;
-          --text-muted: #c5a880;
-          --text-faint: #8c7355;
-          --input-bg: rgba(25, 20, 14, 0.7);
-        }
-        .sp-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 80px 20px; background: #080810; }
-        .sp-card { width: 100%; max-width: 650px; background: var(--bg-card); border: 1px solid var(--border-gold); border-radius: 22px; padding: 45px 40px; box-shadow: 0 20px 50px rgba(0,0,0,0.7), var(--gold-glow); position: relative; overflow: hidden; }
-        .sp-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--gold-gradient); }
-        .sp-kicker { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 8px; display: inline-block; font-weight: 600; }
-        .sp-title { font-family: 'Fraunces', serif; font-size: 34px; font-weight: 700; color: var(--gold-light); margin-bottom: 8px; }
-        .sp-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 30px; line-height: 1.6; }
-        .sp-avatar-box { display: flex; justify-content: center; margin-bottom: 26px; }
-        .sp-avatar { width: 120px; height: 120px; border-radius: 50%; overflow: hidden; border: 3px solid var(--gold-primary); box-shadow: 0 0 20px rgba(212,175,55,0.35); background: #0d0b08; }
-        .sp-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .sp-form { display: flex; flex-direction: column; gap: 20px; }
-        .sp-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-        @media(max-width: 650px) { .sp-form-row { grid-template-columns: 1fr; } .sp-card { padding: 30px 20px; } }
-        .sp-form label { display: flex; flex-direction: column; gap: 8px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold-light); }
-        .sp-form input, .sp-form textarea, .sp-form select { padding: 13px 16px; background: var(--input-bg); border: 1px solid var(--border-gold); border-radius: 12px; color: var(--text-main); font-size: 14px; outline: none; }
-        .sp-form input:focus, .sp-form textarea:focus, .sp-form select:focus { border-color: var(--gold-primary); box-shadow: 0 0 12px rgba(212,175,55,0.25); }
-        .sp-form select option { background-color: #120f0b; color: var(--text-main); }
-        .sp-form textarea { resize: none; height: 90px; }
-        .sp-optional { font-size: 10px; color: var(--text-faint); text-transform: lowercase; font-weight: normal; }
-        .sp-error { color: #f87171; font-size: 13px; }
-        .sp-btn-save { padding: 14px; border: none; border-radius: 12px; cursor: pointer; font-weight: 700; font-size: 14px; background: var(--gold-gradient); color: #0a0908; margin-top: 10px; }
-        .sp-btn-save:disabled { opacity: 0.6; cursor: default; }
-      `}</style>
+      <style dangerouslySetInnerHTML={{ __html: pageStyles }} />
 
-      <div className="sp-wrap">
+      <main className="h-page">
         <div className="sp-card">
           <span className="sp-kicker">Almost There</span>
           <h1 className="sp-title">Set Up Your Profile</h1>
@@ -176,12 +401,12 @@ navigate('/profile');
 
             {error && <p className="sp-error">{error}</p>}
 
-            <button type="submit" className="sp-btn-save" disabled={saving}>
+            <button type="submit" className="cm2-btn cm2-btn-primary" disabled={saving}>
               {saving ? 'Saving...' : 'Complete Setup →'}
             </button>
           </form>
         </div>
-      </div>
+      </main>
     </>
   );
 };

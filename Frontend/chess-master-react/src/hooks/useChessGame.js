@@ -68,6 +68,9 @@ const blackTimeRef = useRef(0);
   const gameOverRef = useRef(false);
   const botRequestIdRef = useRef(0);
 
+const closeGameOver = useCallback(() => {
+  setGameOver(false);
+}, []);
   useEffect(() => {
     gameOverRef.current = gameOver;
   }, [gameOver]);
@@ -462,6 +465,7 @@ blackTime: blackTimeRef.current,
     isReviewing,
     gameStarted,
     gameOver,
+    closeGameOver,
     gameOverInfo,
     botThinking,
     whiteTime,

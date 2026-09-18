@@ -114,7 +114,7 @@ const Friends = () => {
       <span style={{
         fontSize: isLarge ? '28px' : '16px',
         fontWeight: 700,
-        color: '#000',
+        color: '#10180e',
       }}>
         {person?.username?.charAt(0)?.toUpperCase() || '?'}
       </span>
@@ -125,33 +125,34 @@ const Friends = () => {
     <>
       <style>{`
         :root {
-          --gold: #C9A227;
-          --gold-light: #F0D265;
-          --gold-dark: #8F6B18;
-          --bg-dark: #0A0A0C;
-          --card-bg: rgba(22, 22, 26, 0.75);
-          --card-border: rgba(201, 162, 39, 0.15);
-          --card-border-hover: rgba(201, 162, 39, 0.4);
-          --text-main: #F5F2EA;
-          --text-muted: #8E8E93;
-          --danger: #FF453A;
-          --danger-bg: rgba(255, 69, 58, 0.1);
+          --h-bg:#0f1411;
+          --h-panel:#1b241d;
+          --h-panel-2:#222d24;
+          --h-line:rgba(255,255,255,0.09);
+          --h-text:#f5f7f1;
+          --h-muted:#aeb7aa;
+          --h-soft:#d7ded0;
+          --h-green:#81b64c;
+          --h-green-2:#95c95e;
+          --h-dark-green:#5d8b32;
+          --h-gold:#f0c15b;
+          --h-orange:#e58b42;
         }
 
         .friends-page {
-          background-color: var(--bg-dark);
-          color: var(--text-main);
+          background-color: var(--h-bg);
+          color: var(--h-text);
           font-family: 'Inter', sans-serif;
           background-image: 
-            radial-gradient(circle at 10% 10%, rgba(201, 162, 39, 0.05) 0%, transparent 40%),
-            radial-gradient(circle at 90% 80%, rgba(201, 162, 39, 0.03) 0%, transparent 50%);
+            radial-gradient(circle at 10% 10%, rgba(129,182,76,0.06) 0%, transparent 40%),
+            radial-gradient(circle at 90% 80%, rgba(240,193,91,0.05) 0%, transparent 50%);
           min-height: 100vh;
         }
 
         .friends-hero {
           padding: 45px 0 25px;
-          border-bottom: 1px solid var(--card-border);
-          background: linear-gradient(180deg, rgba(20,20,25,0.8) 0%, rgba(10,10,12,0) 100%);
+          border-bottom: 1px solid var(--h-line);
+          background: linear-gradient(180deg, rgba(27,36,29,0.8) 0%, rgba(15,20,17,0) 100%);
         }
 
         .hero-inner {
@@ -173,12 +174,12 @@ const Friends = () => {
           width: 72px;
           height: 72px;
           border-radius: 50%;
-          background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+          background: linear-gradient(135deg, var(--h-green-2), var(--h-green));
           display: flex;
           align-items: center;
           justify-content: center;
-          border: 2px solid var(--gold);
-          box-shadow: 0 0 20px rgba(201, 162, 39, 0.25);
+          border: 2px solid var(--h-green);
+          box-shadow: 0 0 20px rgba(129,182,76,0.25);
           overflow: hidden;
           flex-shrink: 0;
         }
@@ -187,11 +188,12 @@ const Friends = () => {
           font-family: 'Fraunces', serif;
           font-size: 32px;
           margin: 0 0 4px 0;
+          color: var(--h-text);
         }
 
         .hero-info p {
           margin: 0;
-          color: var(--text-muted);
+          color: var(--h-muted);
           font-size: 14px;
         }
 
@@ -201,8 +203,8 @@ const Friends = () => {
         }
 
         .stat-pill {
-          background: var(--card-bg);
-          border: 1px solid var(--card-border);
+          background: rgba(255,255,255,.045);
+          border: 1px solid rgba(255,255,255,.09);
           padding: 10px 18px;
           border-radius: 12px;
           text-align: center;
@@ -212,7 +214,7 @@ const Friends = () => {
         .stat-pill .num {
           font-family: 'Fraunces', serif;
           font-size: 20px;
-          color: var(--gold-light);
+          color: var(--h-green-2);
           font-weight: 700;
         }
 
@@ -220,7 +222,7 @@ const Friends = () => {
           font-size: 11px;
           text-transform: uppercase;
           letter-spacing: 0.5px;
-          color: var(--text-muted);
+          color: var(--h-muted);
         }
 
         .dashboard-grid {
@@ -233,9 +235,9 @@ const Friends = () => {
         }
 
         .dash-card {
-          background: var(--card-bg);
-          border: 1px solid var(--card-border);
-          border-radius: 16px;
+          background: rgba(255,255,255,.045);
+          border: 1px solid rgba(255,255,255,.09);
+          border-radius: 12px;
           padding: 20px;
           backdrop-filter: blur(12px);
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
@@ -245,7 +247,7 @@ const Friends = () => {
         .card-title {
           font-family: 'Fraunces', serif;
           font-size: 18px;
-          color: var(--gold-light);
+          color: var(--h-green-2);
           margin-bottom: 16px;
           display: flex;
           align-items: center;
@@ -255,8 +257,8 @@ const Friends = () => {
         .friend-search-input {
           width: 100%;
           padding: 12px 16px;
-          background: rgba(0, 0, 0, 0.4);
-          border: 1px solid var(--card-border);
+          background: rgba(255,255,255,.04);
+          border: 1px solid rgba(255,255,255,.12);
           border-radius: 10px;
           color: #fff;
           font-size: 14px;
@@ -267,8 +269,9 @@ const Friends = () => {
 
         .friend-search-input:focus {
           outline: none;
-          border-color: var(--gold);
-          box-shadow: 0 0 12px rgba(201, 162, 39, 0.2);
+          border-color: var(--h-green);
+          box-shadow: 0 0 12px rgba(129,182,76,0.2);
+          background: rgba(129,182,76,.06);
         }
 
         .user-row {
@@ -277,15 +280,15 @@ const Friends = () => {
           justify-content: space-between;
           padding: 12px;
           border-radius: 12px;
-          background: rgba(255, 255, 255, 0.02);
+          background: rgba(255,255,255,.03);
           border: 1px solid transparent;
           margin-bottom: 8px;
           transition: all 0.2s ease;
         }
 
         .user-row:hover {
-          border-color: var(--card-border-hover);
-          background: rgba(201, 162, 39, 0.04);
+          border-color: rgba(129,182,76,.35);
+          background: rgba(129,182,76,.08);
           transform: translateY(-1px);
         }
 
@@ -299,8 +302,8 @@ const Friends = () => {
           width: 42px;
           height: 42px;
           border-radius: 50%;
-          background: linear-gradient(135deg, var(--gold), var(--gold-dark));
-          color: #000;
+          background: linear-gradient(135deg, var(--h-green-2), var(--h-green));
+          color: #10180e;
           font-weight: 700;
           display: flex;
           align-items: center;
@@ -318,7 +321,7 @@ const Friends = () => {
 
         .user-info .sub {
           font-size: 12px;
-          color: var(--text-muted);
+          color: var(--h-muted);
         }
 
         .btn-group {
@@ -338,37 +341,39 @@ const Friends = () => {
         }
 
         .btn-primary {
-          background: linear-gradient(135deg, var(--gold), var(--gold-dark));
-          color: #000;
+          background: linear-gradient(180deg,#9bd761,#7fb64a);
+          color: #10180e;
+          box-shadow: 0 16px 30px rgba(129,182,76,.25), inset 0 1px rgba(255,255,255,.45);
         }
 
-        .btn-primary:hover {
-          filter: brightness(1.1);
-          box-shadow: 0 0 10px rgba(201, 162, 39, 0.3);
+        .btn-primary:hover:not(:disabled) {
+          background: linear-gradient(180deg,#a8e372,#82bd4a);
+          box-shadow: 0 20px 38px rgba(129,182,76,.32), inset 0 1px rgba(255,255,255,.55);
+          filter: none;
         }
 
         .btn-primary:disabled {
           opacity: 0.6;
           cursor: not-allowed;
-          filter: none;
         }
 
         .btn-danger {
-          background: var(--danger-bg);
-          color: var(--danger);
-          border: 1px solid rgba(255, 69, 58, 0.2);
+          background: rgba(255,100,100,.1);
+          color: #ff8585;
+          border: 1px solid rgba(255,100,100,.25);
         }
 
         .btn-danger:hover {
-          background: rgba(255, 69, 58, 0.2);
+          background: rgba(255,100,100,.15);
+          border-color: rgba(255,100,100,.45);
         }
 
         .empty-state {
           text-align: center;
           padding: 30px;
-          color: var(--text-muted);
+          color: var(--h-muted);
           font-size: 13px;
-          border: 1px dashed var(--card-border);
+          border: 1px dashed var(--h-line);
           border-radius: 10px;
         }
 

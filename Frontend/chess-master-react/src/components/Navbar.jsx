@@ -14,7 +14,7 @@ const Navbar = () => {
     <>
       <nav className="cm-nav">
         <div className="cm-nav-inner">
-          <Link to="/" className="cm-brand" onClick={() => setMenuOpen(false)}>
+          <Link to="/" className="cm-brand" onClick={() => { setMenuOpen(false); setProfileMenuOpen(false); }}>
             <span className="cm-brand-icon">♞</span>
             <span>ChessMaster</span>
           </Link>
@@ -24,32 +24,31 @@ const Navbar = () => {
             className="cm-menu-btn"
             type="button"
             onClick={toggleMenu}
-            aria-label="Toggle menu"
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
           >
-            ☰
+            {menuOpen ? '✕' : '☰'}
           </button>
 
           <div
             id="navLinks"
             className={`cm-nav-links ${menuOpen ? 'cm-open' : ''}`}
           >
-            <Link to="/" className="cm-nav-link" onClick={() => setMenuOpen(false)}>
+            <Link to="/" className="cm-nav-link" onClick={() => { setMenuOpen(false); setProfileMenuOpen(false); }}>
               Home
             </Link>
-            <Link to="/play" className="cm-nav-link" onClick={() => setMenuOpen(false)}>
+            <Link to="/play" className="cm-nav-link" onClick={() => { setMenuOpen(false); setProfileMenuOpen(false); }}>
               Play
             </Link>
-            <Link to="/leaderboard" className="cm-nav-link" onClick={() => setMenuOpen(false)}>
+            <Link to="/leaderboard" className="cm-nav-link" onClick={() => { setMenuOpen(false); setProfileMenuOpen(false); }}>
               Leaderboard
             </Link>
-            <Link to="/about" className="cm-nav-link" onClick={() => setMenuOpen(false)}>
+            <Link to="/about" className="cm-nav-link" onClick={() => { setMenuOpen(false); setProfileMenuOpen(false); }}>
               About
             </Link>
 
             {user ? (
               <div
                 className="cm-profile-wrap"
-                onMouseLeave={() => setProfileMenuOpen(false)}
               >
                 <button
                   type="button"
@@ -116,14 +115,14 @@ const Navbar = () => {
                 <Link
                   to="/login"
                   className="cm-nav-link"
-                  onClick={() => setMenuOpen(false)}
+                  onClick={() => { setMenuOpen(false); setProfileMenuOpen(false); }}
                 >
                   Login
                 </Link>
                 <Link
                   to="/register"
                   className="cm-register-btn"
-                  onClick={() => setMenuOpen(false)}
+                  onClick={() => { setMenuOpen(false); setProfileMenuOpen(false); }}
                 >
                   Register
                 </Link>
@@ -194,6 +193,7 @@ const Navbar = () => {
           font-size: 20px;
         }
 
+        /* Desktop: horizontal nav always visible */
         .cm-nav-links {
           display: flex;
           align-items: center;
@@ -305,6 +305,7 @@ const Navbar = () => {
           border: 1px solid rgba(255,255,255,0.11);
           border-radius: 12px;
           box-shadow: 0 24px 54px rgba(0,0,0,0.44);
+          z-index: 120;
         }
 
         .cm-profile-item {
@@ -336,70 +337,147 @@ const Navbar = () => {
           color: #ff9c9c;
           background: rgba(248,113,113,0.1);
         }
+       /* ====== TABLET & MOBILE (≤ 768px) ====== */
+/* ====== TABLET & MOBILE (≤ 768px) ====== */
+@media (max-width: 768px) {
+  .cm-nav-inner {
+    height: 62px;
+    padding: 0 16px;
+  }
 
-        @media (max-width: 768px) {
+  .cm-menu-btn {
+    display: inline-flex;
+  }
+
+  .cm-nav-links {
+    position: absolute;
+    top: 62px;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 12px 16px 16px;
+    background: rgba(15, 20, 17, 0.97);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 22px 40px rgba(0,0,0,0.28);
+    display: none;
+  }
+
+  .cm-nav-links.cm-open {
+    display: flex;
+  }
+
+  .cm-nav-link {
+    width: 100%;
+    min-height: 42px;
+    justify-content: flex-start;
+    padding: 0 14px;
+  }
+
+  .cm-auth-links {
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .cm-auth-links .cm-nav-link,
+  .cm-register-btn {
+    width: 100%;
+  }
+
+  .cm-profile-wrap {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .cm-profile-btn {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .cm-profile-menu {
+    position: static;
+    width: 100%;
+    min-width: 100%;
+    margin-top: 8px;
+  }
+}
+/* ===== FORCE DESKTOP NAV: 769px - 900px ===== */
+@media (min-width: 769px) and (max-width: 900px) {
+  .cm-menu-btn {
+    display: none !important;
+  }
+
+  .cm-nav-links {
+    position: static !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .cm-nav-link {
+    width: auto !important;
+    min-height: 38px;
+    padding: 0 8px;
+    font-size: 13px;
+  }
+
+  .cm-auth-links {
+    flex-direction: row !important;
+    width: auto !important;
+  }
+
+  .cm-auth-links .cm-nav-link,
+  .cm-register-btn {
+    width: auto !important;
+  }
+
+  .cm-profile-wrap {
+    width: auto !important;
+    margin-left: 4px;
+  }
+
+  .cm-profile-btn {
+    width: auto !important;
+  }
+}
+        /* Small mobile */
+        @media (max-width: 480px) {
           .cm-nav-inner {
-            height: 62px;
-            padding: 0 14px;
+            padding: 0 12px;
+          }
+
+          .cm-brand {
+            font-size: 17px;
+          }
+
+          .cm-brand-icon {
+            width: 32px;
+            height: 32px;
+            font-size: 20px;
           }
 
           .cm-menu-btn {
-            display: inline-flex;
+            width: 38px;
+            height: 38px;
+            font-size: 18px;
           }
 
           .cm-nav-links {
-            display: none;
-            position: absolute;
-            top: 62px;
-            left: 0;
-            right: 0;
-            flex-direction: column;
-            align-items: stretch;
-            gap: 6px;
-            padding: 12px 14px 16px;
-            background: rgba(15, 20, 17, 0.97);
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-            box-shadow: 0 22px 40px rgba(0,0,0,0.28);
-          }
-
-          .cm-nav-links.cm-open {
-            display: flex;
+            top: 60px;
+            padding: 10px 12px 14px;
           }
 
           .cm-nav-link,
           .cm-register-btn {
-            width: 100%;
-            justify-content: flex-start;
             min-height: 42px;
-          }
-
-          .cm-auth-links {
-            width: 100%;
-            flex-direction: column;
-            align-items: stretch;
-            gap: 6px;
-          }
-
-          .cm-profile-wrap {
-            width: 100%;
-            margin-left: 0;
-          }
-
-          .cm-profile-btn {
-            width: 100%;
-            border-radius: 10px;
-            justify-content: flex-start;
-          }
-
-          .cm-profile-name {
-            flex: 1;
-            text-align: left;
-          }
-
-          .cm-profile-menu {
-            position: static;
-            min-width: 100%;
-            margin-top: 8px;
+            font-size: 13px;
           }
         }
       `}</style>

@@ -677,10 +677,24 @@ const OnlinePlay = () => {
               <h2 id="onlineGameOverTitle">{online.gameOverInfo.title}</h2>
               <p id="onlineGameOverMessage">{online.gameOverInfo.message}</p>
               <div className="og-gameover-btns">
-                <Link to="/play" className="og-gameover-btn primary">← Back to Play</Link>
-                <Link to="/online" className="og-gameover-btn secondary">New Match</Link>
-                <button id="onlineCloseGameOverBtn" type="button" className="og-gameover-btn secondary" onClick={handleCloseGameOver}>Review</button>
-              </div>
+  <Link to="/play" className="og-gameover-btn primary">
+    ← Back to Play
+  </Link>
+
+  <Link to="/online" className="og-gameover-btn secondary">
+    New Match
+  </Link>
+
+  {online.savedGameId && (
+    <button
+      type="button"
+      className="og-gameover-btn secondary"
+      onClick={() => navigate(`/replay/${online.savedGameId}`)}
+    >
+      ▶ Replay
+    </button>
+  )}
+</div>
             </div>
           </div>
         )}

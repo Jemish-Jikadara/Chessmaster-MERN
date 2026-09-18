@@ -115,13 +115,28 @@ const Online = () => {
   return (
     <>
       <style>{`
+        :root {
+          --h-bg:#0f1411;
+          --h-panel:#1b241d;
+          --h-panel-2:#222d24;
+          --h-line:rgba(255,255,255,0.09);
+          --h-text:#f5f7f1;
+          --h-muted:#aeb7aa;
+          --h-soft:#d7ded0;
+          --h-green:#81b64c;
+          --h-green-2:#95c95e;
+          --h-dark-green:#5d8b32;
+          --h-gold:#f0c15b;
+          --h-orange:#e58b42;
+        }
+
         .online-page {
-          background: #080810;
+          background: var(--h-bg);
           min-height: 100vh;
           display: flex;
           flex-direction: column;
           font-family: 'Inter', sans-serif;
-          color: #f0ece4;
+          color: var(--h-text);
         }
 
         .online-main {
@@ -135,8 +150,8 @@ const Online = () => {
         .online-card {
           width: 100%;
           max-width: 700px;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.08);
+          background: rgba(255,255,255,0.045);
+          border: 1px solid rgba(255,255,255,0.09);
           border-radius: 24px;
           padding: 40px 32px;
           text-align: center;
@@ -148,21 +163,22 @@ const Online = () => {
           font-size: 11px;
           letter-spacing: 0.2em;
           text-transform: uppercase;
-          color: #facc15;
+          color: var(--h-green-2);
           margin-bottom: 10px;
           display: block;
+          font-weight: 800;
         }
 
         .online-card h1 {
           font-family: 'Fraunces', serif;
           font-size: 2.4rem;
           font-weight: 700;
-          color: #ffffff;
+          color: var(--h-text);
           margin-bottom: 8px;
         }
 
         .online-card > p {
-          color: #6b7280;
+          color: var(--h-muted);
           font-size: 15px;
           margin-bottom: 24px;
         }
@@ -174,9 +190,15 @@ const Online = () => {
           margin: 24px 0;
         }
 
-        @media (max-width: 600px) {
+        @media (max-width: 700px) {
           .tc-grid {
             grid-template-columns: 1fr;
+          }
+          .online-main {
+            padding: 40px 16px;
+          }
+          .online-card {
+            padding: 32px 20px;
           }
         }
 
@@ -191,27 +213,27 @@ const Online = () => {
         }
 
         .tc-card:hover {
-          border-color: rgba(250,204,21,0.5);
-          background: rgba(250,204,21,0.06);
+          border-color: rgba(129,182,76,0.35);
+          background: rgba(129,182,76,0.08);
         }
 
         .tc-card.selected {
-          border-color: #facc15;
-          background: rgba(250,204,21,0.1);
+          border-color: var(--h-green);
+          background: rgba(129,182,76,0.12);
         }
 
         .tc-icon { font-size: 1.8rem; }
 
         .tc-name {
-          font-weight: 800;
-          color: #f0ece4;
+          font-weight: 850;
+          color: var(--h-text);
           margin: 6px 0 2px;
           font-size: 14px;
         }
 
         .tc-time {
           font-size: 12px;
-          color: #6b7280;
+          color: var(--h-muted);
         }
 
         .tc-btns {
@@ -226,18 +248,18 @@ const Online = () => {
           border-radius: 8px;
           border: 1px solid rgba(255,255,255,0.1);
           background: transparent;
-          color: #9ca3af;
+          color: var(--h-muted);
           font-size: 13px;
-          font-weight: 700;
+          font-weight: 800;
           cursor: pointer;
           transition: all 0.2s;
           font-family: 'Inter', sans-serif;
         }
 
         .tc-btn:hover, .tc-btn.active {
-          border-color: #facc15;
-          color: #facc15;
-          background: rgba(250,204,21,0.08);
+          border-color: var(--h-green);
+          color: var(--h-green-2);
+          background: rgba(129,182,76,0.1);
         }
 
         .find-match-btn {
@@ -245,20 +267,21 @@ const Online = () => {
           padding: 16px;
           border-radius: 12px;
           border: none;
-          background: linear-gradient(135deg, #8F6B18, #C9A227);
-          color: #ffffff;
+          background: linear-gradient(180deg,#9bd761,#7fb64a);
+          color: #10180e;
           font-size: 15px;
-          font-weight: 700;
+          font-weight: 850;
           cursor: pointer;
           transition: all 0.25s;
-          box-shadow: 0 6px 20px rgba(201, 162, 39, 0.25);
+          box-shadow: 0 16px 30px rgba(129,182,76,.25), inset 0 1px rgba(255,255,255,.45);
           font-family: 'Inter', sans-serif;
           margin-top: 8px;
         }
 
         .find-match-btn:hover:not(:disabled) {
           transform: translateY(-2px);
-          box-shadow: 0 10px 30px rgba(201, 162, 39, 0.4);
+          background: linear-gradient(180deg,#a8e372,#82bd4a);
+          box-shadow: 0 20px 38px rgba(129,182,76,.32), inset 0 1px rgba(255,255,255,.55);
         }
 
         .find-match-btn:disabled {
@@ -270,7 +293,7 @@ const Online = () => {
         .match-status {
           margin-top: 12px;
           font-size: 13px;
-          color: #6b7280;
+          color: var(--h-muted);
           line-height: 1.6;
         }
       `}</style>
@@ -326,7 +349,17 @@ const Online = () => {
             </button>
 
             {searching && (
-              <button type="button" className="find-match-btn" style={{ background: 'transparent', border: '1px solid rgba(212,175,55,0.35)', marginTop: '10px' }} onClick={handleCancelSearch}>
+              <button
+                type="button"
+                className="find-match-btn"
+                style={{
+                  background: 'rgba(255,255,255,.06)',
+                  border: '1px solid rgba(255,255,255,.12)',
+                  color: 'var(--h-text)',
+                  marginTop: '10px',
+                }}
+                onClick={handleCancelSearch}
+              >
                 Cancel
               </button>
             )}

@@ -3,6 +3,541 @@ import { useParams, Link } from 'react-router-dom';
 import { Chess } from '../lib/chessjs';
 import api from '../api/axios';
 
+const THEMES = {
+  classic: ['#f0d9b5', '#b58863'],
+  midnight: ['#6b7fa3', '#2c3e6b'],
+  forest: ['#ffffdd', '#6faa3f'],
+  ocean: ['#d6eaf8', '#2e86c1'],
+  ruby: ['#f5cba7', '#b91c1c'],
+  walnut: ['#e8d5b0', '#6b4226'],
+};
+
+const pageStyles = `
+.h-page{
+  --h-bg:#0f1411;
+  --h-panel:#1b241d;
+  --h-panel-2:#222d24;
+  --h-line:rgba(255,255,255,0.09);
+  --h-text:#f5f7f1;
+  --h-muted:#aeb7aa;
+  --h-soft:#d7ded0;
+  --h-green:#81b64c;
+  --h-green-2:#95c95e;
+  --h-dark-green:#5d8b32;
+  --h-gold:#f0c15b;
+  --h-orange:#e58b42;
+  background:
+    linear-gradient(180deg,rgba(129,182,76,0.08),transparent 360px),
+    radial-gradient(circle at 15% 8%,rgba(129,182,76,0.18),transparent 34%),
+    radial-gradient(circle at 85% 12%,rgba(240,193,91,0.1),transparent 32%),
+    var(--h-bg);
+  color:var(--h-text);
+  min-height:100vh;
+}
+
+.h-page *{ box-sizing:border-box; }
+
+.cm2-wrap{
+  width:min(1180px,calc(100% - 40px));
+  margin:0 auto;
+}
+
+.cm2-eyebrow{
+  display:inline-flex;
+  align-items:center;
+  gap:9px;
+  color:var(--h-green-2);
+  font-size:12px;
+  line-height:1;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.14em;
+  margin-bottom:18px;
+}
+
+.cm2-eyebrow .sq{
+  width:9px;
+  height:9px;
+  border-radius:2px;
+  background:var(--h-green);
+  box-shadow:0 0 0 5px rgba(129,182,76,.12);
+}
+
+.cm2-h1{
+  margin:0;
+  color:var(--h-text);
+  font-size:clamp(1.5rem,4vw,2.4rem);
+  line-height:1.02;
+  letter-spacing:0;
+  font-weight:900;
+}
+
+.cm2-accent{
+  color:var(--h-green-2);
+}
+
+.cm2-sub{
+  max-width:620px;
+  margin:14px 0 0;
+  color:var(--h-muted);
+  font-size:15px;
+  line-height:1.7;
+}
+
+.cm2-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:44px;
+  padding:0 18px;
+  border-radius:8px;
+  font-size:14px;
+  font-weight:850;
+  text-decoration:none;
+  border:1px solid transparent;
+  transition:transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
+  cursor:pointer;
+  color:var(--h-text);
+  background:rgba(255,255,255,.06);
+  border-color:rgba(255,255,255,.12);
+}
+
+.cm2-btn:hover:not(:disabled){
+  transform:translateY(-1px);
+  background:rgba(255,255,255,.1);
+  border-color:rgba(129,182,76,.35);
+}
+
+.cm2-btn:disabled{
+  opacity:0.35;
+  cursor:not-allowed;
+  transform:none;
+}
+
+/* Replay banner */
+.replay-banner{
+  position:relative;
+  padding:72px 0 40px;
+  border-bottom:1px solid var(--h-line);
+  background:
+    linear-gradient(135deg,rgba(129,182,76,0.10) 0%,rgba(129,182,76,0.04) 50%,transparent 100%);
+  overflow:hidden;
+}
+
+.replay-banner::before{
+  content:'';
+  position:absolute;
+  width:600px;height:600px;
+  background:radial-gradient(circle,rgba(129,182,76,0.12) 0%,transparent 70%);
+  top:-200px;right:-100px;
+  pointer-events:none;
+}
+
+.replay-banner-inner{
+  max-width:1100px;
+  margin:0 auto;
+  position:relative;
+  z-index:1;
+  padding-bottom:28px;
+}
+
+.replay-back-link{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  color:var(--h-muted);
+  font-size:13px;
+  text-decoration:none;
+  margin-bottom:20px;
+  transition:color 0.2s;
+  font-weight:800;
+}
+
+.replay-back-link:hover{
+  color:var(--h-text);
+}
+
+.replay-kicker{
+  font-size:11px;
+  letter-spacing:0.18em;
+  text-transform:uppercase;
+  color:var(--h-green-2);
+  margin-bottom:8px;
+  display:block;
+  font-weight:800;
+}
+
+.replay-page-title{
+  font-size:clamp(1.5rem,4vw,2.4rem);
+  font-weight:900;
+  color:var(--h-text);
+  margin:0 0 6px;
+  letter-spacing:-0.02em;
+}
+
+.replay-page-meta{
+  font-size:13px;
+  color:var(--h-muted);
+}
+
+/* Layout */
+.replay-page-wrap{
+  max-width:1100px;
+  margin:0 auto;
+  padding:40px 24px 80px;
+}
+
+.replay-game-layout{
+  display:grid;
+  grid-template-columns:1fr 320px;
+  gap:24px;
+  margin-top:28px;
+}
+
+@media (max-width:900px){
+  .replay-game-layout{
+    grid-template-columns:1fr;
+  }
+}
+
+/* Board shell */
+.replay-board-shell{
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:12px;
+  padding:24px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+.replay-player-strip{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:12px 16px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:12px;
+}
+
+.replay-ps-left{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.replay-ps-avatar{
+  width:36px;height:36px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+  font-weight:900;
+}
+
+.replay-white-av{
+  background:var(--h-text);
+  color:var(--h-bg);
+}
+
+.replay-black-av{
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);
+  color:var(--h-text);
+}
+
+.replay-ps-name{
+  font-size:14px;
+  font-weight:850;
+  color:var(--h-text);
+}
+
+.replay-board-status{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  font-size:13px;
+  padding:0 4px;
+}
+
+.replay-status-label{
+  color:var(--h-muted);
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+  font-weight:800;
+}
+
+.replay-result-badge{
+  padding:5px 16px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:850;
+}
+
+.rb-white{
+  background:rgba(129,182,76,.12);
+  border:1px solid rgba(129,182,76,.25);
+  color:var(--h-green-2);
+}
+
+.rb-black{
+  background:rgba(0,0,0,.35);
+  border:1px solid var(--h-line);
+  color:var(--h-muted);
+}
+
+.rb-draw{
+  background:rgba(129,182,76,.12);
+  border:1px solid rgba(129,182,76,.3);
+  color:var(--h-green-2);
+}
+
+.replay-board-wrap{
+  display:flex;
+  justify-content:center;
+  padding:8px 0;
+}
+
+#replayBoard{
+  display:grid;
+  grid-template-columns:repeat(8,1fr);
+  width:100%;
+  max-width:480px;
+  aspect-ratio:1;
+  border-radius:10px;
+  overflow:hidden;
+  border:3px solid rgba(129,182,76,.2);
+  box-shadow:0 8px 40px rgba(0,0,0,0.4);
+}
+
+#replayBoard > div{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  aspect-ratio:1;
+}
+
+#replayBoard img{
+  width:78%;
+  height:78%;
+  object-fit:contain;
+  pointer-events:none;
+}
+
+/* History panel */
+.replay-history-panel{
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:12px;
+  padding:24px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  max-height:720px;
+}
+
+.replay-history-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  padding-bottom:14px;
+  border-bottom:1px solid var(--h-line);
+}
+
+.replay-hh-label{
+  font-size:11px;
+  color:var(--h-muted);
+  text-transform:uppercase;
+  letter-spacing:0.12em;
+  font-weight:800;
+}
+
+.replay-history-head h2{
+  font-size:18px;
+  font-weight:900;
+  color:var(--h-text);
+  margin:4px 0 0;
+}
+
+.replay-move-count{
+  background:rgba(129,182,76,.12);
+  border:1px solid rgba(129,182,76,.2);
+  color:var(--h-green-2);
+  font-size:13px;
+  font-weight:850;
+  padding:5px 12px;
+  border-radius:20px;
+}
+
+.replay-review-controls{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:12px;
+  padding:12px;
+}
+
+.replay-review-controls button{
+  background:transparent;
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:8px;
+  color:var(--h-muted);
+  padding:8px 12px;
+  cursor:pointer;
+  font-size:14px;
+  transition:all 0.2s;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-width:36px;
+  height:36px;
+  font-weight:800;
+}
+
+.replay-review-controls button:hover:not(:disabled){
+  border-color:rgba(129,182,76,.35);
+  color:var(--h-green-2);
+  background:rgba(129,182,76,.08);
+}
+
+.replay-review-controls button:disabled{
+  opacity:0.25;
+  cursor:not-allowed;
+}
+
+.replay-btn-play{
+  background:rgba(129,182,76,.12) !important;
+  border-color:rgba(129,182,76,.3) !important;
+  color:var(--h-green-2) !important;
+  font-weight:900;
+  min-width:72px !important;
+}
+
+.replay-btn-play:hover:not(:disabled){
+  background:rgba(129,182,76,.2) !important;
+}
+
+.replay-btn-play.active{
+  background:rgba(229,139,66,.12) !important;
+  border-color:rgba(229,139,66,.3) !important;
+  color:var(--h-orange) !important;
+}
+
+.replay-move-list{
+  flex:1;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.replay-move-list p{
+  color:var(--h-muted);
+  font-size:13px;
+  text-align:center;
+  padding:20px;
+}
+
+.replay-move-item{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:10px;
+  padding:10px 14px;
+  font-size:13px;
+  cursor:pointer;
+  transition:all 0.15s;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-weight:700;
+}
+
+.replay-move-item:hover{
+  border-color:rgba(129,182,76,.35);
+  background:rgba(129,182,76,.08);
+}
+
+.replay-move-item.active{
+  border-color:rgba(129,182,76,.5);
+  background:rgba(129,182,76,.12);
+}
+
+.replay-move-num{
+  color:var(--h-green-2);
+  font-weight:900;
+  min-width:28px;
+}
+
+.replay-move-san{
+  color:var(--h-text);
+  font-weight:850;
+  flex:1;
+}
+
+.replay-move-sq{
+  color:var(--h-muted);
+  font-size:11px;
+}
+
+.replay-speed-label{
+  font-size:11px;
+  color:var(--h-muted);
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+  margin-bottom:6px;
+  font-weight:800;
+}
+
+.replay-speed-options{
+  display:flex;
+  gap:6px;
+}
+
+.replay-speed-btn{
+  flex:1;
+  padding:6px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:8px;
+  color:var(--h-muted);
+  font-size:12px;
+  cursor:pointer;
+  transition:all 0.2s;
+  text-align:center;
+  font-weight:800;
+}
+
+.replay-speed-btn:hover{
+  border-color:rgba(129,182,76,.35);
+  color:var(--h-text);
+}
+
+.replay-speed-btn.active{
+  background:rgba(129,182,76,.12);
+  border-color:rgba(129,182,76,.3);
+  color:var(--h-green-2);
+  font-weight:900;
+}
+
+@media (max-width:900px){
+  .replay-game-layout{
+    grid-template-columns:1fr;
+  }
+  #replayBoard{
+    max-width:100%;
+  }
+  .replay-history-panel{
+    max-height:none;
+  }
+}
+`;
+
 const Replay = () => {
   const { id } = useParams();
   const [game, setGame] = useState(null);
@@ -23,7 +558,6 @@ const Replay = () => {
     return () => { mounted = false; };
   }, [id]);
 
-  // Replay verbose moves + FEN at every position, exactly like replay.ejs.
   const { positionHistory, verboseMoves } = useMemo(() => {
     if (!game) return { positionHistory: [], verboseMoves: [] };
     const chess = new Chess();
@@ -90,185 +624,46 @@ const Replay = () => {
   }, [isPlaying, playSpeed, total, stopPlaying]);
 
   if (loading) {
-    return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c9a84c', background: '#0f0f0f' }}>Loading replay...</div>;
+    return (
+      <main className="h-page" style={{ display:'flex', alignItems:'center', justifyContent:'center' }}>
+        <div className="cm2-wrap" style={{ textAlign:'center' }}>
+          <p style={{ color:'var(--h-green-2)', fontSize:16 }}>Loading replay...</p>
+        </div>
+      </main>
+    );
   }
 
   if (error || !game) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', gap: '14px', alignItems: 'center', justifyContent: 'center', color: '#f87171', background: '#0f0f0f' }}>
-        <p>{error || 'Game not found.'}</p>
-        <Link to="/profile" style={{ color: '#c9a84c' }}>← Back to Profile</Link>
-      </div>
+      <main className="h-page" style={{ display:'flex', alignItems:'center', justifyContent:'center' }}>
+        <div className="cm2-wrap" style={{ textAlign:'center' }}>
+          <p style={{ color:'#ff8585', fontSize:16 }}>{error || 'Game not found.'}</p>
+          <Link to="/profile" style={{ color:'var(--h-green-2)', fontWeight:800 }}>← Back to Profile</Link>
+        </div>
+      </main>
     );
   }
 
+  const t = THEMES[game.boardTheme] || THEMES.classic;
+
   return (
     <>
-      <style>{`
-        :root {
-            --replay-bg: #0f0f0f;
-            --replay-bg-2: #161616;
-            --replay-bg-3: #1e1e1e;
-            --replay-line: rgba(243,234,217,0.08);
-            --replay-ink: #f0ece4;
-            --replay-ink-dim: #7a7570;
-            --replay-ink-faint: #4a4642;
-            --replay-brass: #c9a84c;
-            --replay-brass-lt: #e8c97a;
-            --replay-sage: #7a9569;
-            --replay-sage-lt: #a4c191;
-        }
-        .replay-page-wrap { max-width:1100px; margin:0 auto; padding:40px 24px 80px; background:var(--replay-bg); min-height: 100vh; }
-        .replay-banner {
-            background: linear-gradient(135deg, rgba(201,162,39,0.10) 0%, rgba(122,149,105,0.07) 50%, transparent 100%);
-            border-bottom:1px solid var(--replay-line);
-            padding:40px 24px 0;
-            position:relative;
-            overflow:hidden;
-        }
-        .replay-banner::before {
-            content:''; position:absolute; width:600px; height:600px;
-            background: radial-gradient(circle, rgba(201,162,39,0.12) 0%, transparent 70%);
-            top:-200px; right:-100px; pointer-events:none;
-        }
-        .replay-banner-inner { max-width:1100px; margin:0 auto; position:relative; z-index:1; padding-bottom: 28px; }
-        .replay-back-link { display:inline-flex; align-items:center; gap:6px; color:var(--replay-ink-dim); font-size:13px; text-decoration:none; margin-bottom:20px; transition:color 0.2s; }
-        .replay-back-link:hover { color:var(--replay-ink); }
-        .replay-kicker { font-family:'Fraunces',serif; font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color:var(--replay-brass); margin-bottom:8px; display:block; }
-        .replay-page-title { font-family:'Fraunces',serif; font-size:clamp(1.5rem,4vw,2.4rem); font-weight:700; color:var(--replay-ink); margin:0 0 6px; letter-spacing:-0.02em; }
-        .replay-page-meta { font-size:13px; color:var(--replay-ink-dim); }
+      <style dangerouslySetInnerHTML={{ __html: pageStyles }} />
 
-        .replay-game-layout { display:grid; grid-template-columns:1fr 320px; gap:24px; margin-top:28px; }
-        @media (max-width:900px) { .replay-game-layout { grid-template-columns:1fr; } }
-
-        .replay-board-shell {
-            background:var(--replay-bg-2);
-            border:1px solid var(--replay-line);
-            border-radius:20px;
-            padding:24px;
-            display:flex;
-            flex-direction:column;
-            gap:14px;
-        }
-        .replay-player-strip {
-            display:flex; align-items:center; justify-content:space-between;
-            padding:12px 16px;
-            background:var(--replay-bg-3);
-            border-radius:12px;
-            border:1px solid var(--replay-line);
-        }
-        .replay-ps-left { display:flex; align-items:center; gap:12px; }
-        .replay-ps-avatar {
-            width:36px; height:36px; border-radius:50%;
-            display:flex; align-items:center; justify-content:center;
-            font-size:16px; font-weight:700;
-        }
-        .replay-white-av { background:var(--replay-ink); color:var(--replay-bg); }
-        .replay-black-av { background:var(--replay-bg-3); border:1px solid var(--replay-line); color:var(--replay-ink); }
-        .replay-ps-name { font-size:14px; font-weight:600; color:var(--replay-ink); }
-
-        .replay-board-status {
-            display:flex; align-items:center; justify-content:space-between;
-            font-size:13px; padding:0 4px;
-        }
-        .replay-status-label { color:var(--replay-ink-dim); font-size:12px; text-transform:uppercase; letter-spacing:0.08em; }
-        .replay-result-badge {
-            padding:5px 16px; border-radius:20px;
-            font-size:12px; font-family:'Fraunces',serif; font-weight:700;
-        }
-        .rb-white { background:rgba(201,168,76,0.12); border:1px solid rgba(201,168,76,0.25); color:var(--replay-brass-lt); }
-        .rb-black { background:rgba(0,0,0,0.35); border:1px solid var(--replay-line); color:var(--replay-ink-dim); }
-        .rb-draw { background:rgba(122,149,105,0.12); border:1px solid rgba(122,149,105,0.25); color:var(--replay-sage-lt); }
-
-        .replay-board-wrap { display:flex; justify-content:center; padding:8px 0; }
-        #replayBoard {
-            display:grid;
-            grid-template-columns:repeat(8,1fr);
-            width:100%;
-            max-width:480px;
-            aspect-ratio:1;
-            border-radius:10px;
-            overflow:hidden;
-            border:3px solid rgba(201,168,76,0.2);
-            box-shadow:0 8px 40px rgba(0,0,0,0.4);
-        }
-        #replayBoard > div { display:flex; align-items:center; justify-content:center; aspect-ratio:1; }
-        #replayBoard img { width:78%; height:78%; object-fit:contain; pointer-events:none; }
-
-        .replay-history-panel {
-            background:var(--replay-bg-2);
-            border:1px solid var(--replay-line);
-            border-radius:20px;
-            padding:24px;
-            display:flex;
-            flex-direction:column;
-            gap:16px;
-            max-height:720px;
-        }
-        .replay-history-head { display:flex; align-items:flex-start; justify-content:space-between; padding-bottom:14px; border-bottom:1px solid var(--replay-line); }
-        .replay-hh-label { font-size:11px; color:var(--replay-ink-faint); text-transform:uppercase; letter-spacing:0.12em; font-family:'Fraunces',serif; }
-        .replay-history-head h2 { font-family:'Fraunces',serif; font-size:18px; font-weight:700; color:var(--replay-ink); margin:4px 0 0; }
-        .replay-move-count {
-            background:rgba(201,168,76,0.12);
-            border:1px solid rgba(201,168,76,0.2);
-            color:var(--replay-brass-lt);
-            font-family:'Fraunces',serif;
-            font-size:13px; font-weight:700;
-            padding:5px 12px; border-radius:20px;
-        }
-
-        .replay-review-controls { display:flex; align-items:center; gap:8px; background:var(--replay-bg-3); border-radius:12px; padding:12px; border:1px solid var(--replay-line); }
-        .replay-review-controls button {
-            background:transparent; border:1px solid var(--replay-line); border-radius:8px;
-            color:var(--replay-ink-dim); padding:8px 12px; cursor:pointer; font-size:14px;
-            transition:all 0.2s; display:flex; align-items:center; justify-content:center;
-            min-width:36px; height:36px;
-        }
-        .replay-review-controls button:hover:not(:disabled) { border-color:rgba(201,168,76,0.4); color:var(--replay-brass-lt); background:rgba(201,168,76,0.06); }
-        .replay-review-controls button:disabled { opacity:0.25; cursor:not-allowed; }
-        .replay-btn-play { background:rgba(201,168,76,0.12) !important; border-color:rgba(201,168,76,0.3) !important; color:var(--replay-brass-lt) !important; font-weight:600; min-width:64px !important; }
-        .replay-btn-play:hover:not(:disabled) { background:rgba(201,168,76,0.2) !important; }
-        .replay-btn-play.active { background:rgba(181,84,31,0.12) !important; border-color:rgba(181,84,31,0.3) !important; color:#e08a5b !important; }
-
-        .replay-move-list { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:6px; }
-        .replay-move-list p { color:var(--replay-ink-faint); font-size:13px; text-align:center; padding:20px; }
-        .replay-move-item {
-            background:var(--replay-bg-3); border:1px solid var(--replay-line); border-radius:10px;
-            padding:10px 14px; font-size:13px; cursor:pointer; transition:all 0.15s;
-            display:flex; align-items:center; gap:8px;
-        }
-        .replay-move-item:hover { border-color:rgba(201,168,76,0.3); background:rgba(201,168,76,0.05); }
-        .replay-move-item.active { border-color:rgba(201,168,76,0.5); background:rgba(201,168,76,0.1); }
-        .replay-move-num { color:var(--replay-brass-lt); font-weight:700; font-family:'JetBrains Mono',monospace; min-width:28px; }
-        .replay-move-san { color:var(--replay-ink); font-weight:500; flex:1; }
-        .replay-move-sq { color:var(--replay-ink-faint); font-size:11px; font-family:'JetBrains Mono',monospace; }
-
-        .replay-speed-label { font-size:11px; color:var(--replay-ink-faint); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px; }
-        .replay-speed-options { display:flex; gap:6px; }
-        .replay-speed-btn { flex:1; padding:6px; background:var(--replay-bg-3); border:1px solid var(--replay-line); border-radius:8px; color:var(--replay-ink-dim); font-size:12px; cursor:pointer; transition:all 0.2s; text-align:center; }
-        .replay-speed-btn:hover { border-color:rgba(201,168,76,0.3); color:var(--replay-ink); }
-        .replay-speed-btn.active { background:rgba(201,168,76,0.12); border-color:rgba(201,168,76,0.3); color:var(--replay-brass-lt); font-weight:600; }
-
-        @media (max-width:900px) {
-            .replay-game-layout { grid-template-columns:1fr; }
-            #replayBoard { max-width:100%; }
-            .replay-history-panel { max-height:none; }
-        }
-      `}</style>
-
-      <div className="replay-banner">
-        <div className="replay-banner-inner">
-          <Link to="/profile" className="replay-back-link">← Back</Link>
-          <span className="replay-kicker">Game Replay</span>
-          <h1 className="replay-page-title">{game.whitePlayer} vs {game.blackPlayer}</h1>
-          <p className="replay-page-meta">{game.timeControl} &bull; {game.timeMode} &bull; {new Date(game.createdAt).toLocaleDateString()}</p>
+      <main className="h-page" style={{ display:'block', padding:0 }}>
+        <div className="replay-banner">
+          <div className="replay-banner-inner">
+            <Link to="/profile" className="replay-back-link">← Back</Link>
+            <span className="replay-kicker">Game Replay</span>
+            <h1 className="cm2-h1 replay-page-title">{game.whitePlayer} vs {game.blackPlayer}</h1>
+            <p className="cm2-sub" style={{ fontSize:13 }}>
+              {game.timeControl} • {game.timeMode} • {new Date(game.createdAt).toLocaleDateString()}
+            </p>
+          </div>
         </div>
-      </div>
 
-      <main>
         <div className="replay-page-wrap">
           <div className="replay-game-layout">
-
             {/* BOARD SECTION */}
             <section className="replay-board-shell">
               <div className="replay-player-strip">
@@ -297,7 +692,7 @@ const Replay = () => {
                       const sq = `${files[col]}${8 - row}`;
                       const light = (row + col) % 2 === 0;
                       const isLast = lastMove && (lastMove.from === sq || lastMove.to === sq);
-                      const bg = isLast ? (light ? '#fef08a' : '#ca8a04') : (light ? '#f0d9b5' : '#b58863');
+                      const bg = isLast ? (light ? '#fef08a' : '#ca8a04') : (light ? t[0] : t[1]);
                       return (
                         <div key={sq} style={{ backgroundColor: bg }}>
                           {piece && (
@@ -341,7 +736,7 @@ const Replay = () => {
                 <button type="button" title="Next" disabled={currentIndex >= total} onClick={() => { stopPlaying(); goTo(currentIndex + 1); }}>→</button>
                 <button type="button" title="Last" disabled={currentIndex >= total} onClick={() => { stopPlaying(); goTo(total); }}>⟫</button>
               </div>
-              <span style={{ textAlign: 'center', fontSize: '12px', color: 'var(--replay-ink-faint)', fontFamily: "'JetBrains Mono',monospace" }}>
+              <span style={{ textAlign: 'center', fontSize: '12px', color: 'var(--h-muted)', fontFamily: "'JetBrains Mono',monospace", fontWeight:800 }}>
                 Move {currentIndex} / {total}
               </span>
 
@@ -379,7 +774,6 @@ const Replay = () => {
                 )}
               </div>
             </aside>
-
           </div>
         </div>
       </main>
