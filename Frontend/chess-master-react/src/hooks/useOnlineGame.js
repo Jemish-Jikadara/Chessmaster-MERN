@@ -39,16 +39,20 @@ export default function useOnlineGame({ user } = {}) {
 
   const gameOverRef = useRef(false);
   const savedGameRef = useRef(false);
-  const [savedGameId, setSavedGameId] = useState(null);
   const disconnectTimerRef = useRef(null);
   const drawOfferMoveCountRef = useRef(-99);
 
   const { roomId, playerColor, opponent, timeControl } = savedRef.current;
 
   useEffect(() => {
+  savedGameRef.current = false;
+}, [roomId]);
+
+  useEffect(() => {
     gameOverRef.current = gameOver;
   }, [gameOver]);
 
+  
   const refresh = useCallback(() => {
     setFen(gameRef.current.fen());
     setHistory(gameRef.current.history({ verbose: true }));
@@ -87,7 +91,7 @@ export default function useOnlineGame({ user } = {}) {
     }
 
     try {
-     const response = await api.post('/api/games', {
+    await api.post('/api/games', {
   whiteUser: playerColor === 'w' ? user?.id : opponent.id,
   blackUser: playerColor === 'b' ? user?.id : opponent.id,
   gameId: roomId,
@@ -102,7 +106,6 @@ export default function useOnlineGame({ user } = {}) {
   moves: moveHistory,
 });
 
-setSavedGameId(response.data?.game?._id || null);
     } catch (err) {
       console.error('Failed to save online game:', err);
     }
@@ -370,7 +373,6 @@ const onOnlineGameState = (data) => {
     whiteTime,
     blackTime,
     formatTime,
-    savedGameId,
     gameOver,
     gameOverInfo,
     drawOffered,

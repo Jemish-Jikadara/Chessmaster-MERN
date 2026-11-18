@@ -8,6 +8,7 @@ const upload = require("../middleware/upload");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const { google } = require("googleapis");
+const sendEmail = require("../utils/sendEmail");
 const User = require("../models/User"); 
 const router = express.Router();
 function handleUpload(req, res, next) {
@@ -205,5 +206,80 @@ router.post("/reset-password/:token", async (req, res) => {
   }
 });
 router.get("/api/me",isAuthenticated, authController.getMe);
+router.get("/api/me",isAuthenticated, authController.getMe);
+
+// ── VERIFY EMAIL ───────────────────────────────
+router.get("/verify-email/:token", async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    const user = await User.findOne({
+      verifyEmailToken: token,
+      verifyEmailExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Verification link is invalid or has expired."
+      });
+    }
+
+    user.isVerified = true;
+    user.verifyEmailToken = null;
+    user.verifyEmailExpires = null;
+    await user.save();
+
+    return res.redirect(`${process.env.CLIENT_URL}/login?verified=1`);
+  } catch (err) {
+    console.error("Verify email error:", err);
+    return res.status(500).json({ success: false, message: "Something went wrong." });
+  }
+});
+
+// ── RESEND VERIFICATION ────────────────────────
+router.post("/resend-verification", async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required." });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found." });
+    }
+    if (user.isVerified) {
+      return res.status(400).json({ success: false, message: "Email already verified." });
+    }
+
+    const verifyEmailToken = crypto.randomBytes(32).toString("hex");
+    user.verifyEmailToken = verifyEmailToken;
+    user.verifyEmailExpires = Date.now() + 60 * 60 * 1000;
+    await user.save();
+
+    const verifyLink = `${process.env.CLIENT_URL}/verify-email/${verifyEmailToken}`;
+    const verifyHtml = `
+      <h2>Verify your ChessMaster email</h2>
+      <p><a href="${verifyLink}"
+         style="display:inline-block;padding:12px 20px;background:#d4af37;
+                color:#000;text-decoration:none;border-radius:6px;font-weight:bold;">
+         Verify Email</a></p>
+      <p>Or paste: ${verifyLink}</p>
+      <p>Valid for <strong>1 hour</strong>.</p>
+    `;
+
+    await sendEmail({
+      to: email,
+      subject: "Verify your ChessMaster email",
+      html: verifyHtml
+    });
+
+    return res.json({ success: true, message: "Verification email sent." });
+  } catch (err) {
+    console.error("Resend verification error:", err);
+    return res.status(500).json({ success: false, message: "Something went wrong." });
+  }
+});
 
 module.exports = router;

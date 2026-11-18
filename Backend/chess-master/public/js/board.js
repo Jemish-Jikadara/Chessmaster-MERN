@@ -85,8 +85,6 @@ function createBoard() {
 
   if (isReviewing) {
     displayGame = new Chess();
-    // BUG 3 FIX: chess.js v0.10.3 load() returns undefined, not true/false.
-    // Simply call load() without checking the return value.
     displayGame.load(positionHistory[reviewIndex]);
   }
 
@@ -310,13 +308,6 @@ function afterSuccessfulMove(move) {
   updateReviewControls();
   createBoard();
 
-  // showCoachAdvice(move);
-
-// if (shouldCoachReply()) {
-//   makeCoachMove();
-// }
-
-  // Bot hook — if bot mode active and game not over, trigger bot move
   if (typeof window._botHook === "function") {
     window._botHook();
   }
@@ -664,7 +655,7 @@ document.querySelectorAll("[data-mode]").forEach((button) => {
 
     resetGamePosition();
     updateClocks();
-  // ── HIDE ALL SCREENS ──
+  
     const gms = document.getElementById("gameModeScreen");
     const bss = document.getElementById("botSelectScreen");
     if (gms) gms.style.display = "none";   // ← ADD
@@ -712,7 +703,7 @@ startGameBtn.addEventListener("click", () => {
         return;
     }
 
-    // Bot mode mein random color assign karo yahan
+    
     if (isBotMode && selectedBot) {
         const playerName = whitePlayerInput.value.trim() || "Player";
         const botName = `${selectedBot.name} (${selectedBot.rating})`;
@@ -728,7 +719,6 @@ startGameBtn.addEventListener("click", () => {
             window.PLAYER_COLOR = "b";
         }
 
-        // Player strips update karo
         const wn = document.getElementById("whiteName");
         const bn = document.getElementById("blackName");
         if (window.PLAYER_COLOR === "b") {
@@ -754,7 +744,6 @@ startGameBtn.addEventListener("click", () => {
     }
 });
 
-// BUG 2 FIX: restartBtn doesn't exist in the HTML, so guard with a null check.
 if (restartBtn) {
   restartBtn.addEventListener("click", () => {
     if (!selectedMode) {

@@ -11,7 +11,21 @@ const userSchema = new mongoose.Schema(
       lowercase: true
     },
     resetPasswordToken: String,
-  resetPasswordExpires: Date,
+    resetPasswordExpires: Date,
+
+    // ── Email Verification ────────────────────────
+    isVerified: {
+      type: Boolean,
+      default: false
+    },
+    verifyEmailToken: {
+      type: String,
+      default: null
+    },
+    verifyEmailExpires: {
+      type: Date,
+      default: null
+    },
   //   mobile: {
   //   type: String,
   //   required: false,

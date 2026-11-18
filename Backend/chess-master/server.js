@@ -22,6 +22,8 @@ const server = http.createServer(app);
 
 const allowedOrigins = [
   "https://chessmaster-frontend.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:3000",
   "https://localhost"
 ];
 const io = new Server(server, {
@@ -55,7 +57,6 @@ app.use(session({
   sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
 }
 }));
-// Health check route
 app.get("/health", (req, res) => {
   res.status(200).json({
     success: true,
@@ -64,7 +65,6 @@ app.get("/health", (req, res) => {
   });
 });
 
-// This backend is now a pure JSON API for the React frontend (chess-master-react).
 app.get("/", (req, res) => {
   res.json({
     success: true,
@@ -83,17 +83,14 @@ app.use((err, req, res, next) => {
 });
 
 let waitingPlayer = null;
-let activeUsersCount = 0; // Starts at 0
-
-// roomId => { sockets: Set, moved: bool, firstMoveTimer: timeout }
+let activeUsersCount = 0;
 const rooms = {};
 const socketToRoom = {};
 io.on("connection", (socket) => {
   console.log("Socket connected:", socket.id);
-  activeUsersCount++; // Add 1 to total users
-io.emit("activeUsersUpdate", activeUsersCount); // Tell ALL players the new number
+  activeUsersCount++;
+io.emit("activeUsersUpdate", activeUsersCount); 
 
-  // ── MATCHMAKING ──
   socket.on("findMatch", ({ player, timeControl }) => {
     if (waitingPlayer &&
         waitingPlayer.socketId !== socket.id &&
@@ -156,7 +153,7 @@ socket.emit("matchFound", {
 });
 
       waitingPlayer = null;
-      // ---- SERVER TIMER ----
+     
 rooms[roomId].timer = setInterval(() => {
 
     const room = rooms[roomId];
@@ -211,10 +208,10 @@ rooms[roomId].timer = setInterval(() => {
 
         room.sockets.add(socket.id);
 
-        // Tell the other player that the opponent reconnected
+     
         socket.to(roomId).emit("opponentReconnected");
 
-        // Send the complete current game state to the reconnecting player
+        
         socket.emit("onlineGameState", {
             moves: room.moves,
             whiteTime: room.whiteTime,
@@ -231,7 +228,7 @@ rooms[roomId].timer = setInterval(() => {
     const room = rooms[roomId];
     if (!room) return;
     room.moves.push(move);
-    // First move timer stop
+ 
     if (!room.moved) {
         room.moved = true;
         clearTimeout(room.firstMoveTimer);
@@ -241,7 +238,7 @@ rooms[roomId].timer = setInterval(() => {
     const now = Date.now();
     const elapsed = Math.floor((now - room.lastUpdate) / 1000);
 
-    // Current player's time reduce
+   
     if (room.turn === "w") {
         room.whiteTime = Math.max(0, room.whiteTime - elapsed);
         room.whiteTime += room.increment;
@@ -250,15 +247,13 @@ rooms[roomId].timer = setInterval(() => {
         room.blackTime += room.increment;
     }
 
-    // Turn change
+  
     room.turn = room.turn === "w" ? "b" : "w";
 
     room.lastUpdate = now;
 
-    // Send move
     socket.to(roomId).emit("opponentMove", move);
 
-    // Send updated timer
     io.to(roomId).emit("timerUpdate", {
         whiteTime: room.whiteTime,
         blackTime: room.blackTime,

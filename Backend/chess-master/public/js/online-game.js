@@ -8,7 +8,6 @@ const onlineCloseGameOverBtn = document.getElementById("onlineCloseGameOverBtn")
 const onlineSaveGameBtn = document.getElementById("onlineSaveGameBtn");
 const onlineMoveHistory = document.getElementById("onlineMoveHistory");
 
-// New UI elements
 const ogOpponentName = document.getElementById("ogOpponentName");
 const ogOpponentRating = document.getElementById("ogOpponentRating");
 const ogOpponentAvatar = document.getElementById("ogOpponentAvatar");
@@ -51,7 +50,6 @@ let canOfferDraw = false;
 let premove = null;
 let premoveHighlights = [];
 
-// Timer
 let whiteTime = 0;
 let blackTime = 0;
 let incrementSeconds = 0;
@@ -76,7 +74,6 @@ if (!roomId || !playerColor) {
 
 socket.emit("joinOnlineRoom", { roomId });
 
-// ── SETUP PLAYER INFO ──
 function setupPlayerInfo() {
     const myUsername = window.currentUsername || "You";
     const myRating = window.currentRating || 1200;
@@ -96,7 +93,7 @@ function setupPlayerInfo() {
     ogOpponentRating.textContent = `${opponentRating} • ${tc.label || "Rapid"}`;
     ogOpponentAvatar.textContent = opponentUsername.charAt(0).toUpperCase();
 
-    // Avatar colors based on piece color
+ 
     if (playerColor === "w") {
         ogMyAvatar.className = "og-avatar white-av";
         ogOpponentAvatar.className = "og-avatar black-av";
@@ -108,7 +105,7 @@ function setupPlayerInfo() {
 
 setupPlayerInfo();
 
-// ── BOARD ──
+
 function createOnlineBoard() {
     onlineChessBoard.innerHTML = "";
 onlineChessBoard.style.transform = "";
@@ -127,12 +124,12 @@ const cols = playerColor === "b" ? [7,6,5,4,3,2,1,0] : [0,1,2,3,4,5,6,7];
 
 if (premove) {
 
-    // Original square se piece hide
+   
     if (squareName === premove.from) {
         displayPiece = null;
     }
 
-    // Destination par piece dikhao
+    
     if (squareName === premove.to) {
         displayPiece = game.get(premove.from);
     }
@@ -325,28 +322,19 @@ function handleOnlineDrop(event, targetSquare) {
 
     createOnlineBoard();
 }
-// ── AFTER MOVE ──
 function afterOnlineMove(move) {
     lastMove = { from: move.from, to: move.to };
     selectedSquare = null;
     legalMoves = [];
-/*
-    if (incrementSeconds > 0) {
-        if (move.color === "w") whiteTime += incrementSeconds;
-        else blackTime += incrementSeconds;
-    }
-*/
+
     const savedMoves = JSON.parse(sessionStorage.getItem("onlineMoves") || "[]");
     savedMoves.push({ from: move.from, to: move.to, promotion: move.promotion || "q" });
     sessionStorage.setItem("onlineMoves", JSON.stringify(savedMoves));
 
-    // Abort button hide after first move
     const totalMoves = savedMoves.length;
     if (totalMoves >= 2 && ogAbortBtn) {
         ogAbortBtn.style.display = "none";
     }
-
-    // Draw offer enable after 30 moves (15 each)
     if (totalMoves >= 30) {
         canOfferDraw = true;
         const movesSinceDecline = totalMoves - drawOfferMoveCount;
@@ -360,19 +348,14 @@ function afterOnlineMove(move) {
     checkOnlineGameOver();
     createOnlineBoard();
 
-    /*
-    if (!timerInterval && totalMoves >= 1) {
-        startOnlineTimer();
-    }
-        */
+    
 }
 
-// ── SOCKET EVENTS ──
 socket.on("opponentMove", (moveData) => {
     const move = game.move(moveData);
     if (!move) return;
     afterOnlineMove(move);
-    // -------- Execute Premove --------
+ 
 if (premove) {
 
     const premoveResult = game.move({
@@ -382,7 +365,7 @@ if (premove) {
     });
     if (premoveResult) {
 
-    premove = null;   // <-- pehle clear karo
+    premove = null;  
 
     afterOnlineMove(premoveResult);
 
@@ -407,7 +390,7 @@ if (premove) {
 }
 }
 });
-//new code for timer update from server
+
 socket.on("timerUpdate", (data) => {
 
     whiteTime = Math.max(0, data.whiteTime);

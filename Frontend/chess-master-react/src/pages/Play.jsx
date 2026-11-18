@@ -13,7 +13,7 @@ const Play = () => {
     onGameOver: async ({ winner, history: moveHistory }) => {
       if (!moveHistory.length) return;
       try {
-       const response = await api.post('/api/games', {
+        const response = await api.post('/api/games', {
           whitePlayer: savedRef.current.white || 'White Player',
           blackPlayer: savedRef.current.black || 'Black Player',
           winner,
@@ -32,7 +32,6 @@ const Play = () => {
     },
   });
 
-  // Screen states: 'mode' | 'bot' | 'time' | 'setup' | 'game'
   const [screen, setScreen] = useState('mode');
   const [isBotMode, setIsBotMode] = useState(false);
   const [selectedBot, setSelectedBot] = useState(null);
@@ -42,80 +41,79 @@ const Play = () => {
   const [whitePlayer, setWhitePlayer] = useState(user?.username || '');
   const [blackPlayer, setBlackPlayer] = useState('');
   const [gameStarted, setGameStarted] = useState(false);
+
   useEffect(() => {
-  const saved = chess.loadLocalGame?.();
-  if (!saved) return;
+    const saved = chess.loadLocalGame?.();
+    if (!saved) return;
 
-  const restored = chess.restoreGame(saved);
-  if (!restored) return;
+    const restored = chess.restoreGame(saved);
+    if (!restored) return;
 
-  setIsBotMode(!!saved.isBot);
-  setSelectedBot(saved.bot || null);
-  setPickedColor(saved.playerColor || 'w');
+    setIsBotMode(!!saved.isBot);
+    setSelectedBot(saved.bot || null);
+    setPickedColor(saved.playerColor || 'w');
 
-  setSelectedTime({
-    minutes: Math.max(1, Math.ceil(Math.max(saved.whiteTime || 0, saved.blackTime || 0) / 60)),
-    increment: saved.increment || 0,
-    mode: 'rapid',
-    label: 'Restored'
-  });
-
-  const playerName = user?.username || 'You';
-  const botName = saved.bot ? `${saved.bot.name} (${saved.bot.rating})` : 'Bot';
-
-  if (saved.isBot) {
-    const white = saved.playerColor === 'w' ? playerName : botName;
-    const black = saved.playerColor === 'w' ? botName : playerName;
-    setWhitePlayer(white);
-    setBlackPlayer(black);
-
-    savedRef.current = {
-      white,
-      black,
-      color: saved.playerColor || 'w',
-      mode: 'rapid',
-      minutes: 10,
+    setSelectedTime({
+      minutes: Math.max(1, Math.ceil(Math.max(saved.whiteTime || 0, saved.blackTime || 0) / 60)),
       increment: saved.increment || 0,
-    };
-  } else {
-    setWhitePlayer('White Player');
-    setBlackPlayer('Black Player');
-
-    savedRef.current = {
-      white: 'White Player',
-      black: 'Black Player',
-      color: 'w',
       mode: 'rapid',
-      minutes: 10,
-      increment: saved.increment || 0,
-    };
-  }
+      label: 'Restored'
+    });
 
-  setGameStarted(true);
-  setScreen('game');
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, []);
-useEffect(() => {
-  let isRefreshing = false;
+    const playerName = user?.username || 'You';
+    const botName = saved.bot ? `${saved.bot.name} (${saved.bot.rating})` : 'Bot';
 
-  const handleBeforeUnload = () => {
-    isRefreshing = true;
-  };
+    if (saved.isBot) {
+      const white = saved.playerColor === 'w' ? playerName : botName;
+      const black = saved.playerColor === 'w' ? botName : playerName;
+      setWhitePlayer(white);
+      setBlackPlayer(black);
 
-  window.addEventListener('beforeunload', handleBeforeUnload);
+      savedRef.current = {
+        white,
+        black,
+        color: saved.playerColor || 'w',
+        mode: 'rapid',
+        minutes: 10,
+        increment: saved.increment || 0,
+      };
+    } else {
+      setWhitePlayer('White Player');
+      setBlackPlayer('Black Player');
 
-  return () => {
-    window.removeEventListener('beforeunload', handleBeforeUnload);
-
-    if (!isRefreshing) {
-      chess.clearLocalGame?.();
+      savedRef.current = {
+        white: 'White Player',
+        black: 'Black Player',
+        color: 'w',
+        mode: 'rapid',
+        minutes: 10,
+        increment: saved.increment || 0,
+      };
     }
-  };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, []);
+    setGameStarted(true);
+    setScreen('game');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Bot data (32 bots, 100-3200 rating)
+  useEffect(() => {
+    let isRefreshing = false;
+
+    const handleBeforeUnload = () => {
+      isRefreshing = true;
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      if (!isRefreshing) {
+        chess.clearLocalGame?.();
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const bots = [
     { name: 'Pawn Pusher', rating: 100, level: 'beginner', icon: '🐣' },
     { name: 'Rookie Ralph', rating: 200, level: 'beginner', icon: '🌱' },
@@ -184,29 +182,11 @@ useEffect(() => {
     },
   ];
 
-  const handleSelectHuman = () => {
-    setIsBotMode(false);
-    setScreen('time');
-  };
-
-  const handleSelectBot = () => {
-    setIsBotMode(true);
-    setScreen('bot');
-  };
-
-  const handleSelectOnline = () => {
-    navigate('/online');
-  };
-
-  const handleSelectBotCard = (bot) => {
-    setSelectedBot(bot);
-    setScreen('time');
-  };
-
-  const handleSelectTime = (option) => {
-    setSelectedTime(option);
-    setScreen('setup');
-  };
+  const handleSelectHuman = () => { setIsBotMode(false); setScreen('time'); };
+  const handleSelectBot = () => { setIsBotMode(true); setScreen('bot'); };
+  const handleSelectOnline = () => { navigate('/online'); };
+  const handleSelectBotCard = (bot) => { setSelectedBot(bot); setScreen('time'); };
+  const handleSelectTime = (option) => { setSelectedTime(option); setScreen('setup'); };
 
   const handleBack = () => {
     if (screen === 'bot') setScreen('mode');
@@ -261,19 +241,14 @@ useEffect(() => {
     setScreen('game');
   };
 
-  const handleStartGame = () => {
-    chess.startGame();
-  };
+  const handleStartGame = () => { chess.startGame(); };
 
-  // Board orientation always matches the human player's chosen side.
-  // (For pass-and-play, White always sits at the bottom, matching the
-  // original EJS app.)
   const playerColorForBot = () => (isBotMode ? savedRef.current.color : 'w');
   const botColor = () => (savedRef.current.color === 'w' ? 'b' : 'w');
 
   const handlePlayAgain = () => {
     setSavedGameId(null);
-     chess.clearLocalGame?.();
+    chess.clearLocalGame?.();
     setScreen('mode');
     setIsBotMode(false);
     setSelectedBot(null);
@@ -284,7 +259,6 @@ useEffect(() => {
     setGameStarted(false);
   };
 
-  // Set board theme for external JS
   useEffect(() => {
     window.BOARD_THEME = user?.boardTheme || 'classic';
   }, [user]);
@@ -292,810 +266,1029 @@ useEffect(() => {
   return (
     <>
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Orbitron:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+
         :root {
-          --h-bg:#0f1411;
-          --h-panel:#1b241d;
-          --h-panel-2:#222d24;
-          --h-line:rgba(255,255,255,0.09);
-          --h-text:#f5f7f1;
-          --h-muted:#aeb7aa;
-          --h-soft:#d7ded0;
-          --h-green:#81b64c;
-          --h-green-2:#95c95e;
-          --h-dark-green:#5d8b32;
-          --h-gold:#f0c15b;
-          --h-orange:#e58b42;
+          --h-bg:#050510;
+          --h-bg-2:#0a0a1e;
+          --h-panel:#08081a;
+          --h-line:rgba(0,229,255,0.14);
+          --h-line-soft:rgba(255,255,255,0.06);
+          --h-text:#e8f4ff;
+          --h-muted:#7d8ba8;
+          --h-soft:#b8c6dd;
+          --h-cyan:#00e5ff;
+          --h-cyan-2:#5cf0ff;
+          --h-cyan-3:#a8f8ff;
+          --h-pink:#ff2d95;
+          --h-pink-2:#ff6bb0;
+          --h-acid:#b6ff3c;
+          --h-purple:#8b5cf6;
+          --h-font-display:'Orbitron', system-ui, sans-serif;
+          --h-font-tech:'Chakra Petch', system-ui, sans-serif;
+          --h-font-body:'Inter', system-ui, sans-serif;
         }
 
         .play-page {
-          background-color: var(--h-bg);
-          background-image: 
-            radial-gradient(circle at 50% 10%, rgba(129,182,76,0.12) 0%, transparent 50%),
-            radial-gradient(circle at 80% 80%, rgba(240,193,91,0.08) 0%, transparent 60%);
-          background-attachment: fixed;
-          color: var(--h-text);
-          min-height: 100vh;
-          font-family: 'Inter', sans-serif;
+          position:relative;
+          background:#050510;
+          min-height:100vh;
+          color:var(--h-text);
+          font-family:var(--h-font-body);
+          overflow-x:hidden;
         }
 
+        /* Animated grid backdrop */
+        .play-page::before{
+          content:'';
+          position:fixed;
+          inset:0;
+          background-image:
+            linear-gradient(rgba(0,229,255,0.045) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0,229,255,0.045) 1px, transparent 1px);
+          background-size:52px 52px;
+          mask-image:radial-gradient(ellipse 80% 60% at 50% 40%, #000 20%, transparent 80%);
+          -webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 40%, #000 20%, transparent 80%);
+          pointer-events:none;
+          z-index:0;
+          animation:h-grid 24s linear infinite;
+        }
+
+        .play-page::after{
+          content:'';
+          position:fixed;
+          inset:0;
+          background:
+            radial-gradient(700px 400px at 12% 8%, rgba(0,229,255,0.14), transparent 60%),
+            radial-gradient(600px 400px at 92% 20%, rgba(255,45,149,0.10), transparent 60%),
+            radial-gradient(800px 500px at 50% 110%, rgba(139,92,246,0.12), transparent 60%);
+          pointer-events:none;
+          z-index:0;
+        }
+
+        @keyframes h-grid{
+          0%{ background-position:0 0, 0 0; }
+          100%{ background-position:52px 52px, 52px 52px; }
+        }
+
+        .play-page > *{ position:relative; z-index:1; }
+
         .play-screen {
-          max-width: 860px;
-          margin: 0 auto;
-          padding: 80px 24px;
-          animation: fadeUp 0.4s ease both;
+          max-width:900px;
+          margin:0 auto;
+          padding:80px 24px;
+          animation:fadeUp 0.4s ease both;
         }
 
         @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
+          from { opacity:0; transform:translateY(20px); }
+          to { opacity:1; transform:translateY(0); }
         }
 
         .play-kicker {
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 11px;
-          letter-spacing: 0.2em;
-          text-transform: uppercase;
-          color: var(--h-green-2);
-          margin-bottom: 10px;
-          display: block;
-          font-weight: 800;
+          display:inline-flex;
+          align-items:center;
+          gap:9px;
+          font-family:var(--h-font-tech);
+          font-size:11px;
+          letter-spacing:0.22em;
+          text-transform:uppercase;
+          color:var(--h-cyan);
+          margin-bottom:16px;
+          font-weight:700;
+        }
+
+        .play-kicker::before{
+          content:'[';
+          color:#a8f8ff;
+          font-family:'Orbitron', system-ui, sans-serif;
+          font-weight:900;
+        }
+        .play-kicker::after{
+          content:']';
+          color:#a8f8ff;
+          font-family:'Orbitron', system-ui, sans-serif;
+          font-weight:900;
         }
 
         .play-title {
-          font-family: 'Fraunces', serif;
-          font-size: clamp(2rem, 5vw, 3rem);
-          font-weight: 800;
-          color: var(--h-text);
-          margin: 0 0 10px;
-          letter-spacing: -0.02em;
-          line-height: 1.1;
+          font-family:var(--h-font-display);
+          font-size:clamp(2rem, 5vw, 3rem);
+          font-weight:800;
+          color:#fff;
+          margin:0 0 12px;
+          letter-spacing:-0.005em;
+          line-height:1.05;
+          text-transform:uppercase;
+          text-shadow:0 0 26px rgba(0,229,255,0.3);
         }
 
         .play-sub {
-          color: var(--h-muted);
-          font-size: 15px;
-          margin: 0 0 44px;
-          line-height: 1.6;
+          color:var(--h-muted);
+          font-size:15px;
+          margin:0 0 44px;
+          line-height:1.7;
         }
 
-        /* Mode Cards */
+        /* =========================================================
+           MODE CARDS
+           ========================================================= */
         .mode-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 16px;
+          display:grid;
+          grid-template-columns:repeat(3, 1fr);
+          gap:18px;
         }
 
         @media (max-width: 780px) {
-          .mode-grid { grid-template-columns: 1fr; }
+          .mode-grid { grid-template-columns:1fr; }
         }
 
         .mode-card {
-          background: rgba(255,255,255,0.045);
-          border: 1px solid rgba(255,255,255,0.09);
-          border-radius: 18px;
-          padding: 36px 28px;
-          cursor: pointer;
-          transition: border-color 0.25s, background 0.25s, transform 0.2s, box-shadow 0.25s;
-          position: relative;
-          overflow: hidden;
-          backdrop-filter: blur(12px);
+          position:relative;
+          background:
+            linear-gradient(180deg, rgba(0,229,255,.06), rgba(139,92,246,.03)),
+            #08081a;
+          border:1px solid rgba(0,229,255,.22);
+          border-radius:8px;
+          padding:36px 28px;
+          cursor:pointer;
+          transition:border-color .25s ease, background .25s ease, transform .2s ease, box-shadow .25s ease;
+          overflow:hidden;
         }
 
-        .mode-card.friend::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          opacity: 0;
-          transition: opacity 0.3s;
-          pointer-events: none;
-          background: radial-gradient(ellipse at top left, rgba(129,182,76,0.18), transparent 70%);
-        }
-
-        .mode-card.bot::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          opacity: 0;
-          transition: opacity 0.3s;
-          pointer-events: none;
-          background: radial-gradient(ellipse at top left, rgba(240,193,91,0.18), transparent 70%);
-        }
-
-        .mode-card.online::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          opacity: 0;
-          transition: opacity 0.3s;
-          pointer-events: none;
-          background: radial-gradient(ellipse at top left, rgba(229,139,66,0.25), transparent 70%);
+        .mode-card::before {
+          content:'';
+          position:absolute;
+          top:0; left:0; right:0;
+          height:2px;
+          background:linear-gradient(90deg, #00e5ff, #ff2d95);
+          transform:scaleX(0);
+          transform-origin:left;
+          transition:transform .3s ease;
         }
 
         .mode-card:hover {
-          border-color: rgba(129,182,76,0.35);
-          background: rgba(255,255,255,0.06);
-          transform: translateY(-3px);
-          box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+          border-color:rgba(0,229,255,.55);
+          background:rgba(0,229,255,.07);
+          transform:translateY(-4px);
+          box-shadow:
+            0 0 30px rgba(0,229,255,.28),
+            0 0 60px rgba(139,92,246,.12),
+            0 12px 30px rgba(0,0,0,.4);
         }
 
-        .mode-card:hover::before { opacity: 1; }
+        .mode-card:hover::before {
+          transform:scaleX(1);
+        }
 
         .mode-icon {
-          font-size: 2.6rem;
-          margin-bottom: 16px;
-          display: block;
+          font-size:2.6rem;
+          margin-bottom:18px;
+          display:block;
+          filter:drop-shadow(0 0 14px rgba(0,229,255,0.55));
         }
 
         .mode-card h3 {
-          font-family: 'Fraunces', serif;
-          font-size: 20px;
-          font-weight: 700;
-          color: var(--h-text);
-          margin: 0 0 8px;
+          font-family:var(--h-font-display);
+          font-size:16px;
+          font-weight:800;
+          color:#fff;
+          margin:0 0 10px;
+          text-transform:uppercase;
+          letter-spacing:0.04em;
         }
 
         .mode-card p {
-          font-size: 13px;
-          color: var(--h-muted);
-          line-height: 1.6;
-          margin: 0 0 24px;
+          font-size:13px;
+          color:var(--h-muted);
+          line-height:1.65;
+          margin:0 0 24px;
         }
 
         .mode-btn {
-          width: 100%;
-          padding: 13px;
-          background: rgba(129,182,76,0.12);
-          border: 1px solid rgba(129,182,76,0.25);
-          border-radius: 10px;
-          color: var(--h-green-2);
-          font-family: 'Syne', sans-serif;
-          font-size: 13px;
-          font-weight: 600;
-          letter-spacing: 0.05em;
-          cursor: pointer;
-          transition: all 0.25s;
+          width:100%;
+          padding:13px;
+          background:rgba(0,229,255,.06);
+          border:1px solid rgba(0,229,255,.3);
+          border-radius:4px;
+          color:var(--h-cyan);
+          font-family:var(--h-font-tech);
+          font-size:12px;
+          font-weight:700;
+          letter-spacing:0.16em;
+          text-transform:uppercase;
+          cursor:pointer;
+          transition:all .25s ease;
+          box-shadow:inset 0 0 12px rgba(0,229,255,.08);
         }
 
         .mode-btn:hover {
-          background: rgba(129,182,76,0.2);
-          border-color: rgba(129,182,76,0.45);
-          color: #ffffff;
-          font-weight: 700;
-          box-shadow: 0 4px 15px rgba(129,182,76,0.3);
+          background:rgba(0,229,255,.14);
+          border-color:var(--h-cyan);
+          color:var(--h-cyan-3);
+          box-shadow:
+            inset 0 0 18px rgba(0,229,255,.18),
+            0 0 20px rgba(0,229,255,.4);
+          text-shadow:0 0 10px rgba(0,229,255,.6);
         }
 
-        /* Bot Grid */
+        /* =========================================================
+           BOT GRID
+           ========================================================= */
         .bot-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-          gap: 10px;
-          margin-top: 32px;
+          display:grid;
+          grid-template-columns:repeat(auto-fill, minmax(130px, 1fr));
+          gap:12px;
+          margin-top:32px;
         }
 
         .bot-card {
-          background: rgba(255,255,255,0.045);
-          border: 1px solid rgba(255,255,255,0.09);
-          border-radius: 12px;
-          padding: 16px 10px;
-          text-align: center;
-          cursor: pointer;
-          transition: border-color 0.2s, background 0.2s, transform 0.15s, box-shadow 0.2s;
+          position:relative;
+          background:rgba(0,229,255,.025);
+          border:1px solid rgba(0,229,255,.18);
+          border-radius:6px;
+          padding:16px 10px;
+          text-align:center;
+          cursor:pointer;
+          transition:border-color .2s ease, background .2s ease, transform .15s ease, box-shadow .2s ease;
         }
 
         .bot-card:hover {
-          border-color: rgba(129,182,76,0.35);
-          background: rgba(129,182,76,0.1);
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(129,182,76,0.2);
+          border-color:rgba(0,229,255,.55);
+          background:rgba(0,229,255,.08);
+          transform:translateY(-3px);
+          box-shadow:0 0 20px rgba(0,229,255,.28);
         }
 
         .bot-card.selected {
-          border-color: var(--h-green);
-          background: rgba(129,182,76,0.15);
-          color: var(--h-text);
+          border-color:var(--h-cyan);
+          background:rgba(0,229,255,.14);
+          box-shadow:
+            0 0 22px rgba(0,229,255,.5),
+            inset 0 0 14px rgba(0,229,255,.12);
         }
 
         .bot-card.selected .bot-name,
         .bot-card.selected .bot-title,
         .bot-card.selected .bot-rating {
-          color: var(--h-text) !important;
+          color:#fff !important;
         }
 
-        .bot-icon { font-size: 1.5rem; margin-bottom: 6px; }
-        .bot-name { font-size: 12px; font-weight: 600; color: var(--h-text); }
+        .bot-icon {
+          font-size:1.5rem;
+          margin-bottom:6px;
+          filter:drop-shadow(0 0 8px rgba(0,229,255,.5));
+        }
+
+        .bot-name {
+          font-family:var(--h-font-tech);
+          font-size:12px;
+          font-weight:700;
+          color:var(--h-text);
+          letter-spacing:0.04em;
+        }
+
         .bot-rating {
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 13px;
-          font-weight: 700;
-          margin: 2px 0;
-          color: var(--h-green-2);
+          font-family:var(--h-font-display);
+          font-size:13px;
+          font-weight:800;
+          margin:3px 0;
+          color:var(--h-cyan);
+          text-shadow:0 0 10px rgba(0,229,255,.5);
         }
-        .bot-title { font-size: 10px; color: var(--h-muted); }
 
-        .bot-card[data-level="beginner"] .bot-rating { color: #6ee7b7; }
-        .bot-card[data-level="novice"] .bot-rating { color: #93c5fd; }
-        .bot-card[data-level="intermediate"] .bot-rating { color: var(--h-green-2); }
-        .bot-card[data-level="club"] .bot-rating { color: #fbbf24; }
-        .bot-card[data-level="advanced"] .bot-rating { color: #fb923c; }
-        .bot-card[data-level="expert"] .bot-rating { color: #f87171; }
-        .bot-card[data-level="master"] .bot-rating { color: #e879f9; }
-        .bot-card[data-level="gm"] .bot-rating { color: #ffffff; }
+        .bot-title {
+          font-family:var(--h-font-tech);
+          font-size:10px;
+          color:var(--h-muted);
+          letter-spacing:0.14em;
+          text-transform:uppercase;
+        }
 
-        /* Time Control */
+        .bot-card[data-level="beginner"] .bot-rating { color:#6ee7b7; text-shadow:0 0 10px rgba(110,231,183,.5); }
+        .bot-card[data-level="novice"] .bot-rating { color:#93c5fd; text-shadow:0 0 10px rgba(147,197,253,.5); }
+        .bot-card[data-level="intermediate"] .bot-rating { color:var(--h-cyan); }
+        .bot-card[data-level="club"] .bot-rating { color:#fbbf24; text-shadow:0 0 10px rgba(251,191,36,.5); }
+        .bot-card[data-level="advanced"] .bot-rating { color:#fb923c; text-shadow:0 0 10px rgba(251,146,60,.5); }
+        .bot-card[data-level="expert"] .bot-rating { color:#f87171; text-shadow:0 0 10px rgba(248,113,113,.5); }
+        .bot-card[data-level="master"] .bot-rating { color:#e879f9; text-shadow:0 0 10px rgba(232,121,249,.5); }
+        .bot-card[data-level="gm"] .bot-rating { color:#ffffff; text-shadow:0 0 14px rgba(255,255,255,.6); }
+
+        /* =========================================================
+           TIME GRID
+           ========================================================= */
         .time-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 14px;
-          margin-top: 32px;
+          display:grid;
+          grid-template-columns:repeat(3, 1fr);
+          gap:16px;
+          margin-top:32px;
         }
 
         @media (max-width: 600px) {
-          .time-grid { grid-template-columns: 1fr; }
+          .time-grid { grid-template-columns:1fr; }
         }
 
         .time-card {
-          background: rgba(255,255,255,0.045);
-          border: 1px solid rgba(255,255,255,0.09);
-          border-radius: 14px;
-          padding: 24px 18px;
-          transition: border-color 0.2s, box-shadow 0.2s;
-          backdrop-filter: blur(12px);
+          background:
+            linear-gradient(180deg, rgba(0,229,255,.06), rgba(139,92,246,.03)),
+            #08081a;
+          border:1px solid rgba(0,229,255,.22);
+          border-radius:8px;
+          padding:26px 20px;
+          transition:border-color .2s ease, box-shadow .2s ease;
         }
 
         .time-card:hover {
-          border-color: rgba(129,182,76,0.35);
-          box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+          border-color:rgba(0,229,255,.55);
+          box-shadow:
+            0 0 28px rgba(0,229,255,.25),
+            0 12px 30px rgba(0,0,0,.4);
         }
 
         .time-card h3 {
-          font-family: 'Fraunces', serif;
-          font-size: 16px;
-          font-weight: 700;
-          color: var(--h-text);
-          margin: 0 0 6px;
+          font-family:var(--h-font-display);
+          font-size:15px;
+          font-weight:800;
+          color:#fff;
+          margin:0 0 8px;
+          text-transform:uppercase;
+          letter-spacing:0.06em;
         }
 
         .time-card p {
-          font-size: 12px;
-          color: var(--h-muted);
-          margin: 0 0 16px;
-          line-height: 1.5;
+          font-size:12px;
+          color:var(--h-muted);
+          margin:0 0 18px;
+          line-height:1.55;
         }
 
         .time-btns {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
+          display:flex;
+          flex-direction:column;
+          gap:8px;
         }
 
         .time-btns button {
-          padding: 10px;
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.12);
-          border-radius: 8px;
-          color: var(--h-text);
-          font-family: 'Syne', sans-serif;
-          font-size: 13px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s;
+          padding:11px;
+          background:rgba(0,229,255,.03);
+          border:1px solid rgba(0,229,255,.22);
+          border-radius:4px;
+          color:var(--h-soft);
+          font-family:var(--h-font-tech);
+          font-size:12px;
+          font-weight:700;
+          letter-spacing:0.14em;
+          text-transform:uppercase;
+          cursor:pointer;
+          transition:all .2s ease;
         }
 
         .time-btns button:hover {
-          border-color: rgba(129,182,76,0.35);
-          color: #ffffff;
-          background: rgba(129,182,76,0.12);
-          font-weight: 700;
-          box-shadow: 0 4px 12px rgba(129,182,76,0.25);
+          border-color:var(--h-cyan);
+          color:var(--h-cyan-3);
+          background:rgba(0,229,255,.12);
+          box-shadow:
+            inset 0 0 12px rgba(0,229,255,.15),
+            0 0 16px rgba(0,229,255,.35);
+          text-shadow:0 0 10px rgba(0,229,255,.6);
         }
 
-        /* Player Setup */
+        /* =========================================================
+           PLAYER FORM
+           ========================================================= */
         .player-form {
-          max-width: 440px;
-          margin: 40px auto 0;
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
+          max-width:460px;
+          margin:40px auto 0;
+          display:flex;
+          flex-direction:column;
+          gap:18px;
         }
 
         .player-form label {
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-          font-size: 11px;
-          font-family: 'JetBrains Mono', monospace;
-          letter-spacing: 0.12em;
-          color: var(--h-green-2);
-          text-transform: uppercase;
+          display:flex;
+          flex-direction:column;
+          gap:9px;
+          font-family:var(--h-font-tech);
+          font-size:10.5px;
+          letter-spacing:0.2em;
+          color:var(--h-cyan);
+          text-transform:uppercase;
+          font-weight:700;
         }
 
         .player-form input {
-          padding: 14px 16px;
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.12);
-          border-radius: 10px;
-          color: var(--h-text);
-          font-size: 15px;
-          font-family: 'Inter', sans-serif;
-          outline: none;
-          transition: all 0.25s ease;
+          padding:14px 16px;
+          background:rgba(0,229,255,.03);
+          border:1px solid rgba(0,229,255,.22);
+          border-radius:6px;
+          color:#fff;
+          font-family:var(--h-font-body);
+          font-size:15px;
+          outline:none;
+          transition:all .25s ease;
         }
 
         .player-form input:focus {
-          border-color: var(--h-green);
-          box-shadow: 0 0 12px rgba(129,182,76,0.25);
-          background: rgba(129,182,76,0.06);
+          border-color:var(--h-cyan);
+          background:rgba(0,229,255,.06);
+          box-shadow:
+            0 0 0 3px rgba(0,229,255,.15),
+            0 0 22px rgba(0,229,255,.25),
+            inset 0 0 10px rgba(0,229,255,.06);
         }
 
         .player-form input::placeholder {
-          color: var(--h-muted);
+          color:#5a6684;
         }
 
         .continue-btn {
-          padding: 14px;
-          background: linear-gradient(180deg,#9bd761,#7fb64a);
-          border: none;
-          border-radius: 10px;
-          color: #10180e;
-          font-family: 'Syne', sans-serif;
-          font-size: 14px;
-          font-weight: 700;
-          cursor: pointer;
-          transition: transform 0.2s, box-shadow 0.2s;
-          box-shadow: 0 16px 30px rgba(129,182,76,.25), inset 0 1px rgba(255,255,255,.45);
-          margin-top: 8px;
+          padding:16px;
+          background:linear-gradient(90deg, #00e5ff, #a8f8ff);
+          border:none;
+          border-radius:6px;
+          color:#050510;
+          font-family:var(--h-font-tech);
+          font-size:13px;
+          font-weight:800;
+          letter-spacing:0.18em;
+          text-transform:uppercase;
+          cursor:pointer;
+          transition:transform 0.2s ease, box-shadow 0.2s ease;
+          box-shadow:
+            0 0 20px rgba(0,229,255,.5),
+            0 0 44px rgba(0,229,255,.22),
+            inset 0 0 10px rgba(255,255,255,.4);
+          margin-top:10px;
+          position:relative;
+          overflow:hidden;
+        }
+
+        .continue-btn::after {
+          content:'';
+          position:absolute;
+          inset:0;
+          background:linear-gradient(90deg, transparent, rgba(255,255,255,.4), transparent);
+          transform:translateX(-100%);
+          transition:transform .5s ease;
         }
 
         .continue-btn:hover {
-          transform: translateY(-2px);
-          background: linear-gradient(180deg,#a8e372,#82bd4a);
-          box-shadow: 0 20px 38px rgba(129,182,76,.32), inset 0 1px rgba(255,255,255,.55);
+          transform:translateY(-2px);
+          box-shadow:
+            0 0 30px rgba(0,229,255,.8),
+            0 0 60px rgba(0,229,255,.4),
+            inset 0 0 12px rgba(255,255,255,.55);
+        }
+
+        .continue-btn:hover::after {
+          transform:translateX(100%);
         }
 
         .back-btn {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          margin-top: 24px;
-          padding: 10px 20px;
-          background: rgba(255,255,255,0.06);
-          border: 1px solid rgba(255,255,255,0.12);
-          border-radius: 8px;
-          color: var(--h-text);
-          font-size: 13px;
-          cursor: pointer;
-          transition: all 0.25s ease;
-          font-family: 'Inter', sans-serif;
+          display:inline-flex;
+          align-items:center;
+          gap:8px;
+          margin-top:28px;
+          padding:11px 22px;
+          background:rgba(0,229,255,.04);
+          border:1px solid rgba(0,229,255,.28);
+          border-radius:4px;
+          color:var(--h-cyan);
+          font-family:var(--h-font-tech);
+          font-size:12px;
+          font-weight:700;
+          letter-spacing:0.16em;
+          text-transform:uppercase;
+          cursor:pointer;
+          transition:all .25s ease;
+          box-shadow:inset 0 0 10px rgba(0,229,255,.08);
         }
 
         .back-btn:hover {
-          border-color: rgba(129,182,76,0.35);
-          color: #ffffff;
-          background: rgba(129,182,76,0.1);
+          border-color:var(--h-cyan);
+          color:var(--h-cyan-3);
+          background:rgba(0,229,255,.12);
+          box-shadow:
+            inset 0 0 16px rgba(0,229,255,.18),
+            0 0 18px rgba(0,229,255,.4);
         }
 
-        .game-over-card {
-          position: relative;
-        }
-
-        .game-over-close {
-          position: absolute;
-          top: 10px;
-          right: 12px;
-          width: 32px;
-          height: 32px;
-          border: 1px solid rgba(255,255,255,0.12);
-          background: rgba(255,255,255,0.06);
-          color: var(--h-text);
-          border-radius: 8px;
-          cursor: pointer;
-          font-size: 18px;
-          line-height: 1;
-        }
-
-        .game-over-close:hover {
-          border-color: rgba(129,182,76,0.35);
-          color: #ffffff;
-          background: rgba(129,182,76,0.12);
-        }
-
-        /* Game Layout */
+        /* =========================================================
+           GAME LAYOUT
+           ========================================================= */
         .game-layout {
-          display: grid;
-          grid-template-columns: minmax(0, 560px) 300px;
-          gap: 20px;
-          max-width: 900px;
-          margin: 0 auto;
-          padding: 32px 24px 60px;
-          animation: fadeUp 0.4s ease both;
+          display:grid;
+          grid-template-columns:minmax(0, 560px) 320px;
+          gap:22px;
+          max-width:960px;
+          margin:0 auto;
+          padding:32px 24px 60px;
+          animation:fadeUp 0.4s ease both;
         }
 
         @media (max-width: 900px) {
-          .game-layout { grid-template-columns: 1fr; }
+          .game-layout { grid-template-columns:1fr; }
         }
 
         .board-shell {
-          background: rgba(255,255,255,0.045);
-          border: 1px solid rgba(255,255,255,0.09);
-          border-radius: 20px;
-          padding: 20px;
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
-          backdrop-filter: blur(12px);
-          position: relative;
+          position:relative;
+          background:
+            linear-gradient(180deg, rgba(0,229,255,.06), rgba(139,92,246,.03)),
+            #08081a;
+          border:1px solid rgba(0,229,255,.32);
+          border-radius:8px;
+          padding:22px;
+          display:flex;
+          flex-direction:column;
+          gap:14px;
+          box-shadow:
+            0 0 40px rgba(0,229,255,.18),
+            inset 0 0 40px rgba(0,229,255,.04);
         }
 
         .player-strip {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 12px 14px;
-          background: rgba(255,255,255,0.04);
-          border-radius: 10px;
-          border: 1px solid rgba(255,255,255,0.12);
-          transition: all 0.25s ease;
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          padding:12px 14px;
+          background:rgba(0,229,255,.03);
+          border-radius:6px;
+          border:1px solid rgba(0,229,255,.15);
+          transition:all .25s ease;
         }
 
         .player-strip .ps-left {
-          display: flex;
-          align-items: center;
-          gap: 10px;
+          display:flex;
+          align-items:center;
+          gap:12px;
         }
 
         .ps-avatar {
-          width: 34px;
-          height: 34px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 15px;
-          flex-shrink: 0;
+          width:36px;
+          height:36px;
+          border-radius:6px;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          font-size:16px;
+          flex-shrink:0;
+          font-weight:800;
         }
 
         .ps-avatar.white-av {
-          background: var(--h-text);
-          color: var(--h-bg);
-          font-weight: bold;
+          background:linear-gradient(135deg, #00e5ff, #a8f8ff);
+          color:#050510;
+          box-shadow:0 0 14px rgba(0,229,255,.55);
         }
 
         .ps-avatar.black-av {
-          background: rgba(255,255,255,0.06);
-          border: 1px solid rgba(255,255,255,0.12);
-          color: var(--h-text);
+          background:linear-gradient(135deg, #8b5cf6, #ff2d95);
+          color:#fff;
+          box-shadow:0 0 14px rgba(139,92,246,.55);
         }
 
         .ps-name {
-          font-size: 14px;
-          font-weight: 600;
-          color: var(--h-text);
+          font-family:var(--h-font-tech);
+          font-size:13px;
+          font-weight:700;
+          color:#fff;
+          letter-spacing:0.06em;
+          text-transform:uppercase;
         }
 
         .ps-thinking {
-          font-size: 11px;
-          color: var(--h-green-2);
-          display: none;
-          animation: pulse 1.2s ease-in-out infinite;
-          font-family: 'JetBrains Mono', monospace;
+          font-family:var(--h-font-tech);
+          font-size:10.5px;
+          color:var(--h-cyan);
+          display:none;
+          animation:pulse 1.2s ease-in-out infinite;
+          letter-spacing:0.14em;
+          text-transform:uppercase;
         }
 
         @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.3; }
+          0%, 100% { opacity:1; }
+          50% { opacity:0.3; }
         }
 
         .ps-clock {
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 20px;
-          font-weight: 700;
-          color: var(--h-text);
-          min-width: 70px;
-          text-align: right;
+          font-family:var(--h-font-display);
+          font-size:22px;
+          font-weight:800;
+          color:#fff;
+          min-width:80px;
+          text-align:right;
+          letter-spacing:0.02em;
+          text-shadow:0 0 14px rgba(0,229,255,.4);
         }
 
-        .player-strip.active-turn {
-          border-color: rgba(129,182,76,0.35);
-          background: rgba(129,182,76,0.1);
-          box-shadow: inset 0 0 10px rgba(129,182,76,0.15);
+        .player-strip.active-turn,
+        .player-strip.cm-active {
+          border-color:rgba(0,229,255,.6);
+          background:rgba(0,229,255,.08);
+          box-shadow:
+            inset 0 0 14px rgba(0,229,255,.18),
+            0 0 20px rgba(0,229,255,.25);
         }
 
-        .player-strip.active-turn .ps-clock {
-          color: var(--h-green-2);
+        .player-strip.active-turn .ps-clock,
+        .player-strip.cm-active .ps-clock {
+          color:var(--h-cyan);
         }
 
         .player-strip.low-time .ps-clock {
-          color: #ef4444;
+          color:#ff6bb0;
+          text-shadow:0 0 14px rgba(255,45,149,.7);
         }
 
         .board-status {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          font-size: 13px;
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          font-size:13px;
         }
 
         .status-turn {
-          color: var(--h-muted);
-          font-family: 'Inter', sans-serif;
+          color:var(--h-muted);
+          font-family:var(--h-font-tech);
+          letter-spacing:0.12em;
+          text-transform:uppercase;
+          font-size:11.5px;
+          font-weight:700;
         }
 
         .status-badge {
-          padding: 4px 12px;
-          border-radius: 20px;
-          font-size: 12px;
-          font-family: 'Syne', sans-serif;
-          font-weight: 600;
+          padding:5px 14px;
+          border-radius:4px;
+          font-family:var(--h-font-tech);
+          font-size:10.5px;
+          font-weight:700;
+          letter-spacing:0.14em;
+          text-transform:uppercase;
         }
 
         .status-badge.active {
-          background: rgba(129,182,76,0.15);
-          color: var(--h-green-2);
-          border: 1px solid rgba(129,182,76,0.25);
+          background:rgba(0,229,255,.1);
+          color:var(--h-cyan);
+          border:1px solid rgba(0,229,255,.4);
+          box-shadow:inset 0 0 10px rgba(0,229,255,.15);
         }
 
         .status-badge.check {
-          background: rgba(240,193,91,0.15);
-          color: var(--h-gold);
-          border: 1px solid rgba(240,193,91,0.3);
+          background:rgba(255,45,149,.1);
+          color:var(--h-pink-2);
+          border:1px solid rgba(255,45,149,.4);
+          box-shadow:inset 0 0 10px rgba(255,45,149,.15);
         }
 
         .status-badge.over {
-          background: rgba(239,68,68,0.15);
-          color: #ef4444;
-          border: 1px solid rgba(239,68,68,0.3);
+          background:rgba(139,92,246,.12);
+          color:#c4b5fd;
+          border:1px solid rgba(139,92,246,.4);
+          box-shadow:inset 0 0 10px rgba(139,92,246,.15);
         }
 
         .board-scroll {
-          width: 100%;
-          aspect-ratio: 1;
-        }
-
-        .cm-game-board {
-          display: grid;
-          grid-template-columns: repeat(8, 1fr);
-          width: 100%;
-          aspect-ratio: 1;
-          border-radius: 8px;
-          overflow: hidden;
-          border: 2px solid rgba(255,255,255,0.12);
-          box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+          width:100%;
+          aspect-ratio:1;
+          border-radius:8px;
+          padding:2px;
+          background:linear-gradient(135deg, rgba(0,229,255,.4), rgba(255,45,149,.25));
+          box-shadow:0 0 30px rgba(0,229,255,.25);
         }
 
         .board-actions {
-          display: flex;
-          gap: 10px;
+          display:flex;
+          gap:10px;
         }
 
         .action-btn {
-          flex: 1;
-          padding: 11px;
-          border-radius: 9px;
-          font-size: 13px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.25s ease;
-          font-family: 'Syne', sans-serif;
+          flex:1;
+          padding:13px;
+          border-radius:4px;
+          font-family:var(--h-font-tech);
+          font-size:12px;
+          font-weight:700;
+          letter-spacing:0.14em;
+          text-transform:uppercase;
+          cursor:pointer;
+          transition:all .25s ease;
         }
 
         .action-btn.primary {
-          background: linear-gradient(180deg,#9bd761,#7fb64a);
-          border: none;
-          color: #10180e;
-          font-weight: 700;
-          box-shadow: 0 16px 30px rgba(129,182,76,.25), inset 0 1px rgba(255,255,255,.45);
+          background:linear-gradient(90deg, #00e5ff, #a8f8ff);
+          border:none;
+          color:#050510;
+          box-shadow:
+            0 0 20px rgba(0,229,255,.5),
+            inset 0 0 10px rgba(255,255,255,.4);
         }
 
-        .action-btn.primary:hover {
-          transform: translateY(-1px);
-          background: linear-gradient(180deg,#a8e372,#82bd4a);
-          box-shadow: 0 20px 38px rgba(129,182,76,.32), inset 0 1px rgba(255,255,255,.55);
+        .action-btn.primary:hover:not(:disabled) {
+          transform:translateY(-2px);
+          box-shadow:
+            0 0 30px rgba(0,229,255,.8),
+            0 0 60px rgba(0,229,255,.35),
+            inset 0 0 12px rgba(255,255,255,.5);
         }
 
         .action-btn.primary:disabled {
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.12);
-          color: var(--h-muted);
-          cursor: not-allowed;
-          box-shadow: none;
+          background:rgba(0,229,255,.05);
+          border:1px solid rgba(0,229,255,.2);
+          color:var(--h-muted);
+          cursor:not-allowed;
+          box-shadow:none;
         }
 
         .action-btn.secondary {
-          background: rgba(255,255,255,0.06);
-          border: 1px solid rgba(255,255,255,0.12);
-          color: var(--h-text);
+          background:rgba(0,229,255,.04);
+          border:1px solid rgba(0,229,255,.3);
+          color:var(--h-cyan);
+          box-shadow:inset 0 0 10px rgba(0,229,255,.08);
         }
 
         .action-btn.secondary:hover {
-          border-color: rgba(129,182,76,0.35);
-          color: #ffffff;
-          background: rgba(129,182,76,0.1);
+          border-color:var(--h-cyan);
+          color:var(--h-cyan-3);
+          background:rgba(0,229,255,.12);
+          box-shadow:
+            inset 0 0 16px rgba(0,229,255,.18),
+            0 0 18px rgba(0,229,255,.4);
         }
 
+        /* =========================================================
+           GAME OVER OVERLAY
+           ========================================================= */
         .game-over-overlay {
-          position: absolute;
-          inset: 0;
-          background: rgba(15,20,17,0.85);
-          border-radius: 20px;
-          display: none;
-          place-items: center;
-          backdrop-filter: blur(8px);
-          z-index: 50;
+          position:absolute;
+          inset:0;
+          background:rgba(5,5,16,0.88);
+          border-radius:8px;
+          display:none;
+          place-items:center;
+          backdrop-filter:blur(10px);
+          z-index:50;
         }
 
         .game-over-overlay.show {
-          display: grid;
+          display:grid;
         }
 
         .game-over-card {
-          background: rgba(255,255,255,0.045);
-          border: 1px solid rgba(255,255,255,0.09);
-          border-radius: 18px;
-          padding: 40px 36px;
-          text-align: center;
-          max-width: 320px;
-          width: 90%;
-          box-shadow: 0 0 50px rgba(0,0,0,0.4);
+          position:relative;
+          background:
+            linear-gradient(180deg, rgba(0,229,255,.08), rgba(139,92,246,.04)),
+            #08081a;
+          border:1px solid rgba(0,229,255,.35);
+          border-radius:8px;
+          padding:44px 36px;
+          text-align:center;
+          max-width:360px;
+          width:90%;
+          box-shadow:
+            0 0 50px rgba(0,229,255,.28),
+            0 0 100px rgba(255,45,149,.15);
+        }
+
+        .game-over-card::before,
+        .game-over-card::after {
+          content:'';
+          position:absolute;
+          width:20px;
+          height:20px;
+          border:2px solid #00e5ff;
+          filter:drop-shadow(0 0 8px rgba(0,229,255,.8));
+          pointer-events:none;
+        }
+        .game-over-card::before { top:-2px; left:-2px; border-right:0; border-bottom:0; }
+        .game-over-card::after { bottom:-2px; right:-2px; border-left:0; border-top:0; }
+
+        .game-over-close {
+          position:absolute;
+          top:10px;
+          right:12px;
+          width:34px;
+          height:34px;
+          border:1px solid rgba(0,229,255,.35);
+          background:rgba(0,229,255,.05);
+          color:var(--h-cyan);
+          border-radius:4px;
+          cursor:pointer;
+          font-size:16px;
+          line-height:1;
+          transition:all .2s ease;
+        }
+
+        .game-over-close:hover {
+          border-color:var(--h-cyan);
+          color:var(--h-cyan-3);
+          background:rgba(0,229,255,.14);
+          box-shadow:0 0 16px rgba(0,229,255,.5);
         }
 
         .go-kicker {
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 11px;
-          letter-spacing: 0.2em;
-          color: var(--h-green-2);
-          text-transform: uppercase;
-          margin-bottom: 10px;
-          font-weight: 800;
+          display:inline-flex;
+          align-items:center;
+          gap:9px;
+          font-family:var(--h-font-tech);
+          font-size:11px;
+          letter-spacing:0.22em;
+          color:var(--h-cyan);
+          text-transform:uppercase;
+          margin-bottom:14px;
+          font-weight:700;
+        }
+
+        .go-kicker::before{
+          content:'[';
+          color:#a8f8ff;
+          font-family:'Orbitron', system-ui, sans-serif;
+          font-weight:900;
+        }
+        .go-kicker::after{
+          content:']';
+          color:#a8f8ff;
+          font-family:'Orbitron', system-ui, sans-serif;
+          font-weight:900;
         }
 
         .game-over-card h2 {
-          font-family: 'Fraunces', serif;
-          font-size: 28px;
-          font-weight: 800;
-          color: var(--h-text);
-          margin: 0 0 8px;
+          font-family:var(--h-font-display);
+          font-size:26px;
+          font-weight:800;
+          color:#fff;
+          margin:0 0 10px;
+          text-transform:uppercase;
+          letter-spacing:0.02em;
+          text-shadow:0 0 22px rgba(0,229,255,.4);
         }
 
         .game-over-card p {
-          color: var(--h-muted);
-          font-size: 14px;
-          margin: 0 0 28px;
+          color:var(--h-muted);
+          font-size:14px;
+          margin:0 0 30px;
+          line-height:1.65;
         }
 
         .go-actions {
-          display: flex;
-          gap: 10px;
+          display:flex;
+          flex-direction:column;
+          gap:10px;
         }
 
-        /* History Panel */
+        /* =========================================================
+           HISTORY PANEL
+           ========================================================= */
         .history-panel {
-          background: rgba(255,255,255,0.045);
-          border: 1px solid rgba(255,255,255,0.09);
-          border-radius: 20px;
-          padding: 20px;
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-          max-height: 700px;
-          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
-          backdrop-filter: blur(12px);
+          background:
+            linear-gradient(180deg, rgba(0,229,255,.06), rgba(139,92,246,.03)),
+            #08081a;
+          border:1px solid rgba(0,229,255,.32);
+          border-radius:8px;
+          padding:22px;
+          display:flex;
+          flex-direction:column;
+          gap:14px;
+          max-height:720px;
+          box-shadow:
+            0 0 40px rgba(0,229,255,.18),
+            inset 0 0 40px rgba(0,229,255,.04);
         }
 
         .history-head {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
+          display:flex;
+          align-items:flex-start;
+          justify-content:space-between;
         }
 
         .hh-label {
-          font-size: 11px;
-          color: var(--h-green-2);
-          text-transform: uppercase;
-          letter-spacing: 0.12em;
-          margin-bottom: 2px;
-          font-family: 'JetBrains Mono', monospace;
-          font-weight: 800;
+          font-family:var(--h-font-tech);
+          font-size:10.5px;
+          color:var(--h-cyan);
+          text-transform:uppercase;
+          letter-spacing:0.22em;
+          margin-bottom:4px;
+          font-weight:700;
         }
 
         .history-head h2 {
-          font-family: 'Fraunces', serif;
-          font-size: 16px;
-          font-weight: 700;
-          color: var(--h-text);
-          margin: 0;
+          font-family:var(--h-font-display);
+          font-size:15px;
+          font-weight:800;
+          color:#fff;
+          margin:0;
+          text-transform:uppercase;
+          letter-spacing:0.06em;
         }
 
         .move-count-badge {
-          background: rgba(129,182,76,0.15);
-          border: 1px solid rgba(129,182,76,0.25);
-          color: var(--h-green-2);
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 13px;
-          font-weight: 700;
-          padding: 4px 10px;
-          border-radius: 20px;
+          background:rgba(0,229,255,.1);
+          border:1px solid rgba(0,229,255,.4);
+          color:var(--h-cyan);
+          font-family:var(--h-font-display);
+          font-size:13px;
+          font-weight:800;
+          padding:5px 12px;
+          border-radius:4px;
+          box-shadow:inset 0 0 10px rgba(0,229,255,.15);
         }
 
         .review-controls {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          background: rgba(255,255,255,0.04);
-          border-radius: 10px;
-          padding: 10px 12px;
-          border: 1px solid rgba(255,255,255,0.12);
+          display:flex;
+          align-items:center;
+          gap:10px;
+          background:rgba(0,229,255,.04);
+          border-radius:6px;
+          padding:10px 12px;
+          border:1px solid rgba(0,229,255,.2);
         }
 
         .review-controls button {
-          background: transparent;
-          border: 1px solid rgba(255,255,255,0.12);
-          border-radius: 6px;
-          color: var(--h-muted);
-          padding: 5px 12px;
-          cursor: pointer;
-          font-size: 14px;
-          transition: all 0.2s;
+          background:transparent;
+          border:1px solid rgba(0,229,255,.28);
+          border-radius:4px;
+          color:var(--h-cyan);
+          padding:6px 14px;
+          cursor:pointer;
+          font-size:14px;
+          transition:all .2s ease;
         }
 
         .review-controls button:hover:not(:disabled) {
-          border-color: rgba(129,182,76,0.35);
-          color: var(--h-green-2);
-          background: rgba(129,182,76,0.1);
+          border-color:var(--h-cyan);
+          color:var(--h-cyan-3);
+          background:rgba(0,229,255,.14);
+          box-shadow:0 0 14px rgba(0,229,255,.5);
         }
 
         .review-controls button:disabled {
-          opacity: 0.25;
-          cursor: not-allowed;
+          opacity:0.25;
+          cursor:not-allowed;
         }
 
         .review-controls span {
-          flex: 1;
-          text-align: center;
-          font-size: 12px;
-          color: var(--h-muted);
-          font-family: 'Syne', sans-serif;
+          flex:1;
+          text-align:center;
+          font-family:var(--h-font-tech);
+          font-size:11px;
+          color:var(--h-muted);
+          letter-spacing:0.12em;
+          text-transform:uppercase;
         }
 
         .move-history {
-          flex: 1;
-          overflow-y: auto;
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-          scrollbar-width: thin;
-          scrollbar-color: rgba(255,255,255,0.12) transparent;
+          flex:1;
+          overflow-y:auto;
+          display:flex;
+          flex-direction:column;
+          gap:6px;
+          scrollbar-width:thin;
+          scrollbar-color:rgba(0,229,255,.3) transparent;
+        }
+
+        .move-history::-webkit-scrollbar {
+          width:6px;
+        }
+
+        .move-history::-webkit-scrollbar-thumb {
+          background:rgba(0,229,255,.3);
+          border-radius:3px;
         }
 
         .move-history p {
-          color: var(--h-muted);
-          font-size: 13px;
+          color:var(--h-muted);
+          font-size:13px;
         }
 
         .move-item {
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.09);
-          border-radius: 8px;
-          padding: 10px 14px;
-          font-size: 13px;
+          background:rgba(0,229,255,.03);
+          border:1px solid rgba(0,229,255,.15);
+          border-radius:4px;
+          padding:10px 14px;
+          font-size:13px;
         }
 
         .move-num {
-          color: var(--h-green-2);
-          font-weight: 700;
-          margin-right: 4px;
-          font-family: 'JetBrains Mono', monospace;
+          color:var(--h-cyan);
+          font-weight:800;
+          margin-right:6px;
+          font-family:var(--h-font-display);
+          text-shadow:0 0 10px rgba(0,229,255,.5);
         }
 
         .move-san {
-          color: var(--h-text);
-          font-weight: 500;
+          color:#fff;
+          font-weight:600;
+          font-family:var(--h-font-tech);
+          letter-spacing:0.04em;
         }
 
         .move-sq {
-          color: var(--h-muted);
-          font-size: 11px;
-          margin-left: 6px;
+          color:var(--h-muted);
+          font-size:11px;
+          margin-left:8px;
+          font-family:var(--h-font-tech);
+          letter-spacing:0.08em;
         }
       `}</style>
 
@@ -1284,140 +1477,136 @@ useEffect(() => {
             );
 
             return (
-            <div className="game-layout">
-              <section className="board-shell">
-                {strip(topColor)}
+              <div className="game-layout">
+                <section className="board-shell">
+                  {strip(topColor)}
 
-                {/* Status */}
-                <div className="board-status">
-                  <span className="status-turn" id="turnIndicator">{chess.turn === 'w' ? 'White' : 'Black'} to move</span>
-                  <span className={`status-badge ${chess.status.type}`} id="gameStatus">{chess.status.text}</span>
-                </div>
+                  <div className="board-status">
+                    <span className="status-turn" id="turnIndicator">{chess.turn === 'w' ? 'White' : 'Black'} to move</span>
+                    <span className={`status-badge ${chess.status.type}`} id="gameStatus">{chess.status.text}</span>
+                  </div>
 
-                {/* Board */}
-                <div className="board-scroll">
-                  <ChessBoard
-                    board={chess.board}
-                    orientation={orientation}
-                    selectedSquare={chess.selectedSquare}
-                    legalMoves={chess.legalMoves}
-                    lastMove={chess.lastMove}
-                    checkedSquare={null}
-                    theme={user?.boardTheme || 'classic'}
-                    disabled={!chess.gameStarted || chess.gameOver || chess.isReviewing}
-                    onSquareClick={chess.handleSquareClick}
-                    onDragStart={chess.handleDragStart}
-                    onDrop={chess.handleDrop}
-                  />
-                </div>
+                  <div className="board-scroll">
+                    <ChessBoard
+                      board={chess.board}
+                      orientation={orientation}
+                      selectedSquare={chess.selectedSquare}
+                      legalMoves={chess.legalMoves}
+                      lastMove={chess.lastMove}
+                      checkedSquare={null}
+                      theme={user?.boardTheme || 'classic'}
+                      disabled={!chess.gameStarted || chess.gameOver || chess.isReviewing}
+                      onSquareClick={chess.handleSquareClick}
+                      onDragStart={chess.handleDragStart}
+                      onDrop={chess.handleDrop}
+                    />
+                  </div>
 
-                {strip(bottomColor)}
+                  {strip(bottomColor)}
 
-                {/* Actions */}
-                <div className="board-actions">
-                  {!chess.gameStarted ? (
-                    <button id="startGameBtn" type="button" className="action-btn primary" onClick={handleStartGame}>
-                      Start Game
+                  <div className="board-actions">
+                    {!chess.gameStarted ? (
+                      <button id="startGameBtn" type="button" className="action-btn primary" onClick={handleStartGame}>
+                        Start Game
+                      </button>
+                    ) : (
+                      <button id="startGameBtn" type="button" className="action-btn primary" disabled>
+                        Game Started
+                      </button>
+                    )}
+                    <button id="changeTimeBtn" type="button" className="action-btn secondary" onClick={() => setScreen('setup')}>
+                      Change Time
                     </button>
-                  ) : (
-                    <button id="startGameBtn" type="button" className="action-btn primary" disabled>
-                      Game Started
-                    </button>
-                  )}
-                  <button id="changeTimeBtn" type="button" className="action-btn secondary" onClick={() => setScreen('setup')}>
-                    Change Time
-                  </button>
-                </div>
+                  </div>
 
-                {/* Game Over Overlay */}
-                {chess.gameOver && chess.gameOverInfo && (
-                  <div id="gameOverModal" className="game-over-overlay" style={{ display: 'grid' }}>
-                    <div className="game-over-card">
-                      <button
-    type="button"
-    className="game-over-close"
-    onClick={chess.closeGameOver}
-    aria-label="Close game over"
-  >
-    ✕
-  </button>
-                      <div className="go-kicker">Game Over</div>
-                      <h2 id="gameOverTitle">{chess.gameOverInfo.title}</h2>
-                      <p id="gameOverMessage">{chess.gameOverInfo.message}</p>
-                      <div className="go-actions">
-                        <button
-                          id="newGameBtn"
-                          type="button"
-                          className="action-btn primary"
-                          onClick={() => {
-                            const botConfig = isBotMode && selectedBot
-                              ? {
-                                  ...selectedBot,
-                                  skill: Math.max(0, Math.min(20, Math.round((selectedBot.rating - 100) / (3200 - 100) * 20))),
-                                  thinkTime: Math.round(200 + ((selectedBot.rating - 100) / (3200 - 100)) * 1800),
-                                }
-                              : null;
-                            chess.setupGame({
-                              minutes: selectedTime?.minutes || 10,
-                              increment: selectedTime?.increment || 0,
-                              isBot: isBotMode,
-                              bot: botConfig,
-                              playerColor: savedRef.current.color,
-                            });
-                          }}
-                        >
-                          New Game
-                        </button>
-                        {savedGameId && (
-  <button
-    type="button"
-    className="action-btn secondary"
-    onClick={() => navigate(`/replay/${savedGameId}`)}
-  >
-    ▶ Replay
-  </button>
-)}
+                  {chess.gameOver && chess.gameOverInfo && (
+                    <div id="gameOverModal" className="game-over-overlay" style={{ display: 'grid' }}>
+                      <div className="game-over-card">
                         <button
                           type="button"
-                          className="action-btn secondary"
-                          onClick={handlePlayAgain}
+                          className="game-over-close"
+                          onClick={chess.closeGameOver}
+                          aria-label="Close game over"
                         >
-                          ← Back to Play
+                          ✕
                         </button>
+                        <div className="go-kicker">Game Over</div>
+                        <h2 id="gameOverTitle">{chess.gameOverInfo.title}</h2>
+                        <p id="gameOverMessage">{chess.gameOverInfo.message}</p>
+                        <div className="go-actions">
+                          <button
+                            id="newGameBtn"
+                            type="button"
+                            className="action-btn primary"
+                            onClick={() => {
+                              const botConfig = isBotMode && selectedBot
+                                ? {
+                                    ...selectedBot,
+                                    skill: Math.max(0, Math.min(20, Math.round((selectedBot.rating - 100) / (3200 - 100) * 20))),
+                                    thinkTime: Math.round(200 + ((selectedBot.rating - 100) / (3200 - 100)) * 1800),
+                                  }
+                                : null;
+                              chess.setupGame({
+                                minutes: selectedTime?.minutes || 10,
+                                increment: selectedTime?.increment || 0,
+                                isBot: isBotMode,
+                                bot: botConfig,
+                                playerColor: savedRef.current.color,
+                              });
+                            }}
+                          >
+                            New Game
+                          </button>
+                          {savedGameId && (
+                            <button
+                              type="button"
+                              className="action-btn secondary"
+                              onClick={() => navigate(`/replay/${savedGameId}`)}
+                            >
+                              ▶ Replay
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            className="action-btn secondary"
+                            onClick={handlePlayAgain}
+                          >
+                            ← Back to Play
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </section>
-
-              {/* History Panel */}
-              <aside className="history-panel">
-                <div className="history-head">
-                  <div>
-                    <div className="hh-label">Match Log</div>
-                    <h2>Move History</h2>
-                  </div>
-                  <span className="move-count-badge" id="moveCount">{chess.history.length}</span>
-                </div>
-                <div className="review-controls">
-                  <button id="prevMoveBtn" type="button" title="Previous" disabled={chess.reviewIndex <= 0} onClick={() => chess.goToMove('prev')}>⟵</button>
-                  <span id="reviewStatus">{chess.positionHistory.length === 1 ? 'Live' : chess.isReviewing ? `Move ${chess.reviewIndex}/${chess.positionHistory.length - 1}` : 'Live'}</span>
-                  <button id="nextMoveBtn" type="button" title="Next" disabled={chess.reviewIndex >= chess.positionHistory.length - 1} onClick={() => chess.goToMove('next')}>⟶</button>
-                </div>
-                <div id="moveHistory" className="move-history">
-                  {chess.history.length === 0 ? (
-                    <p style={{ color: 'var(--h-muted)' }}>No moves yet.</p>
-                  ) : (
-                    chess.history.map((move, index) => (
-                      <div key={index} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: '10px', padding: '10px 14px', marginBottom: '6px', fontSize: '14px' }}>
-                        <span style={{ color: 'var(--h-green-2)', fontWeight: 700 }}>{index + 1}.</span> {move.san}
-                        <span style={{ color: 'var(--h-muted)', fontSize: '11px', marginLeft: '6px' }}>({move.from} → {move.to})</span>
-                      </div>
-                    ))
                   )}
-                </div>
-              </aside>
-            </div>
+                </section>
+
+                <aside className="history-panel">
+                  <div className="history-head">
+                    <div>
+                      <div className="hh-label">Match Log</div>
+                      <h2>Move History</h2>
+                    </div>
+                    <span className="move-count-badge" id="moveCount">{chess.history.length}</span>
+                  </div>
+                  <div className="review-controls">
+                    <button id="prevMoveBtn" type="button" title="Previous" disabled={chess.reviewIndex <= 0} onClick={() => chess.goToMove('prev')}>⟵</button>
+                    <span id="reviewStatus">{chess.positionHistory.length === 1 ? 'Live' : chess.isReviewing ? `Move ${chess.reviewIndex}/${chess.positionHistory.length - 1}` : 'Live'}</span>
+                    <button id="nextMoveBtn" type="button" title="Next" disabled={chess.reviewIndex >= chess.positionHistory.length - 1} onClick={() => chess.goToMove('next')}>⟶</button>
+                  </div>
+                  <div id="moveHistory" className="move-history">
+                    {chess.history.length === 0 ? (
+                      <p style={{ color: 'var(--h-muted)' }}>No moves yet.</p>
+                    ) : (
+                      chess.history.map((move, index) => (
+                        <div key={index} className="move-item">
+                          <span className="move-num">{index + 1}.</span>
+                          <span className="move-san">{move.san}</span>
+                          <span className="move-sq">({move.from} → {move.to})</span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </aside>
+              </div>
             );
           })()}
         </main>

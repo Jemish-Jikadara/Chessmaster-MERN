@@ -6,7 +6,6 @@ const matchStatus = document.getElementById("matchStatus");
 findMatchBtn.addEventListener("click", () => {
     if (!selectedTimeControl) return;
 
-    // Purana data clear karo
     sessionStorage.removeItem("onlineMoves");
     sessionStorage.removeItem("onlineTimeControl");
     sessionStorage.removeItem("onlineRoomId");

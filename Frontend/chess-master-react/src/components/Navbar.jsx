@@ -1,484 +1,290 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-
-  const { user, logout } = useAuth();
-
-  const toggleMenu = () => setMenuOpen(!menuOpen);
+  const { user } = useAuth();
+  const initials = user?.username?.[0]?.toUpperCase() || 'U';
 
   return (
     <>
-      <nav className="cm-nav">
-        <div className="cm-nav-inner">
-          <Link to="/" className="cm-brand" onClick={() => { setMenuOpen(false); setProfileMenuOpen(false); }}>
-            <span className="cm-brand-icon">♞</span>
-            <span>ChessMaster</span>
+      <nav className="cn-nav">
+        <div className="cn-wrap cn-nav-inner">
+          <Link to="/" className="cn-logo">
+            <span className="cn-logo-mark">♞</span>
+            ChessMaster
           </Link>
 
-          <button
-            id="menuBtn"
-            className="cm-menu-btn"
-            type="button"
-            onClick={toggleMenu}
-            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-          >
-            {menuOpen ? '✕' : '☰'}
-          </button>
+          <ul className="cn-nav-links">
+            <li><Link to="/play">Play</Link></li>
+            <li><Link to="/online">Online</Link></li>
+            <li><Link to="/leaderboard">Rankings</Link></li>
+            <li><Link to="/friends">Friends</Link></li>
+          </ul>
 
-          <div
-            id="navLinks"
-            className={`cm-nav-links ${menuOpen ? 'cm-open' : ''}`}
-          >
-            <Link to="/" className="cm-nav-link" onClick={() => { setMenuOpen(false); setProfileMenuOpen(false); }}>
-              Home
-            </Link>
-            <Link to="/play" className="cm-nav-link" onClick={() => { setMenuOpen(false); setProfileMenuOpen(false); }}>
-              Play
-            </Link>
-            <Link to="/leaderboard" className="cm-nav-link" onClick={() => { setMenuOpen(false); setProfileMenuOpen(false); }}>
-              Leaderboard
-            </Link>
-            <Link to="/about" className="cm-nav-link" onClick={() => { setMenuOpen(false); setProfileMenuOpen(false); }}>
-              About
-            </Link>
-
+          <div className="cn-nav-actions">
             {user ? (
-              <div
-                className="cm-profile-wrap"
-              >
-                <button
-                  type="button"
-                  className="cm-profile-btn"
-                  onClick={() => setProfileMenuOpen((v) => !v)}
-                >
-                  <img
-                    src={user.profileImage || '/images/default-avatar.png'}
-                    alt="Profile"
-                    className="cm-profile-img"
-                  />
-                  <span className="cm-profile-name">{user.username}</span>
-                  <span className="cm-profile-arrow">▾</span>
-                </button>
-
-                {profileMenuOpen && (
-                  <div className="cm-profile-menu">
-                    <Link
-                      to="/profile"
-                      onClick={() => {
-                        setProfileMenuOpen(false);
-                        setMenuOpen(false);
-                      }}
-                      className="cm-profile-item"
-                    >
-                      Profile
-                    </Link>
-                    <Link
-                      to="/friends"
-                      onClick={() => {
-                        setProfileMenuOpen(false);
-                        setMenuOpen(false);
-                      }}
-                      className="cm-profile-item"
-                    >
-                      Friends
-                    </Link>
-                    <Link
-                      to="/settings"
-                      onClick={() => {
-                        setProfileMenuOpen(false);
-                        setMenuOpen(false);
-                      }}
-                      className="cm-profile-item"
-                    >
-                      Settings
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        setProfileMenuOpen(false);
-                        setMenuOpen(false);
-                        await logout();
-                      }}
-                      className="cm-profile-item cm-logout-btn"
-                    >
-                      Log out
-                    </button>
-                  </div>
-                )}
-              </div>
+              <Link to="/profile" className="cn-avatar" title={user.username}>
+                {initials}
+              </Link>
             ) : (
-              <div className="cm-auth-links">
-                <Link
-                  to="/login"
-                  className="cm-nav-link"
-                  onClick={() => { setMenuOpen(false); setProfileMenuOpen(false); }}
-                >
-                  Login
+              <>
+                <Link to="/login" className="cn-btn cn-btn-sm cn-btn-outline cn-corners">
+                  Sign In
                 </Link>
-                <Link
-                  to="/register"
-                  className="cm-register-btn"
-                  onClick={() => { setMenuOpen(false); setProfileMenuOpen(false); }}
-                >
+                <Link to="/register" className="cn-btn cn-btn-sm cn-btn-cyber cn-corners">
                   Register
                 </Link>
-              </div>
+              </>
             )}
           </div>
         </div>
       </nav>
 
       <style>{`
-        .cm-nav {
-          position: sticky;
-          top: 0;
-          z-index: 100;
-          background: rgba(15, 20, 17, 0.88);
-          border-bottom: 1px solid rgba(255,255,255,0.08);
-          backdrop-filter: blur(18px);
-          box-shadow: 0 14px 40px rgba(0,0,0,0.22);
+        @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Orbitron:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+
+        /* ---------- Layout wrapper (shared with Home) ---------- */
+        .cn-wrap{
+          width:min(1240px, calc(100% - 40px));
+          margin:0 auto;
         }
 
-        .cm-nav-inner {
-          max-width: 1180px;
-          height: 66px;
-          margin: 0 auto;
-          padding: 0 22px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 18px;
+        /* =========================================================
+           NAV
+           ========================================================= */
+        .cn-nav{
+          position:sticky;
+          top:0;
+          z-index:50;
+          backdrop-filter:blur(14px);
+          -webkit-backdrop-filter:blur(14px);
+          background:rgba(5,5,16,0.78);
+          border-bottom:1px solid rgba(0,229,255,0.14);
+          font-family:'Inter', system-ui, sans-serif;
         }
 
-        .cm-brand {
-          display: inline-flex;
-          align-items: center;
-          gap: 10px;
-          color: #f5f7f1;
-          text-decoration: none;
-          font-size: 19px;
-          font-weight: 900;
-          letter-spacing: 0;
-          white-space: nowrap;
+        .cn-nav-inner{
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          gap:20px;
+          padding:14px 0;
         }
 
-        .cm-brand-icon {
-          width: 36px;
-          height: 36px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 9px;
-          color: #10180e;
-          background: linear-gradient(180deg, #9bd761, #7fb64a);
-          font-size: 22px;
-          box-shadow: 0 12px 24px rgba(129,182,76,0.24), inset 0 1px rgba(255,255,255,0.42);
+        .cn-logo{
+          display:inline-flex;
+          align-items:center;
+          gap:11px;
+          color:#e8f4ff;
+          text-decoration:none;
+          font-family:'Orbitron', system-ui, sans-serif;
+          font-weight:800;
+          font-size:19px;
+          letter-spacing:0.06em;
+          text-transform:uppercase;
         }
 
-        .cm-menu-btn {
-          display: none;
-          width: 42px;
-          height: 42px;
-          align-items: center;
-          justify-content: center;
-          color: #f5f7f1;
-          background: rgba(255,255,255,0.07);
-          border: 1px solid rgba(255,255,255,0.12);
-          border-radius: 9px;
-          cursor: pointer;
-          font-size: 20px;
+        .cn-logo-mark{
+          width:36px;
+          height:36px;
+          border-radius:8px;
+          display:inline-flex;
+          align-items:center;
+          justify-content:center;
+          position:relative;
+          background:linear-gradient(135deg, #00e5ff, #8b5cf6);
+          color:#050510;
+          font-size:18px;
+          font-weight:900;
+          box-shadow:
+            0 0 18px rgba(0,229,255,0.55),
+            0 0 32px rgba(139,92,246,0.35),
+            inset 0 0 10px rgba(255,255,255,0.35);
         }
 
-        /* Desktop: horizontal nav always visible */
-        .cm-nav-links {
-          display: flex;
-          align-items: center;
-          gap: 6px;
+        .cn-logo-mark::after{
+          content:'';
+          position:absolute;
+          inset:-3px;
+          border-radius:10px;
+          border:1px solid rgba(0,229,255,0.35);
+          pointer-events:none;
         }
 
-        .cm-nav-link {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 38px;
-          padding: 0 13px;
-          color: #b9c2b3;
-          text-decoration: none;
-          font-size: 14px;
-          font-weight: 750;
-          border-radius: 8px;
-          transition: color .18s ease, background .18s ease, transform .18s ease;
+        .cn-nav-links{
+          display:flex;
+          align-items:center;
+          gap:26px;
+          list-style:none;
+          margin:0;
+          padding:0;
         }
 
-        .cm-nav-link:hover {
-          color: #ffffff;
-          background: rgba(255,255,255,0.075);
-          transform: translateY(-1px);
+        .cn-nav-links a{
+          color:#b8c6dd;
+          text-decoration:none;
+          font-family:'Chakra Petch', system-ui, sans-serif;
+          font-size:13px;
+          font-weight:600;
+          letter-spacing:0.14em;
+          text-transform:uppercase;
+          position:relative;
+          padding:4px 0;
+          transition:color .18s ease, text-shadow .18s ease;
         }
 
-        .cm-auth-links {
-          display: flex;
-          align-items: center;
-          gap: 6px;
+        .cn-nav-links a::before{
+          content:'>';
+          position:absolute;
+          left:-14px;
+          opacity:0;
+          color:#00e5ff;
+          transition:opacity .18s ease;
         }
 
-        .cm-register-btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 40px;
-          padding: 0 17px;
-          color: #000000;
-          text-decoration: none;
-          font-size: 14px;
-          font-weight: 900;
-          border-radius: 8px;
-          background: linear-gradient(180deg, #1c1e19, #181916);
-          box-shadow: 0 12px 24px rgba(129,182,76,0.22), inset 0 1px rgba(255,255,255,0.45);
-          transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+        .cn-nav-links a:hover{
+          color:#00e5ff;
+          text-shadow:0 0 12px rgba(0,229,255,0.7);
         }
 
-        .cm-register-btn:hover {
-          transform: translateY(-1px);
-          background: linear-gradient(180deg, #000000, #090a09);
-          box-shadow: 0 16px 30px rgba(129,182,76,0.3), inset 0 1px rgba(255,255,255,0.55);
+        .cn-nav-links a:hover::before{
+          opacity:1;
         }
 
-        .cm-profile-wrap {
-          position: relative;
-          margin-left: 4px;
+        .cn-nav-actions{
+          display:flex;
+          align-items:center;
+          gap:10px;
         }
 
-        .cm-profile-btn {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          min-height: 42px;
-          padding: 4px 10px 4px 5px;
-          color: #f5f7f1;
-          background: rgba(255,255,255,0.07);
-          border: 1px solid rgba(255,255,255,0.1);
-          border-radius: 999px;
-          cursor: pointer;
-          transition: background .18s ease, border-color .18s ease;
+        .cn-avatar{
+          width:38px;
+          height:38px;
+          border-radius:8px;
+          display:inline-flex;
+          align-items:center;
+          justify-content:center;
+          background:linear-gradient(135deg, #00e5ff, #8b5cf6);
+          color:#050510;
+          font-family:'Orbitron', system-ui, sans-serif;
+          font-weight:800;
+          font-size:14px;
+          border:1px solid rgba(0,229,255,0.5);
+          box-shadow:
+            0 0 16px rgba(0,229,255,0.5),
+            inset 0 0 10px rgba(255,255,255,0.35);
+          text-decoration:none;
+          transition:transform .18s ease, box-shadow .22s ease;
         }
 
-        .cm-profile-btn:hover {
-          background: rgba(255,255,255,0.1);
-          border-color: rgba(129,182,76,0.32);
+        .cn-avatar:hover{
+          transform:translateY(-2px);
+          box-shadow:
+            0 0 26px rgba(0,229,255,0.9),
+            inset 0 0 12px rgba(255,255,255,0.5);
         }
 
-        .cm-profile-img {
-          width: 34px;
-          height: 34px;
-          border-radius: 50%;
-          object-fit: cover;
-          border: 2px solid #81b64c;
+        /* =========================================================
+           BUTTONS (mirrors Home)
+           ========================================================= */
+        .cn-btn{
+          display:inline-flex;
+          align-items:center;
+          justify-content:center;
+          gap:9px;
+          min-height:46px;
+          padding:0 22px;
+          border-radius:6px;
+          font-family:'Chakra Petch', system-ui, sans-serif;
+          font-size:13px;
+          font-weight:700;
+          letter-spacing:0.14em;
+          text-transform:uppercase;
+          text-decoration:none;
+          border:1px solid transparent;
+          cursor:pointer;
+          position:relative;
+          transition:transform .18s ease, box-shadow .22s ease, background .22s ease, color .22s ease;
+          white-space:nowrap;
+          overflow:hidden;
         }
 
-        .cm-profile-name {
-          max-width: 130px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          font-size: 14px;
-          font-weight: 850;
+        .cn-btn:hover{ transform:translateY(-2px); }
+
+        .cn-btn-sm{ min-height:38px; padding:0 16px; font-size:11.5px; }
+
+        .cn-btn-cyber{
+          color:#050510;
+          background:linear-gradient(90deg, #00e5ff, #a8f8ff);
+          box-shadow:
+            0 0 20px rgba(0,229,255,0.55),
+            0 0 44px rgba(0,229,255,0.25),
+            inset 0 0 10px rgba(255,255,255,0.4);
+        }
+        .cn-btn-cyber:hover{
+          box-shadow:
+            0 0 30px rgba(0,229,255,0.8),
+            0 0 60px rgba(0,229,255,0.4),
+            inset 0 0 12px rgba(255,255,255,0.55);
         }
 
-        .cm-profile-arrow {
-          color: #9bd761;
-          font-size: 12px;
-          line-height: 1;
+        .cn-btn-cyber::after{
+          content:'';
+          position:absolute;
+          inset:0;
+          background:linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+          transform:translateX(-100%);
+          transition:transform .5s ease;
+        }
+        .cn-btn-cyber:hover::after{ transform:translateX(100%); }
+
+        .cn-btn-outline{
+          color:#00e5ff;
+          background:rgba(0,229,255,0.05);
+          border-color:rgba(0,229,255,0.35);
+          box-shadow:inset 0 0 12px rgba(0,229,255,0.12);
+        }
+        .cn-btn-outline:hover{
+          background:rgba(0,229,255,0.12);
+          border-color:#00e5ff;
+          color:#a8f8ff;
+          box-shadow:
+            inset 0 0 20px rgba(0,229,255,0.2),
+            0 0 22px rgba(0,229,255,0.35);
         }
 
-        .cm-profile-menu {
-          position: absolute;
-          right: 0;
-          top: 52px;
-          min-width: 190px;
-          overflow: hidden;
-          background: #151c17;
-          border: 1px solid rgba(255,255,255,0.11);
-          border-radius: 12px;
-          box-shadow: 0 24px 54px rgba(0,0,0,0.44);
-          z-index: 120;
+        /* Corner brackets */
+        .cn-corners{ position:relative; }
+        .cn-corners::before,
+        .cn-corners::after{
+          content:'';
+          position:absolute;
+          width:8px; height:8px;
+          border:1px solid currentColor;
+          opacity:0.5;
+          pointer-events:none;
+        }
+        .cn-corners::before{
+          top:3px; left:3px;
+          border-right:0; border-bottom:0;
+        }
+        .cn-corners::after{
+          bottom:3px; right:3px;
+          border-left:0; border-top:0;
         }
 
-        .cm-profile-item {
-          display: block;
-          width: 100%;
-          padding: 12px 15px;
-          color: #e9eee3;
-          background: transparent;
-          border: none;
-          text-align: left;
-          text-decoration: none;
-          font-size: 14px;
-          font-weight: 750;
-          cursor: pointer;
-          transition: background .16s ease, color .16s ease;
+        /* =========================================================
+           RESPONSIVE
+           ========================================================= */
+        @media (max-width:820px){
+          .cn-nav-links{ display:none; }
         }
 
-        .cm-profile-item:hover {
-          color: #ffffff;
-          background: rgba(255,255,255,0.075);
-        }
-
-        .cm-logout-btn {
-          color: #ff8585;
-          border-top: 1px solid rgba(255,255,255,0.08);
-        }
-
-        .cm-logout-btn:hover {
-          color: #ff9c9c;
-          background: rgba(248,113,113,0.1);
-        }
-       /* ====== TABLET & MOBILE (≤ 768px) ====== */
-/* ====== TABLET & MOBILE (≤ 768px) ====== */
-@media (max-width: 768px) {
-  .cm-nav-inner {
-    height: 62px;
-    padding: 0 16px;
-  }
-
-  .cm-menu-btn {
-    display: inline-flex;
-  }
-
-  .cm-nav-links {
-    position: absolute;
-    top: 62px;
-    left: 0;
-    right: 0;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-    padding: 12px 16px 16px;
-    background: rgba(15, 20, 17, 0.97);
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-    box-shadow: 0 22px 40px rgba(0,0,0,0.28);
-    display: none;
-  }
-
-  .cm-nav-links.cm-open {
-    display: flex;
-  }
-
-  .cm-nav-link {
-    width: 100%;
-    min-height: 42px;
-    justify-content: flex-start;
-    padding: 0 14px;
-  }
-
-  .cm-auth-links {
-    flex-direction: column;
-    width: 100%;
-    gap: 8px;
-  }
-
-  .cm-auth-links .cm-nav-link,
-  .cm-register-btn {
-    width: 100%;
-  }
-
-  .cm-profile-wrap {
-    width: 100%;
-    margin-left: 0;
-  }
-
-  .cm-profile-btn {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .cm-profile-menu {
-    position: static;
-    width: 100%;
-    min-width: 100%;
-    margin-top: 8px;
-  }
-}
-/* ===== FORCE DESKTOP NAV: 769px - 900px ===== */
-@media (min-width: 769px) and (max-width: 900px) {
-  .cm-menu-btn {
-    display: none !important;
-  }
-
-  .cm-nav-links {
-    position: static !important;
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    gap: 4px !important;
-    padding: 0 !important;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-  }
-
-  .cm-nav-link {
-    width: auto !important;
-    min-height: 38px;
-    padding: 0 8px;
-    font-size: 13px;
-  }
-
-  .cm-auth-links {
-    flex-direction: row !important;
-    width: auto !important;
-  }
-
-  .cm-auth-links .cm-nav-link,
-  .cm-register-btn {
-    width: auto !important;
-  }
-
-  .cm-profile-wrap {
-    width: auto !important;
-    margin-left: 4px;
-  }
-
-  .cm-profile-btn {
-    width: auto !important;
-  }
-}
-        /* Small mobile */
-        @media (max-width: 480px) {
-          .cm-nav-inner {
-            padding: 0 12px;
-          }
-
-          .cm-brand {
-            font-size: 17px;
-          }
-
-          .cm-brand-icon {
-            width: 32px;
-            height: 32px;
-            font-size: 20px;
-          }
-
-          .cm-menu-btn {
-            width: 38px;
-            height: 38px;
-            font-size: 18px;
-          }
-
-          .cm-nav-links {
-            top: 60px;
-            padding: 10px 12px 14px;
-          }
-
-          .cm-nav-link,
-          .cm-register-btn {
-            min-height: 42px;
-            font-size: 13px;
-          }
+        @media (max-width:560px){
+          .cn-wrap{ width:calc(100% - 24px); }
+          .cn-nav-inner .cn-btn{ padding:0 12px; font-size:10.5px; letter-spacing:0.1em; }
+          .cn-logo{ font-size:16px; }
+          .cn-logo-mark{ width:32px; height:32px; font-size:16px; }
         }
       `}</style>
     </>

@@ -21,6 +21,7 @@ import OnlinePlay from './pages/OnlinePlay';
 import Online from './pages/Online';
 import Replay from './pages/Replay';
 import Status from './pages/Status';
+import CheckEmail from './pages/CheckEmail';
 
 function HomeWrapper() {
   const { user } = useAuth(); 
@@ -38,6 +39,7 @@ function App() {
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />
             <Route path="setup-profile" element={<SetupProfile />} />
+            <Route path="check-email" element={<CheckEmail />} />
             <Route path="forgot-password" element={<ForgotPassword />} />
             <Route path="reset-password/:token" element={<ResetPassword />} />
             <Route path="leaderboard" element={<Leaderboard />} />

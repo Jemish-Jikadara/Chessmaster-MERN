@@ -22,10 +22,6 @@ function squareName(row, col) {
   return `${FILES[col]}${8 - row}`;
 }
 
-/**
- * board: 8x8 array as returned by chess.js `.board()`
- * orientation: 'w' | 'b' — which side is shown at the bottom
- */
 export default function ChessBoard({
   board,
   orientation = 'w',

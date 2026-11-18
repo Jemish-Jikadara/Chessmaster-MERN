@@ -19,14 +19,11 @@ async function saveGame(req, res) {
 
         let { whiteUser, blackUser, whitePlayer, blackPlayer, winner } = req.body;
 
-        // Local/bot games only send one real player — attach the logged-in
-        // user's id to whichever colour they were playing, when available.
         if (req.session.user && !whiteUser && !blackUser) {
             if (playerColor === "w") whiteUser = req.session.user.id;
             else if (playerColor === "b") blackUser = req.session.user.id;
         }
 
-        // Duplicate save guard
         if (gameId) {
             const existing = await Game.findOne({ gameId });
 
@@ -55,14 +52,11 @@ async function saveGame(req, res) {
             totalMoves
         });
 
-        // Save moves separately in GameMove collection
         await GameMove.create({
             game: game._id,
             moves: Array.isArray(moves) ? moves : []
         });
 
-        // Only update ladder ratings when both sides are real, distinct users
-        // (bot / pass-and-play games do not affect ELO).
         if (whiteUser && blackUser && String(whiteUser) !== String(blackUser)) {
             try {
                 await updateRatings(whiteUser, blackUser, winner, timeMode);

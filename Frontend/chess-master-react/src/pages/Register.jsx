@@ -3,117 +3,132 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const pageStyles = `
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Orbitron:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+
 .h-page{
-  --h-bg:#0f1411;
-  --h-panel:#1b241d;
-  --h-panel-2:#222d24;
-  --h-line:rgba(255,255,255,0.09);
-  --h-text:#f5f7f1;
-  --h-muted:#aeb7aa;
-  --h-soft:#d7ded0;
-  --h-green:#81b64c;
-  --h-green-2:#95c95e;
-  --h-dark-green:#5d8b32;
-  --h-gold:#f0c15b;
-  --h-orange:#e58b42;
-  background:
-    linear-gradient(180deg,rgba(129,182,76,0.08),transparent 360px),
-    radial-gradient(circle at 15% 8%,rgba(129,182,76,0.18),transparent 34%),
-    radial-gradient(circle at 85% 12%,rgba(240,193,91,0.1),transparent 32%),
-    var(--h-bg);
-  color:var(--h-text);
+  position:relative;
+  background:#050510;
+  color:#e8f4ff;
+  font-family:'Inter', system-ui, sans-serif;
   min-height:100vh;
   display:flex;
   flex-direction:column;
+  overflow-x:hidden;
 }
 
+.h-page::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(0,229,255,0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,255,0.045) 1px, transparent 1px);
+  background-size:52px 52px;
+  mask-image:radial-gradient(ellipse 80% 60% at 50% 40%, #000 20%, transparent 80%);
+  -webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 40%, #000 20%, transparent 80%);
+  pointer-events:none;
+  z-index:0;
+  animation:h-grid 24s linear infinite;
+}
+
+.h-page::after{
+  content:'';
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(700px 400px at 12% 8%, rgba(0,229,255,0.14), transparent 60%),
+    radial-gradient(600px 400px at 92% 20%, rgba(255,45,149,0.10), transparent 60%),
+    radial-gradient(800px 500px at 50% 110%, rgba(139,92,246,0.12), transparent 60%);
+  pointer-events:none;
+  z-index:0;
+}
+
+@keyframes h-grid{
+  0%{ background-position:0 0, 0 0; }
+  100%{ background-position:52px 52px, 52px 52px; }
+}
+
+.h-page > *{ position:relative; z-index:1; }
 .h-page *{ box-sizing:border-box; }
 
-.cm2-wrap{
-  width:min(1180px,calc(100% - 40px));
-  margin:0 auto;
-}
-
-.cm2-eyebrow{
-  display:inline-flex;
-  align-items:center;
-  gap:9px;
-  color:var(--h-green-2);
-  font-size:12px;
-  line-height:1;
-  font-weight:800;
-  text-transform:uppercase;
-  letter-spacing:.14em;
-  margin-bottom:18px;
-}
-
-.cm2-eyebrow .sq{
-  width:9px;
-  height:9px;
-  border-radius:2px;
-  background:var(--h-green);
-  box-shadow:0 0 0 5px rgba(129,182,76,.12);
-}
-
-.cm2-h1{
-  margin:0;
-  color:var(--h-text);
-  font-size:clamp(2.2rem,5vw,3.2rem);
-  line-height:1.02;
-  letter-spacing:0;
-  font-weight:900;
-}
-
-.cm2-accent{
-  color:var(--h-green-2);
-}
-
-.cm2-sub{
-  max-width:520px;
-  margin:14px 0 0;
-  color:var(--h-muted);
-  font-size:15px;
-  line-height:1.7;
-}
-
+/* BUTTON */
 .cm2-btn{
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  gap:8px;
+  gap:9px;
   min-height:48px;
-  padding:0 20px;
-  border-radius:8px;
-  font-size:15px;
-  font-weight:850;
+  padding:0 22px;
+  border-radius:6px;
+  font-family:'Chakra Petch', system-ui, sans-serif;
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:.14em;
+  text-transform:uppercase;
   text-decoration:none;
   border:1px solid transparent;
-  transition:transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
+  cursor:pointer;
+  position:relative;
+  transition:transform .18s ease, box-shadow .22s ease, background .22s ease, color .22s ease;
   width:100%;
+  overflow:hidden;
 }
 
-.cm2-btn:hover{
-  transform:translateY(-2px);
-}
+.cm2-btn:hover{ transform:translateY(-2px); }
 
 .cm2-btn-primary{
-  color:#10180e;
-  background:linear-gradient(180deg,#9bd761,#7fb64a);
-  box-shadow:0 16px 30px rgba(129,182,76,.25), inset 0 1px rgba(255,255,255,.45);
+  color:#050510;
+  background:linear-gradient(90deg, #00e5ff, #a8f8ff);
+  box-shadow:
+    0 0 20px rgba(0,229,255,0.55),
+    0 0 44px rgba(0,229,255,0.25),
+    inset 0 0 10px rgba(255,255,255,0.4);
 }
 
 .cm2-btn-primary:hover{
-  background:linear-gradient(180deg,#a8e372,#82bd4a);
-  box-shadow:0 20px 38px rgba(129,182,76,.32), inset 0 1px rgba(255,255,255,.55);
+  box-shadow:
+    0 0 30px rgba(0,229,255,0.8),
+    0 0 60px rgba(0,229,255,0.4),
+    inset 0 0 12px rgba(255,255,255,0.55);
 }
 
+.cm2-btn-primary::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+  transform:translateX(-100%);
+  transition:transform .5s ease;
+}
+.cm2-btn-primary:hover::after{ transform:translateX(100%); }
+
 .cm2-btn:disabled{
-  opacity:0.6;
+  opacity:0.55;
   cursor:not-allowed;
   transform:none;
 }
 
-/* Register specific */
+.cm2-corners{ position:relative; }
+.cm2-corners::before,
+.cm2-corners::after{
+  content:'';
+  position:absolute;
+  width:8px; height:8px;
+  border:1px solid currentColor;
+  opacity:0.55;
+  pointer-events:none;
+  z-index:2;
+}
+.cm2-corners::before{
+  top:3px; left:3px;
+  border-right:0; border-bottom:0;
+}
+.cm2-corners::after{
+  bottom:3px; right:3px;
+  border-left:0; border-top:0;
+}
+
+/* REGISTER WRAP + CARD */
 .reg-wrap{
   flex:1;
   display:flex;
@@ -129,7 +144,7 @@ const pageStyles = `
   position:absolute;
   width:550px;
   height:550px;
-  background:radial-gradient(circle,rgba(129,182,76,0.15) 0%,transparent 70%);
+  background:radial-gradient(circle,rgba(0,229,255,0.15) 0%,transparent 70%);
   top:-120px;
   left:-120px;
   pointer-events:none;
@@ -140,118 +155,172 @@ const pageStyles = `
   position:absolute;
   width:450px;
   height:450px;
-  background:radial-gradient(circle,rgba(240,193,91,0.1) 0%,transparent 70%);
+  background:radial-gradient(circle,rgba(255,45,149,0.12) 0%,transparent 70%);
   bottom:-80px;
   right:5%;
   pointer-events:none;
 }
 
 .reg-card{
-  background:rgba(255,255,255,.045);
-  border:1px solid rgba(255,255,255,.09);
-  border-radius:12px;
-  padding:36px 32px;
-  width:100%;
-  max-width:440px;
   position:relative;
   z-index:1;
-  box-shadow:0 16px 36px rgba(0,0,0,.35);
+  width:100%;
+  max-width:460px;
+  padding:40px 34px;
+  border-radius:8px;
+  background:
+    linear-gradient(180deg, rgba(0,229,255,.08), rgba(139,92,246,.04)),
+    #08081a;
+  border:1px solid rgba(0,229,255,.35);
+  box-shadow:
+    0 0 60px rgba(0,229,255,.18),
+    0 0 120px rgba(255,45,149,.1),
+    inset 0 0 60px rgba(0,229,255,.06);
 }
 
-/* Steps */
+.reg-card::before,
+.reg-card::after{
+  content:'';
+  position:absolute;
+  width:22px; height:22px;
+  border:2px solid #00e5ff;
+  filter:drop-shadow(0 0 8px rgba(0,229,255,.8));
+  pointer-events:none;
+}
+.reg-card::before{ top:-2px; left:-2px; border-right:0; border-bottom:0; }
+.reg-card::after{ bottom:-2px; right:-2px; border-left:0; border-top:0; }
+
+/* STEPS INDICATOR - 3 steps now */
 .reg-steps{
   display:flex;
   align-items:center;
-  gap:8px;
-  margin-bottom:22px;
+  gap:10px;
+  margin-bottom:24px;
 }
 
 .reg-step-item{
   display:flex;
   align-items:center;
-  gap:6px;
+  gap:8px;
   font-size:12px;
 }
 
 .reg-step-dot{
-  width:24px;
-  height:24px;
-  border-radius:50%;
+  width:26px;
+  height:26px;
+  border-radius:4px;
   display:flex;
   align-items:center;
   justify-content:center;
+  font-family:'Orbitron', system-ui, sans-serif;
   font-size:11px;
   font-weight:900;
-  color:var(--h-muted);
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.1);
+  color:#5a6684;
+  background:rgba(0,229,255,.04);
+  border:1px solid rgba(0,229,255,.22);
+  transition:all .22s ease;
 }
 
 .reg-step-dot.active{
-  color:#10180e;
-  background:linear-gradient(180deg,#9bd761,#7fb64a);
+  color:#050510;
+  background:linear-gradient(135deg, #00e5ff, #a8f8ff);
   border-color:transparent;
+  box-shadow:
+    0 0 16px rgba(0,229,255,.7),
+    inset 0 0 8px rgba(255,255,255,.4);
 }
 
 .reg-step-label{
-  color:var(--h-muted);
-  font-size:12px;
-  font-weight:800;
+  color:#5a6684;
+  font-family:'Chakra Petch', system-ui, sans-serif;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.16em;
+  text-transform:uppercase;
 }
 
 .reg-step-label.active{
-  color:var(--h-green-2);
+  color:#00e5ff;
+  text-shadow:0 0 10px rgba(0,229,255,.6);
 }
 
 .reg-step-line{
   flex:1;
   height:1px;
-  background:var(--h-line);
+  background:linear-gradient(90deg, rgba(0,229,255,.4), rgba(0,229,255,.12));
 }
 
+/* HEADINGS */
 .reg-kicker{
-  display:block;
-  color:var(--h-green-2);
+  display:inline-flex;
+  align-items:center;
+  gap:9px;
+  color:#00e5ff;
+  font-family:'Chakra Petch', system-ui, sans-serif;
   font-size:11px;
-  font-weight:800;
+  font-weight:700;
   text-transform:uppercase;
-  letter-spacing:.18em;
-  margin-bottom:8px;
+  letter-spacing:.22em;
+  margin-bottom:14px;
 }
 
-.reg-title{
-  margin:0 0 8px;
-  color:var(--h-text);
-  font-size:2.2rem;
+.reg-kicker::before{
+  content:'[';
+  color:#a8f8ff;
+  font-family:'Orbitron', system-ui, sans-serif;
+  font-weight:900;
+}
+.reg-kicker::after{
+  content:']';
+  color:#a8f8ff;
+  font-family:'Orbitron', system-ui, sans-serif;
   font-weight:900;
 }
 
-.reg-sub{
-  margin:0 0 24px;
-  color:var(--h-muted);
-  font-size:14px;
-  line-height:1.65;
+.reg-title{
+  margin:0 0 10px;
+  color:#fff;
+  font-family:'Orbitron', system-ui, sans-serif;
+  font-size:clamp(1.8rem, 4vw, 2.4rem);
+  font-weight:800;
+  letter-spacing:-0.01em;
+  text-transform:uppercase;
+  line-height:1.05;
 }
 
+.reg-sub{
+  margin:0 0 26px;
+  color:#7d8ba8;
+  font-size:14px;
+  line-height:1.7;
+}
+
+/* ALERTS */
 .reg-alert{
   padding:12px 16px;
-  border-radius:10px;
-  font-size:13px;
-  margin-bottom:20px;
+  border-radius:6px;
+  font-family:'Chakra Petch', system-ui, sans-serif;
+  font-size:12.5px;
+  font-weight:600;
+  letter-spacing:.06em;
+  margin-bottom:22px;
 }
 
 .reg-alert-error{
-  background:rgba(239,68,68,0.1);
-  border:1px solid rgba(239,68,68,0.25);
-  color:#f87171;
+  background:rgba(255,45,149,.08);
+  border:1px solid rgba(255,45,149,.35);
+  color:#ff6bb0;
+  box-shadow:inset 0 0 14px rgba(255,45,149,.1);
 }
 
 .reg-alert-success{
-  background:rgba(74,222,128,0.1);
-  border:1px solid rgba(74,222,128,0.25);
-  color:#4ade80;
+  background:rgba(182,255,60,.08);
+  border:1px solid rgba(182,255,60,.35);
+  color:#b6ff3c;
+  box-shadow:inset 0 0 14px rgba(182,255,60,.1);
 }
 
+/* FORM */
 .reg-form{
   display:flex;
   flex-direction:column;
@@ -261,67 +330,85 @@ const pageStyles = `
 .reg-form label{
   display:flex;
   flex-direction:column;
-  gap:8px;
-  font-size:11px;
-  font-weight:800;
-  color:var(--h-muted);
+  gap:9px;
+  font-family:'Chakra Petch', system-ui, sans-serif;
+  font-size:10.5px;
+  font-weight:700;
+  color:#00e5ff;
   text-transform:uppercase;
-  letter-spacing:.12em;
+  letter-spacing:.2em;
 }
 
 .reg-form input{
   padding:13px 16px;
-  background:rgba(255,255,255,.04);
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:10px;
+  background:rgba(0,229,255,.03);
+  border:1px solid rgba(0,229,255,.22);
+  border-radius:6px;
   color:#ffffff;
+  font-family:'Inter', system-ui, sans-serif;
   font-size:14px;
   outline:none;
-  transition:all .2s ease;
+  transition:border-color .2s ease, background .2s ease, box-shadow .2s ease;
 }
 
 .reg-form input:focus{
-  border-color:var(--h-green);
-  background:rgba(129,182,76,.06);
-  box-shadow:0 0 0 3px rgba(129,182,76,.15);
+  border-color:#00e5ff;
+  background:rgba(0,229,255,.06);
+  box-shadow:
+    0 0 0 3px rgba(0,229,255,.15),
+    0 0 22px rgba(0,229,255,.25),
+    inset 0 0 10px rgba(0,229,255,.06);
 }
 
 .reg-form input::placeholder{
-  color:var(--h-muted);
+  color:#5a6684;
+  letter-spacing:.02em;
 }
 
 .reg-switch{
   text-align:center;
-  font-size:13px;
-  color:var(--h-muted);
-  margin-top:24px;
+  font-family:'Chakra Petch', system-ui, sans-serif;
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:.1em;
+  color:#7d8ba8;
+  margin-top:26px;
+  text-transform:uppercase;
 }
 
 .reg-switch a{
-  color:var(--h-green-2);
+  color:#00e5ff;
   text-decoration:none;
-  font-weight:850;
-  transition:color .18s ease;
+  font-weight:800;
+  transition:color .18s ease, text-shadow .18s ease;
 }
 
 .reg-switch a:hover{
-  color:var(--h-green);
-  text-decoration:underline;
+  color:#a8f8ff;
+  text-shadow:0 0 10px rgba(0,229,255,.7);
 }
 
-/* Responsive */
 @media (max-width:560px){
-  .cm2-wrap{
-    width:min(100% - 24px,1180px);
-  }
   .reg-wrap{
     padding:46px 18px;
   }
   .reg-card{
-    padding:28px 22px;
+    padding:30px 22px;
   }
   .reg-title{
-    font-size:1.9rem;
+    font-size:1.7rem;
+  }
+  .reg-steps{
+    gap:6px;
+  }
+  .reg-step-dot{
+    width:24px;
+    height:24px;
+    font-size:10px;
+  }
+  .reg-step-label{
+    font-size:10px;
+    letter-spacing:.1em;
   }
 }
 `;
@@ -332,7 +419,6 @@ const Register = () => {
 
   const [formData, setFormData] = useState({
     email: '',
-    // mobile: '',
     password: '',
     confirmPassword: '',
   });
@@ -348,7 +434,6 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('RSGISTER SUCCSESS');
     setError('');
     setSuccess('');
 
@@ -368,14 +453,25 @@ const Register = () => {
     try {
       const data = await register(formData);
 
+      // ✅ NEW: Email verification flow
+      if (data.needsEmailVerification) {
+        setSuccess('Account created! Redirecting to verification...');
+        setTimeout(() => {
+          navigate('/check-email', {
+            state: { email: data.email || formData.email }
+          });
+        }, 1000);
+        return;
+      }
+
+      // Legacy fallback (agar backend purana response bheje)
       if (data.setupToken) {
         localStorage.setItem('setupToken', data.setupToken);
       }
-
-      setSuccess('Account created! Let\'s set up your profile...');
+      setSuccess("Account created! Let's set up your profile...");
       setTimeout(() => navigate('/setup-profile'), 800);
     } catch (err) {
-      console.log("Registration error:", err);
+      console.log('Registration error:', err);
       setError(err?.response?.data?.message || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
@@ -389,7 +485,7 @@ const Register = () => {
       <main className="h-page">
         <div className="reg-wrap">
           <div className="reg-card">
-            {/* Steps Indicator */}
+            {/* Steps Indicator — 3 steps now */}
             <div className="reg-steps">
               <div className="reg-step-item">
                 <div className="reg-step-dot active">1</div>
@@ -397,26 +493,30 @@ const Register = () => {
               </div>
               <div className="reg-step-line"></div>
               <div className="reg-step-item">
-                <div className="reg-step-dot inactive">2</div>
+                <div className="reg-step-dot">2</div>
+                <span className="reg-step-label">Verify</span>
+              </div>
+              <div className="reg-step-line"></div>
+              <div className="reg-step-item">
+                <div className="reg-step-dot">3</div>
                 <span className="reg-step-label">Profile</span>
               </div>
             </div>
 
             <span className="reg-kicker">Player Registration</span>
             <h1 className="reg-title">Create Account</h1>
-            <p className="reg-sub">Enter your email and password to get started.</p>
+            <p className="reg-sub">
+              Enter your email and password. We'll send you a verification link.
+            </p>
 
-            {/* Error Message */}
             {error && (
               <div className="reg-alert reg-alert-error">{error}</div>
             )}
 
-            {/* Success Message */}
             {success && (
               <div className="reg-alert reg-alert-success">{success}</div>
             )}
 
-            {/* Register Form */}
             <form onSubmit={handleSubmit} className="reg-form">
               <label>
                 Email
@@ -429,18 +529,6 @@ const Register = () => {
                   required
                 />
               </label>
-
-              {/* <label>
-                Mobile Number
-                <input
-                  type="text"
-                  name="mobile"
-                  placeholder="Enter your mobile number"
-                  value={formData.mobile}
-                  onChange={handleChange}
-                  required
-                />
-              </label> */}
 
               <label>
                 Password
@@ -466,7 +554,11 @@ const Register = () => {
                 />
               </label>
 
-              <button type="submit" className="cm2-btn cm2-btn-primary" disabled={loading}>
+              <button
+                type="submit"
+                className="cm2-btn cm2-btn-primary cm2-corners"
+                disabled={loading}
+              >
                 {loading ? 'Creating...' : 'Continue →'}
               </button>
             </form>

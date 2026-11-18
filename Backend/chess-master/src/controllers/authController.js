@@ -1,4 +1,5 @@
 const bcrypt = require("bcryptjs");
+const sendEmail = require("../utils/sendEmail");
 const User = require("../models/User");
 const Game = require("../models/Game");
 const Rating = require("../models/Rating");
@@ -6,8 +7,6 @@ const Friend = require("../models/Friend");
 const Statistic = require("../models/Statistic");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
-
-
 function createAuthToken(user) {
   return jwt.sign(
     sessionUserFromDoc(user),
@@ -48,27 +47,25 @@ async function registerUser(req, res) {
     if (password.length < 6) {
       return res.status(400).json({ success: false, message: "Password must be at least 6 characters." });
     }
-    // if (!/^\d{10}$/.test(mobile)) {
-    //   return res.status(400).json({ success: false, message: "Invalid mobile number format." });
-    // }
 
     const existingUser = await User.findOne({ email });
     if (existingUser && existingUser.profileSetup) {
       return res.status(409).json({ success: false, message: "Email is already registered." });
     }
-    // const existingMobile = await User.findOne({ mobile });
 
-    // if (existingMobile && existingMobile.profileSetup) {
-    //   return res.status(409).json({ success: false, message: "Mobile number is already registered." });
-    // }
-
-    const hashedPassword = await bcrypt.hash(password, 12);
+        const hashedPassword = await bcrypt.hash(password, 12);
     const setupToken = crypto.randomBytes(32).toString("hex");
     const tempUsername = "user_" + Date.now();
+
+    const verifyEmailToken = crypto.randomBytes(32).toString("hex");
+    const verifyEmailExpires = Date.now() + 60 * 60 * 1000; // 1 hour
 
     if (existingUser && !existingUser.profileSetup) {
       existingUser.password = hashedPassword;
       existingUser.setupToken = setupToken;
+      existingUser.isVerified = false;
+      existingUser.verifyEmailToken = verifyEmailToken;
+      existingUser.verifyEmailExpires = verifyEmailExpires;
       await existingUser.save();
     } else {
       const user = await User.create({
@@ -76,17 +73,54 @@ async function registerUser(req, res) {
         password: hashedPassword,
         username: tempUsername,
         profileSetup: false,
-        setupToken
+        setupToken,
+        isVerified: false,
+        verifyEmailToken,
+        verifyEmailExpires
       });
       await Rating.create({ user: user._id });
       await Friend.create({ user: user._id });
       await Statistic.create({ user: user._id });
     }
 
+    // ── Send verification email ─────────────────
+    const verifyLink = `${process.env.CLIENT_URL}/verify-email/${verifyEmailToken}`;
+
+    const verifyHtml = `
+      <h2>Welcome to ChessMaster ♟️</h2>
+      <p>Please verify your email to activate your account.</p>
+      <p>
+        <a href="${verifyLink}"
+           style="display:inline-block;padding:12px 20px;background:#d4af37;
+                  color:#000;text-decoration:none;border-radius:6px;font-weight:bold;">
+          Verify Email
+        </a>
+      </p>
+      <p>Or paste this link in your browser:</p>
+      <p>${verifyLink}</p>
+      <p>This link is valid for <strong>1 hour</strong>.</p>
+      <p>If you didn't create a ChessMaster account, ignore this email.</p>
+      <p>— ChessMaster Team</p>
+    `;
+
+    try {
+      await sendEmail({
+        to: email,
+        subject: "Verify your ChessMaster email",
+        html: verifyHtml
+      });
+    } catch (mailErr) {
+      console.error("Verification email failed:", mailErr);
+    }
+
     req.session.setupEmail = email;
 
     return req.session.save(() => {
-      res.status(201).json({ success: true, needsProfileSetup: true, email, setupToken });
+      res.status(201).json({
+        success: true,
+        needsEmailVerification: true,
+        email
+      });
     });
   } catch (error) {
     console.error("Register error:", error);
@@ -182,7 +216,13 @@ async function loginUser(req, res) {
     if (!isMatch) {
       return res.status(401).json({ success: false, message: "Invalid email or password." });
     }
-
+if (user.isVerified === false) {
+      return res.status(403).json({
+        success: false,
+        needsEmailVerification: true,
+        message: "Please verify your email first. Check your inbox."
+      });
+    }
     if (!user.profileSetup) {
       req.session.setupEmail = email;
 
