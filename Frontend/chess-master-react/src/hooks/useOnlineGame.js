@@ -36,6 +36,7 @@ export default function useOnlineGame({ user } = {}) {
   const [showAbort, setShowAbort] = useState(true);
   const [disconnectMessage, setDisconnectMessage] = useState('');
   const [invalid, setInvalid] = useState(!savedRef.current.roomId || !savedRef.current.playerColor);
+  const [promotionPending, setPromotionPending] = useState(null);
 
   const gameOverRef = useRef(false);
   const savedGameRef = useRef(false);
@@ -263,16 +264,45 @@ const onOnlineGameState = (data) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [invalid, roomId, afterMove, finish]);
 
-  const makeMove = useCallback((from, to) => {
-    if (gameOverRef.current) return null;
-    const move = gameRef.current.move({ from, to, promotion: 'q' });
-    if (move) {
-      afterMove(move);
-      socketRef.current?.emit('onlineMove', { roomId, move: { from: move.from, to: move.to, promotion: 'q' } });
-    }
-    return move;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roomId, afterMove]);
+ const makeMove = useCallback((from, to) => {
+  if (gameOverRef.current) return null;
+  const g = gameRef.current;
+  const moves = g.moves({ square: from, verbose: true });
+  const isPromotion = moves.some((m) => m.to === to && m.promotion);
+
+  if (isPromotion) {
+    setPromotionPending({ from, to });
+    return null;
+  }
+
+  const move = g.move({ from, to });
+  if (move) {
+    afterMove(move);
+    socketRef.current?.emit('onlineMove', { roomId, move: { from: move.from, to: move.to } });
+  }
+  return move;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [roomId, afterMove]);
+const completePromotion = useCallback((piece) => {
+  if (!promotionPending) return;
+  const { from, to } = promotionPending;
+  const move = gameRef.current.move({ from, to, promotion: piece });
+  setPromotionPending(null);
+  if (move) {
+    afterMove(move);
+    socketRef.current?.emit('onlineMove', {
+      roomId,
+      move: { from: move.from, to: move.to, promotion: piece }
+    });
+  }
+}, [promotionPending, roomId, afterMove]);
+
+const cancelPromotion = useCallback(() => {
+  setPromotionPending(null);
+  setSelectedSquare(null);
+  setLegalMoves([]);
+}, []);
+
 
   const handleSquareClick = useCallback((squareName) => {
     if (gameOverRef.current || gameRef.current.game_over()) return;
@@ -287,8 +317,13 @@ const onOnlineGameState = (data) => {
       return;
     }
 
-    const move = makeMove(selectedSquare, squareName);
+     const move = makeMove(selectedSquare, squareName);
     if (move) return;
+    if (promotionPending) {
+      setSelectedSquare(null);
+      setLegalMoves([]);
+      return;
+    }
 
     if (piece && piece.color === playerColor) {
       setSelectedSquare(squareName);
@@ -299,7 +334,7 @@ const onOnlineGameState = (data) => {
     setSelectedSquare(null);
     setLegalMoves([]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSquare, playerColor, makeMove]);
+  }, [selectedSquare, playerColor, makeMove, promotionPending]);
 
   const handleDragStart = useCallback((event, squareName, piece) => {
     if (gameOverRef.current || gameRef.current.turn() !== playerColor || !piece || piece.color !== playerColor) {
@@ -316,11 +351,11 @@ const onOnlineGameState = (data) => {
     event.preventDefault();
     if (gameOverRef.current || !selectedSquare) return;
     const move = makeMove(selectedSquare, targetSquare);
-    if (!move) {
+    if (!move && !promotionPending) {
       setSelectedSquare(null);
       setLegalMoves([]);
     }
-  }, [selectedSquare, makeMove]);
+  }, [selectedSquare, makeMove, promotionPending]);
 
   const resign = useCallback(() => {
     socketRef.current?.emit('resign', { roomId });
@@ -383,6 +418,9 @@ const onOnlineGameState = (data) => {
     handleSquareClick,
     handleDragStart,
     handleDrop,
+    promotionPending,
+    completePromotion,
+    cancelPromotion,
     resign,
     offerDraw,
     acceptDraw,

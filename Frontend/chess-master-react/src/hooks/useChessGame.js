@@ -58,6 +58,7 @@ const blackTimeRef = useRef(0);
   const [reviewIndex, setReviewIndex] = useState(0);
   const [isReviewing, setIsReviewing] = useState(false);
   const [botThinking, setBotThinking] = useState(false);
+  const [promotionPending, setPromotionPending] = useState(null);
 
   const timerRef = useRef(null);
   const incrementRef = useRef(0);
@@ -224,15 +225,37 @@ blackTime: blackTimeRef.current,
     return gameRef.current.turn() === botColor;
   }, []);
 
-  const trySquareMove = useCallback((from, to) => {
-    const move = gameRef.current.move({ from, to, promotion: 'q' });
-    if (move) {
-      afterSuccessfulMove(move);
-      return move;
-    }
+ const trySquareMove = useCallback((from, to) => {
+  const g = gameRef.current;
+  const moves = g.moves({ square: from, verbose: true });
+  const isPromotion = moves.some((m) => m.to === to && m.promotion);
+
+  if (isPromotion) {
+    setPromotionPending({ from, to });
     return null;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [afterSuccessfulMove]);
+  }
+
+  const move = g.move({ from, to });
+  if (move) {
+    afterSuccessfulMove(move);
+    return move;
+  }
+  return null;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [afterSuccessfulMove]);
+const completePromotion = useCallback((piece) => {
+  if (!promotionPending) return;
+  const { from, to } = promotionPending;
+  const move = gameRef.current.move({ from, to, promotion: piece });
+  setPromotionPending(null);
+  if (move) afterSuccessfulMove(move);
+}, [promotionPending, afterSuccessfulMove]);
+
+const cancelPromotion = useCallback(() => {
+  setPromotionPending(null);
+  setSelectedSquare(null);
+  setLegalMoves([]);
+}, []);
 
   const selectSquare = useCallback((squareName) => {
     setSelectedSquare(squareName);
@@ -250,9 +273,13 @@ blackTime: blackTimeRef.current,
       selectSquare(squareName);
       return;
     }
-
     const move = trySquareMove(selectedSquare, squareName);
     if (move) return;
+    if (promotionPending) {
+      setSelectedSquare(null);
+      setLegalMoves([]);
+      return;
+    }
 
     if (piece && piece.color === g.turn()) {
       selectSquare(squareName);
@@ -262,7 +289,7 @@ blackTime: blackTimeRef.current,
     setSelectedSquare(null);
     setLegalMoves([]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameStarted, isReviewing, isBotTurn, selectedSquare, selectSquare, trySquareMove]);
+  }, [gameStarted, isReviewing, isBotTurn, selectedSquare, selectSquare, trySquareMove, promotionPending]);
 
   const handleDragStart = useCallback((event, squareName, piece) => {
     if (!gameStarted || isReviewing || gameOverRef.current || isBotTurn()) {
@@ -279,16 +306,15 @@ blackTime: blackTimeRef.current,
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameStarted, isReviewing, isBotTurn, selectSquare]);
 
-  const handleDrop = useCallback((event, targetSquare) => {
+   const handleDrop = useCallback((event, targetSquare) => {
     event.preventDefault();
     if (!gameStarted || isReviewing || gameOverRef.current || !selectedSquare) return;
     const move = trySquareMove(selectedSquare, targetSquare);
-    if (!move) {
+    if (!move && !promotionPending) {
       setSelectedSquare(null);
       setLegalMoves([]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameStarted, isReviewing, selectedSquare, trySquareMove]);
+  }, [gameStarted, isReviewing, selectedSquare, trySquareMove, promotionPending]);
 
   const startTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -468,6 +494,9 @@ blackTime: blackTimeRef.current,
     closeGameOver,
     gameOverInfo,
     botThinking,
+    promotionPending,
+    completePromotion,
+    cancelPromotion,
     whiteTime,
     blackTime,
     formatTime,

@@ -960,7 +960,116 @@ const OnlinePlay = () => {
             </div>
           </div>
         </main>
-
+        {/* Pawn Promotion Modal */}
+        {online.promotionPending && (
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(5,5,16,0.9)',
+            backdropFilter: 'blur(10px)',
+            display: 'grid',
+            placeItems: 'center',
+            zIndex: 200,
+          }}>
+            <div style={{
+              background: 'linear-gradient(180deg, rgba(0,229,255,.08), rgba(139,92,246,.04)), #08081a',
+              border: '2px solid #00e5ff',
+              borderRadius: '8px',
+              padding: '32px 28px',
+              textAlign: 'center',
+              boxShadow: '0 0 70px rgba(0,229,255,.4)',
+              maxWidth: '420px',
+              width: '90%',
+            }}>
+              <div style={{
+                fontFamily: 'Chakra Petch, sans-serif',
+                fontSize: '11px',
+                letterSpacing: '.24em',
+                color: '#00e5ff',
+                textTransform: 'uppercase',
+                marginBottom: '16px',
+                fontWeight: 700,
+              }}>
+                [ Promote Pawn ]
+              </div>
+              <h2 style={{
+                fontFamily: 'Orbitron, sans-serif',
+                fontSize: '20px',
+                color: '#fff',
+                marginBottom: '24px',
+                textTransform: 'uppercase',
+              }}>
+                Choose Piece
+              </h2>
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                {[
+                  { piece: 'q', label: 'Queen', symbol: '♛' },
+                  { piece: 'r', label: 'Rook', symbol: '♜' },
+                  { piece: 'b', label: 'Bishop', symbol: '♝' },
+                  { piece: 'n', label: 'Knight', symbol: '♞' },
+                ].map(({ piece, label, symbol }) => (
+                  <button
+                    key={piece}
+                    type="button"
+                    onClick={() => online.completePromotion(piece)}
+                    style={{
+                      background: 'rgba(0,229,255,.06)',
+                      border: '1px solid rgba(0,229,255,.4)',
+                      borderRadius: '6px',
+                      padding: '16px 10px',
+                      cursor: 'pointer',
+                      color: '#fff',
+                      fontSize: '42px',
+                      minWidth: '72px',
+                      transition: 'all .2s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(0,229,255,.2)';
+                      e.currentTarget.style.transform = 'scale(1.08)';
+                      e.currentTarget.style.boxShadow = '0 0 24px rgba(0,229,255,.7)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'rgba(0,229,255,.06)';
+                      e.currentTarget.style.transform = 'scale(1)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  >
+                    {symbol}
+                    <div style={{
+                      fontSize: '10px',
+                      marginTop: '4px',
+                      color: '#7d8ba8',
+                      letterSpacing: '.1em',
+                      textTransform: 'uppercase',
+                      fontFamily: 'Chakra Petch, sans-serif',
+                    }}>
+                      {label}
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={online.cancelPromotion}
+                style={{
+                  marginTop: '20px',
+                  background: 'transparent',
+                  border: '1px solid rgba(0,229,255,.25)',
+                  borderRadius: '4px',
+                  color: '#7d8ba8',
+                  padding: '8px 20px',
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                  letterSpacing: '.14em',
+                  textTransform: 'uppercase',
+                  fontFamily: 'Chakra Petch, sans-serif',
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
         {/* Resign confirm popup */}
         {showResignOverlay && (
           <div className="og-confirm-overlay" id="ogResignOverlay">
