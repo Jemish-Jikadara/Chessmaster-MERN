@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -435,12 +435,18 @@ const SetupProfile = () => {
     country: '',
     dateOfBirth: '',
     bio: '',
+    email: '',
   });
   const [imageFile, setImageFile] = useState(null);
   const [previewImage, setPreviewImage] = useState('/images/default-avatar.png');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
-
+useEffect(() => {
+  const savedEmail = localStorage.getItem('verifiedEmail');
+  if (savedEmail) {
+    setFormData((prev) => ({ ...prev, email: savedEmail }));
+  }
+}, []);
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));

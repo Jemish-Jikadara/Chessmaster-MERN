@@ -22,7 +22,7 @@ function handleUpload(req, res, next) {
 }
 
 router.post("/register", isGuest, authController.registerUser);
-router.post("/setup-profile",isAuthenticated, handleUpload, authController.setupProfile);
+router.post("/setup-profile", handleUpload, authController.setupProfile);
 
 // Edit Profile
 router.post("/profile/edit", isAuthenticated, handleUpload, authController.updateProfile);
@@ -210,6 +210,7 @@ router.get("/api/me",isAuthenticated, authController.getMe);
 
 // ── VERIFY EMAIL ───────────────────────────────
 // ── VERIFY EMAIL (JSON — frontend calls this) ───
+// ── VERIFY EMAIL (JSON — frontend calls this) ───
 router.get("/verify-email/:token", async (req, res) => {
   try {
     const { token } = req.params;
@@ -231,9 +232,29 @@ router.get("/verify-email/:token", async (req, res) => {
     user.verifyEmailExpires = null;
     await user.save();
 
+    // ✅ JWT token generate karo
+    const jwt = require("jsonwebtoken");
+    const authToken = jwt.sign(
+      {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        rapidRating: user.rapidRating,
+        blitzRating: user.blitzRating,
+        bulletRating: user.bulletRating,
+        boardTheme: user.boardTheme,
+        profileImage: user.profileImage
+      },
+      process.env.JWT_SECRET || "chessmasterjwtsecret",
+      { expiresIn: "7d" }
+    );
+
     return res.json({
       success: true,
-      message: "Email verified successfully. You can now login."
+      message: "Email verified successfully. You can now login.",
+      email: user.email,        // ✅ email bhejo
+      token: authToken          // ✅ JWT bhejo
     });
   } catch (err) {
     console.error("Verify email error:", err);

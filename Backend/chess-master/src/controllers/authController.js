@@ -133,38 +133,38 @@ async function registerUser(req, res) {
 async function setupProfile(req, res) {
   try {
     const {
-  username,
-  fullName,
-  country,
-  bio,
-  dateOfBirth,
-  profileImage,
-  setupToken,
-  email: bodyEmail
-} = req.body;
+      username,
+      fullName,
+      country,
+      bio,
+      dateOfBirth,
+      profileImage,
+      email: bodyEmail
+    } = req.body;
 
-const email = req.session.setupEmail || req.session.user?.email || bodyEmail;
-// 🔍 DEBUG LOGS
-console.log("===== SETUP PROFILE DEBUG =====");
-console.log("setupToken from body:", setupToken);
-console.log("session setupEmail:", req.session?.setupEmail);
-console.log("session user:", req.session?.user);
-console.log("bodyEmail:", bodyEmail);
-console.log("req.file:", req.file ? "File present" : "No file");
-console.log("===============================");
-
-    if (!email && !setupToken) {
-  return res.status(400).json({ success: false, message: "Please register first." });
-}
+    if (!bodyEmail) {
+      return res.status(400).json({ success: false, message: "Email is required." });
+    }
 
     if (!username || username.length < 3 || username.length > 24) {
       return res.status(400).json({ success: false, message: "Username must be 3-24 characters." });
     }
-const user = setupToken
-  ? await User.findOne({ setupToken, profileSetup: false })
-  : await User.findOne({ email });
+
+    // User ko email + isVerified se dhundho
+    const user = await User.findOne({ email: bodyEmail, isVerified: true });
+
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found." });
+      return res.status(400).json({
+        success: false,
+        message: "Email not verified. Please verify your email first."
+      });
+    }
+
+    if (user.profileSetup) {
+      return res.status(400).json({
+        success: false,
+        message: "Profile already setup. Please login."
+      });
     }
 
     const existingUsername = await User.findOne({
@@ -186,19 +186,12 @@ const user = setupToken
   user.profileImage = req.file.path;
 } else if (profileImage && profileImage.trim()) {
   user.profileImage = profileImage.trim();
-}
-user.setupToken = null;
+}    await user.save();
 
-    await user.save();
-    req.session.setupEmail = null;
-    req.session.user = sessionUserFromDoc(user);
-
-    return req.session.save(() => {
-res.status(200).json({
-  success: true,
-  user: req.session.user,
-  token: createAuthToken(user)
-});
+    return res.status(200).json({
+      success: true,
+      user: sessionUserFromDoc(user),
+      token: createAuthToken(user)
     });
   } catch (error) {
     console.error("Setup profile error:", error);

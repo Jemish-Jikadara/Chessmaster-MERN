@@ -6,13 +6,21 @@ export default function VerifyEmail() {
   const { token } = useParams();
   const [status, setStatus] = useState('loading'); // loading | success | error
   const [message, setMessage] = useState('');
-
   useEffect(() => {
     const verify = async () => {
       try {
         const res = await api.get(`/verify-email/${token}`);
         setStatus('success');
         setMessage(res.data.message || 'Email verified successfully.');
+
+        // ✅ Email localStorage me save karo (setup-profile ke liye)
+        if (res.data.email) {
+          localStorage.setItem('verifiedEmail', res.data.email);
+        }
+        // ✅ JWT token save karo (auto-login ke liye)
+        if (res.data.token) {
+          localStorage.setItem('authToken', res.data.token);
+        }
       } catch (err) {
         setStatus('error');
         setMessage(
