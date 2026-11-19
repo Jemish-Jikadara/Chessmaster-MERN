@@ -22,6 +22,9 @@ import Online from './pages/Online';
 import Replay from './pages/Replay';
 import Status from './pages/Status';
 import CheckEmail from './pages/CheckEmail';
+import TermsOfService from './pages/TermsOfService';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import VerifyEmail from './pages/VerifyEmail';
 
 function HomeWrapper() {
   const { user } = useAuth(); 
@@ -44,6 +47,9 @@ function App() {
             <Route path="reset-password/:token" element={<ResetPassword />} />
             <Route path="leaderboard" element={<Leaderboard />} />
             <Route path="about" element={<About />} />
+            <Route path="verify-email/:token" element={<VerifyEmail />} />
+            <Route path="terms-of-service" element={<TermsOfService />} />
+            <Route path="privacy-policy" element={<PrivacyPolicy />} />
 
             {/* Protected Routes — PrivateRoute ke andar */}
             <Route element={<PrivateRoute />}>

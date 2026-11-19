@@ -407,7 +407,7 @@ const Login = () => {
     setResendLoading(true);
     setResendMsg('');
     try {
-      await api.post('/auth/resend-verification', { email: unverifiedEmail });
+      await api.post('/resend-verification', { email: unverifiedEmail });
       setResendMsg('✅ Verification email sent! Check your inbox.');
     } catch (err) {
       setResendMsg(err.response?.data?.message || 'Failed to resend.');

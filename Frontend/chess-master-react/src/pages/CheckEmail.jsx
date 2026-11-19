@@ -193,7 +193,7 @@ export default function CheckEmail() {
     }
     setLoading(true);
     try {
-      await api.post('/auth/resend-verification', { email });
+      await api.post('/resend-verification', { email });
       setMsg('✅ Verification email sent! Check your inbox.');
     } catch (err) {
       setMsg(err.response?.data?.message || 'Failed to resend.');

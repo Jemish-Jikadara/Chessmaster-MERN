@@ -209,6 +209,7 @@ router.get("/api/me",isAuthenticated, authController.getMe);
 router.get("/api/me",isAuthenticated, authController.getMe);
 
 // ── VERIFY EMAIL ───────────────────────────────
+// ── VERIFY EMAIL (JSON — frontend calls this) ───
 router.get("/verify-email/:token", async (req, res) => {
   try {
     const { token } = req.params;
@@ -230,7 +231,10 @@ router.get("/verify-email/:token", async (req, res) => {
     user.verifyEmailExpires = null;
     await user.save();
 
-    return res.redirect(`${process.env.CLIENT_URL}/login?verified=1`);
+    return res.json({
+      success: true,
+      message: "Email verified successfully. You can now login."
+    });
   } catch (err) {
     console.error("Verify email error:", err);
     return res.status(500).json({ success: false, message: "Something went wrong." });

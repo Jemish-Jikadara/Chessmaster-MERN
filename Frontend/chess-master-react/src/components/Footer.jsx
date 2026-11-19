@@ -14,6 +14,8 @@ const FOOTER_COLUMNS = [
     title: 'System',
     links: [
       { to: '/friends', label: 'Friends' },
+      { to: '/terms-of-service', label: 'Terms of Service' },
+      { to: '/privacy-policy', label: 'Privacy Policy' },
       { to: '/profile', label: 'Profile' },
       { to: '/leaderboard', label: 'Rankings' },
       { to: '/register', label: 'Register' },
