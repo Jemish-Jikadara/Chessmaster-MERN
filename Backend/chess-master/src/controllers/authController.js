@@ -119,7 +119,8 @@ async function registerUser(req, res) {
       res.status(201).json({
         success: true,
         needsEmailVerification: true,
-        email
+        email,
+        setupToken
       });
     });
   } catch (error) {
@@ -143,6 +144,14 @@ async function setupProfile(req, res) {
 } = req.body;
 
 const email = req.session.setupEmail || req.session.user?.email || bodyEmail;
+// 🔍 DEBUG LOGS
+console.log("===== SETUP PROFILE DEBUG =====");
+console.log("setupToken from body:", setupToken);
+console.log("session setupEmail:", req.session?.setupEmail);
+console.log("session user:", req.session?.user);
+console.log("bodyEmail:", bodyEmail);
+console.log("req.file:", req.file ? "File present" : "No file");
+console.log("===============================");
 
     if (!email && !setupToken) {
   return res.status(400).json({ success: false, message: "Please register first." });

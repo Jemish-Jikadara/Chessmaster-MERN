@@ -22,7 +22,7 @@ function handleUpload(req, res, next) {
 }
 
 router.post("/register", isGuest, authController.registerUser);
-router.post("/setup-profile", handleUpload, authController.setupProfile);
+router.post("/setup-profile",isAuthenticated, handleUpload, authController.setupProfile);
 
 // Edit Profile
 router.post("/profile/edit", isAuthenticated, handleUpload, authController.updateProfile);

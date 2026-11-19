@@ -469,7 +469,7 @@ const SetupProfile = () => {
       const data = new FormData();
       Object.entries(formData).forEach(([key, value]) => data.append(key, value));
 
-      const setupToken = localStorage.getItem('setupToken');
+      const setupToken = localStorage.getItem('pendingSetupToken');
       if (setupToken) {
         data.append('setupToken', setupToken);
       }
@@ -477,7 +477,7 @@ const SetupProfile = () => {
       if (imageFile) data.append('profileImage', imageFile);
 
       await setupProfile(data);
-      localStorage.removeItem('setupToken');
+      localStorage.removeItem('pendingSetupToken');
       navigate('/profile');
     } catch (err) {
       setError(err?.response?.data?.message || 'Something went wrong. Please try again.');

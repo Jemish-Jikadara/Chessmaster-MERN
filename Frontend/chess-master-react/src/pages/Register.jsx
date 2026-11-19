@@ -454,7 +454,12 @@ const Register = () => {
       const data = await register(formData);
 
       // ✅ NEW: Email verification flow
+            // ✅ NEW: Email verification flow
       if (data.needsEmailVerification) {
+        // setupToken localStorage me save karo
+        if (data.setupToken) {
+          localStorage.setItem('pendingSetupToken', data.setupToken);
+        }
         setSuccess('Account created! Redirecting to verification...');
         setTimeout(() => {
           navigate('/check-email', {

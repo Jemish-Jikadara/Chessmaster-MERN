@@ -49,6 +49,7 @@ app.use(session({
   secret: process.env.SESSION_SECRET || "chessmastersecret",
   resave: false,
   saveUninitialized: false,
+  proxy: true,
   store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
   cookie: {
   maxAge: 1000 * 60 * 60 * 24 * 7,
