@@ -428,6 +428,10 @@ const Login = () => {
       const data = await login(formData.email, formData.password);
 
       if (data.needsProfileSetup) {
+        // Email send first 
+        if(data.email){
+          localStorage.setItem('verifiedEmail', data.email);
+        }
         setSuccess("Almost there — let's finish setting up your profile.");
         setTimeout(() => navigate('/setup-profile'), 800);
         return;

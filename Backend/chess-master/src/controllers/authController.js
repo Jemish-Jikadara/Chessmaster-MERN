@@ -226,8 +226,6 @@ if (user.isVerified === false) {
       });
     }
     if (!user.profileSetup) {
-      req.session.setupEmail = email;
-
       return req.session.save(() => {
         res.status(200).json({ success: true, needsProfileSetup: true, email });
       });
